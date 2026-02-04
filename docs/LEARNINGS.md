@@ -27,3 +27,27 @@ The user cancelled a `git commit` operation and reported feeling the agent was "
 
 ### Action Items
 - Create `3_transparency.md` to force status updates before blocking calls.
+
+## 2026-02-04: PowerShell Execution Policy Blocks NPM
+
+### Incident
+`npm install` failed with `PSSecurityException` because scripts are disabled on this machine.
+
+### Learnings
+1.  **PS1 Scripts Blocked**: `npm.ps1` and `npx.ps1` cannot run directly.
+2.  **CMD Bypass**: Using `cmd /c npm ...` works because it invokes the batch file (`npm.cmd`) instead of the PowerShell script.
+
+### Action Items
+-   **Always** prefix npm/npx commands with `cmd /c` (e.g., `cmd /c npm install`, `cmd /c npx wrangler`).
+-   Update `task.md` or usage docs to reflect this constraint for the user.
+
+## 2026-02-04: The "Stuck" Perception (Batching Limit)
+### Incident
+User cancelled a sequence of 4 chained Git commands (`commit` -> `checkout` -> `merge` -> `delete`) because the system appeared unresponsive.
+### Learnings
+1.  **Too Many Shell Calls**: Chaining multiple synchronous Git operations in one turn creates a long "silence" window.
+2.  **Windows FS Latency**: On Windows (especially OneDrive), Git operations take non-trivial time. 4 commands might take 10-20 seconds with no output.
+### Action Items
+-   **Micro-Batching**: Split workflows into single, visible steps. Do not queue `git merge` + `git commit` + `file creation` in one turn.
+-   **Explicit Handoff**: After *each* significant file write or command chain, return control to the user (or `notify_user`) to prove liveness.
+-   **Throttle Operations**: Do not batch more than 2 Git State-Changing commands in a single agent turn.

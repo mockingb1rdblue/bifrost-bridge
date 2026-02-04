@@ -1,0 +1,10 @@
+name = "perplexity-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Public variables here (if any)
+
+# Secrets are set via `wrangler secret put` or .dev.vars for local dev
+# PERPLEXITY_API_KEY
+# PROXY_API_KEY
