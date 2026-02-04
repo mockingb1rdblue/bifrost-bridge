@@ -1,0 +1,19 @@
+{
+    "name": "bifrost-bridge",
+    "version": "1.0.0",
+    "description": "Toolkit for liberating development from corporate network restrictions",
+    "scripts": {
+        "extract-certs": "node scripts/extract_certs.js",
+        "thinslice": "node scripts/thinslice.py"
+    },
+    "keywords": [
+        "corporate",
+        "proxy",
+        "mcp",
+        "toolkit"
+    ],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {},
+    "devDependencies": {}
+}
