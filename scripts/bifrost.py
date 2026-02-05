@@ -226,6 +226,7 @@ def main():
         print("  setup        - Verify environment and certs")
         print("  deploy-proxy - Deploy the Perplexity MCP Proxy")
         print("  detect       - Run network diagnostics")
+        print("  slice <pat>  - Slice markdown files into backlog items")
         return
 
     command = sys.argv[1]
@@ -241,8 +242,100 @@ def main():
         deploy_proxy()
     elif command == "detect":
         run_detective()
+    elif command == "slice":
+        if len(sys.argv) < 3:
+            print("[!] Usage: python bifrost.py slice <source_file_or_pattern>")
+            return
+        run_thinslice(sys.argv[2])
     else:
         print(f"[!] Unknown command: {command}")
+
+def run_thinslice(source_pattern):
+    """Slice a markdown file into backlog items"""
+    import glob
+    import re
+    
+    # Resolve source files
+    # Check if user provided an absolute path or relative to current dir
+    # But usually sources are in docs/reference
+    # Let's try to find it
+    
+    files = []
+    if os.path.exists(source_pattern):
+         files.append(source_pattern)
+    else:
+         # Try globbing
+         files = glob.glob(source_pattern)
+         
+    if not files:
+         # Try looking in docs/reference if not found
+         ref_path = ROOT_DIR / "docs" / "reference" / source_pattern
+         if ref_path.exists():
+             files.append(str(ref_path))
+         else:
+             # Try glob in docs/reference
+             files = glob.glob(str(ref_path))
+
+    if not files:
+        Colors.print(f"[!] No files found matching '{source_pattern}'", Colors.FAIL)
+        return
+
+    backlog_dir = ROOT_DIR / "docs" / "backlog"
+    
+    # Find max index
+    existing = glob.glob(str(backlog_dir / "*.md"))
+    max_index = 0
+    for f in existing:
+        basename = os.path.basename(f)
+        parts = basename.split('_')
+        if parts[0].isdigit():
+            idx = int(parts[0])
+            if idx > max_index:
+                max_index = idx
+    
+    current_index = max_index + 1
+    print(f"[*] Starting backlog index: {current_index:03d}")
+
+    for source_file in files:
+        print(f"[*] Processing {source_file}...")
+        try:
+            with open(source_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except Exception as e:
+            Colors.print(f"[!] Could not read {source_file}: {e}", Colors.FAIL)
+            continue
+
+        # Split by level 2 headers
+        sections = re.split(r'(^##\s+.+$)', content, flags=re.MULTILINE)
+        
+        # Preamble
+        if sections[0].strip():
+            # Create preamble file
+            base_name = os.path.basename(source_file).replace('.md', '')
+            filename = f"{current_index:03d}_{base_name}_Preamble.md"
+            filepath = backlog_dir / filename
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(sections[0].strip() + "\n")
+            Colors.print(f"  + Created {filename}", Colors.OKGREEN)
+            current_index += 1
+            
+        # Sections
+        for i in range(1, len(sections), 2):
+            header = sections[i].strip()
+            body = sections[i+1].strip() if i+1 < len(sections) else ""
+            
+            title_raw = header.replace('##', '').strip()
+            safe_title = "".join([c if c.isalnum() or c in (' ', '-', '_') else '' for c in title_raw]).strip()
+            safe_title = safe_title.replace(' ', '_')
+            
+            filename = f"{current_index:03d}_{safe_title}.md"
+            filepath = backlog_dir / filename
+            
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(f"{header}\n\n{body}\n")
+            
+            Colors.print(f"  + Created {filename}", Colors.OKGREEN)
+            current_index += 1
 
 if __name__ == "__main__":
     main()
