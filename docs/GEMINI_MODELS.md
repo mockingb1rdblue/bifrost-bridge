@@ -6,8 +6,8 @@ Based on the `google-genai` Python SDK (latest version as of 2026-02-05):
 
 For integration with the Bifrost Bridge project, use these model identifiers:
 
-- **Fast Model**: `gemini-2.0-flash-exp` or `gemini-flash-latest`
-- **Pro Model**: `gemini-2.0-pro-exp` or `gemini-pro-latest`
+- **Fast Model**: `gemini-flash-latest`
+- **Pro Model**: `gemini-pro-latest`
 
 ## Notes
 
