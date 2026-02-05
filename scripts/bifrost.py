@@ -249,8 +249,21 @@ def main():
         run_thinslice(sys.argv[2])
     elif command == "test-sdk":
         run_test_sdk()
+    elif command in ["ask", "research"]:
+        # Pass through to CLI
+        # args: bifrost.py ask <query> -> ts-node src/cli.ts ask <query>
+        # args: bifrost.py research <query> -> ts-node src/cli.ts research <query>
+        pass_through_cli(command, sys.argv[2:])
     else:
         print(f"[!] Unknown command: {command}")
+
+def pass_through_cli(subcommand, args):
+    """Pass commands to the TypeScript CLI"""
+    # Ensure environment is prepped
+    set_node_certs()
+    
+    cmd = ["npx", "ts-node", "src/cli.ts", subcommand] + args
+    run_command(cmd)
 
 def run_test_sdk():
     """Run the TypeScript SDK verification script with correct environment"""
