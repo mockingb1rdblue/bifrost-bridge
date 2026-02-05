@@ -1,6 +1,16 @@
 node_modules/
 .certs/
 .env
+.env.local
+.env.*.local
 .DS_Store
 dist/
 coverage/
+*.log
+*.pem
+*.key
+.wrangler/
+build/
+out/
+.cache/
+
