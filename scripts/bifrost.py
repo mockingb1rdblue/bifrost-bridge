@@ -247,8 +247,29 @@ def main():
             print("[!] Usage: python bifrost.py slice <source_file_or_pattern>")
             return
         run_thinslice(sys.argv[2])
+    elif command == "test-sdk":
+        run_test_sdk()
     else:
         print(f"[!] Unknown command: {command}")
+
+def run_test_sdk():
+    """Run the TypeScript SDK verification script with correct environment"""
+    print("\n=== Running SDK Connectivity Test ===")
+    
+    # Ensure certs are set in current process for run_command to inherit
+    set_node_certs()
+    
+    if "NODE_EXTRA_CA_CERTS" not in os.environ:
+         Colors.print("[!] Warning: NODE_EXTRA_CA_CERTS not set. Test may fail if behind proxy.", Colors.WARNING)
+
+    # Check for correct keys
+    if not os.environ.get("PERPLEXITY_BASE_URL"):
+         Colors.print("[!] Warning: PERPLEXITY_BASE_URL not set. Test will use direct API (likely blocked).", Colors.WARNING)
+
+    # Run via ts-node
+    # We use 'npx' prefix which run_command handles (cmd /c on windows)
+    # We point to the local ts-node
+    run_command(["npx", "ts-node", "tests/test_sdk.ts"])
 
 def run_thinslice(source_pattern):
     """Slice a markdown file into backlog items"""
