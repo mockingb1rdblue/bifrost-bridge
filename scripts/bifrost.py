@@ -219,14 +219,43 @@ def run_detective():
     
     print("\n" + "="*30 + "\n")
 
+def show_help():
+    print("""
+╔═══════════════════════════════════════════════════════════════╗
+║              Bifrost Bridge - Universal Runner                ║
+╚═══════════════════════════════════════════════════════════════╝
+
+USAGE:
+  python bifrost.py <command> [args...]
+
+COMMANDS:
+  extract-certs           Extract SSL certificates from corporate proxy
+  detect                  Run network detective to test connectivity
+  deploy-proxy            Deploy Perplexity proxy to Cloudflare
+  test-sdk                Test SDK connectivity via proxy
+  ask <query>             Quick question (Sonar model)
+  research <query>        Deep research (Sonar Reasoning Pro)
+  slice <pattern>         Slice markdown files into backlog items
+  
+  setup-shell             Setup portable PowerShell Core environment
+  shell                   Launch portable PowerShell Core
+  deploy <worker>         Deploy a Cloudflare Worker
+  secret <worker> <name>  Set a worker secret
+  workers                 List available workers
+
+EXAMPLES:
+  python bifrost.py extract-certs
+  python bifrost.py detect
+  python bifrost.py ask "What is TypeScript?"
+  python bifrost.py research "Best practices for error handling"
+  python bifrost.py setup-shell
+  python bifrost.py deploy linear-proxy
+  python bifrost.py secret linear-proxy LINEAR_API_KEY
+""")
+
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python bifrost.py [command]")
-        print("Commands:")
-        print("  setup        - Verify environment and certs")
-        print("  deploy-proxy - Deploy the Perplexity MCP Proxy")
-        print("  detect       - Run network diagnostics")
-        print("  slice <pat>  - Slice markdown files into backlog items")
+        show_help()
         return
 
     command = sys.argv[1]
@@ -254,6 +283,26 @@ def main():
         # args: bifrost.py ask <query> -> ts-node src/cli.ts ask <query>
         # args: bifrost.py research <query> -> ts-node src/cli.ts research <query>
         pass_through_cli(command, sys.argv[2:])
+    elif command == "setup-shell":
+        setup_shell()
+    elif command == "shell":
+        launch_shell()
+    elif command == "deploy":
+        if len(sys.argv) < 3:
+            print("[!] Usage: bifrost.py deploy <worker-name> [wrangler-args...]")
+            list_workers()
+        else:
+            deploy_worker(sys.argv[2], *sys.argv[3:])
+    elif command == "secret":
+        if len(sys.argv) < 4:
+            print("[!] Usage: bifrost.py secret <worker-name> <secret-name> [secret-value]")
+        else:
+            worker = sys.argv[2]
+            secret = sys.argv[3]
+            value = sys.argv[4] if len(sys.argv) > 4 else None
+            set_worker_secret(worker, secret, value)
+    elif command == "workers":
+        list_workers()
     else:
         print(f"[!] Unknown command: {command}")
 
@@ -370,6 +419,47 @@ def run_thinslice(source_pattern):
             
             Colors.print(f"  + Created {filename}", Colors.OKGREEN)
             current_index += 1
+
+# --- Portable Shell Commands ---
+
+def setup_shell():
+    """Setup portable PowerShell Core environment"""
+    setup_script = ROOT_DIR / "scripts" / "setup_portable_shell.py"
+    print("[*] Setting up portable PowerShell Core...")
+    run_command([sys.executable, str(setup_script)])
+
+def launch_shell():
+    """Launch portable PowerShell Core"""
+    pwsh_bat = ROOT_DIR / "scripts" / "pwsh.bat"
+    
+    if not pwsh_bat.exists():
+        Colors.print("[!] Launcher not found. Running setup first...", Colors.WARNING)
+        setup_shell()
+    
+    print("[*] Launching portable PowerShell...")
+    if IS_WINDOWS:
+        run_command([str(pwsh_bat)])
+    else:
+        Colors.print("[!] Portable shell is Windows-only", Colors.FAIL)
+
+def deploy_worker(worker_name, *args):
+    """Deploy a Cloudflare Worker"""
+    deploy_script = ROOT_DIR / "scripts" / "deploy_worker.py"
+    cmd = [sys.executable, str(deploy_script), worker_name] + list(args)
+    run_command(cmd)
+
+def set_worker_secret(worker_name, secret_name, secret_value=None):
+    """Set a Cloudflare Worker secret"""
+    deploy_script = ROOT_DIR / "scripts" / "deploy_worker.py"
+    cmd = [sys.executable, str(deploy_script), "secret", worker_name, secret_name]
+    if secret_value:
+        cmd.append(secret_value)
+    run_command(cmd)
+
+def list_workers():
+    """List available workers"""
+    deploy_script = ROOT_DIR / "scripts" / "deploy_worker.py"
+    run_command([sys.executable, str(deploy_script), "list"])
 
 if __name__ == "__main__":
     main()
