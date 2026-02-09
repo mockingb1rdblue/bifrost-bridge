@@ -14,3 +14,6 @@ build/
 out/
 .cache/
 
+
+router_logs.db
+.tools/pwsh.zip
