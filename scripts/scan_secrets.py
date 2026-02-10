@@ -4,9 +4,9 @@ import sys
 
 # Define patterns for common secrets
 SECRET_PATTERNS = {
+    'Cloudflare API Token': r'CLOUDFLARE_API_TOKEN=[a-zA-Z0-9_-]{40}',
     'Linear API Key': r'lin_api_[a-zA-Z0-9]{40}',
     'Linear Webhook Secret': r'lin_wh_[a-zA-Z0-9]{40}',
-    'Cloudflare API Token': r'[a-zA-Z0-9_-]{40}',
     'Generic API Key': r'api[_-]?key[:=]\s*["\']?[a-zA-Z0-9]{32,64}["\']?',
 }
 
