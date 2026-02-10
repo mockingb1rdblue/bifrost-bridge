@@ -1,4 +1,4 @@
-﻿# Localized ArchiveResources.psd1
+# Localized ArchiveResources.psd1
 
 ConvertFrom-StringData @'
 ###PSLOC

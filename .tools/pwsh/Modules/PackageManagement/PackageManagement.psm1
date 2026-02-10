@@ -1,4 +1,4 @@
-﻿#
+#
 # Script module for module 'PackageManagement'
 #
 Set-StrictMode -Version Latest

@@ -16,21 +16,6 @@
    npx wrangler deploy
    ```
 
-4. **Set the secrets:**
-   ```powershell
-   # Linear API Key
-   npx wrangler secret put LINEAR_API_KEY
-   # When prompted, enter: <YOUR_LINEAR_API_KEY>
-
-   # Proxy API Key (generate a secure random string or use the Perplexity one)
-   npx wrangler secret put PROXY_API_KEY
-   # When prompted, enter your proxy key
-
-   # Linear Webhook Secret
-   npx wrangler secret put LINEAR_WEBHOOK_SECRET
-   # When prompted, enter: <YOUR_LINEAR_WEBHOOK_SECRET>
-   ```
-
 ### Option 2: Use .dev.vars for Local Testing
 
 Create `workers/linear-proxy/.dev.vars`:
