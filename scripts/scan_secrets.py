@@ -11,7 +11,7 @@ SECRET_PATTERNS = {
 }
 
 EXCLUDE_DIRS = {'.git', 'node_modules', '.tools', '.certs', 'dist'}
-EXCLUDE_FILES = {'scan_secrets.py', 'package-lock.json'}
+EXCLUDE_FILES = {'scan_secrets.py', 'package-lock.json', '.env', '.env.template'}
 
 def scan_file(file_path):
     findings = []
