@@ -15,7 +15,9 @@ This project implements the "Bifrost" pattern: a secure, verifiable bridge betwe
 
 ## 🛠️ Quick Start
 
-### 1. Initial Setup
+### Initial Setup
+For detailed instructions for a fresh install, see the [Environment Setup Guide](docs/setup_guide.md).
+
 ```bash
 # 1. Extract corporate certificates to .certs/
 python scripts/bifrost.py extract-certs
