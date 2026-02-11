@@ -49,20 +49,20 @@ wrangler deploy
 
 After deployment, you'll get a URL like:
 ```
-https://bifrost-bridge.mock1ng.workers.dev
+https://linear-proxy.mock1ng.workers.dev
 ```
 
 ## Usage
 
 ### GraphQL API Endpoint
 
-**URL**: `https://bifrost-bridge.mock1ng.workers.dev/graphql`
+**URL**: `https://linear-proxy.mock1ng.workers.dev/graphql`
 
 **Authentication**: Use your `PROXY_API_KEY` as a Bearer token
 
 **Example Request**:
 ```bash
-curl -X POST https://bifrost-bridge.mock1ng.workers.dev/graphql \
+curl -X POST https://linear-proxy.mock1ng.workers.dev/graphql \
   -H "Authorization: Bearer YOUR_PROXY_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -72,12 +72,12 @@ curl -X POST https://bifrost-bridge.mock1ng.workers.dev/graphql \
 
 ### Webhook Endpoint
 
-**URL**: `https://bifrost-bridge.mock1ng.workers.dev/webhook`
+**URL**: `https://linear-proxy.mock1ng.workers.dev/webhook`
 
 Configure this URL in Linear:
 1. Go to Settings → Webhooks
 2. Create new webhook
-3. Set URL to: `https://bifrost-bridge.mock1ng.workers.dev/webhook`
+3. Set URL to: `https://linear-proxy.mock1ng.workers.dev/webhook`
 4. Use your webhook secret: `<YOUR_LINEAR_WEBHOOK_SECRET>`
 
 ## Environment Variables
@@ -87,8 +87,8 @@ Add to your `.env` file:
 ```env
 LINEAR_API_KEY=<YOUR_LINEAR_API_KEY>
 LINEAR_PROXY_API_KEY=<your_proxy_api_key>
-LINEAR_BASE_URL=https://bifrost-bridge.mock1ng.workers.dev/graphql
-LINEAR_WEBHOOK_URL=https://bifrost-bridge.mock1ng.workers.dev/webhook
+LINEAR_BASE_URL=https://linear-proxy.mock1ng.workers.dev/graphql
+LINEAR_WEBHOOK_URL=https://linear-proxy.mock1ng.workers.dev/webhook
 ```
 
 ## Security Notes

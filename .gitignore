@@ -1,19 +1,10 @@
 node_modules/
-.certs/
-.env
-.env.local
-.env.*.local
-.DS_Store
 dist/
-coverage/
+.env
+.DS_Store
 *.log
-*.pem
-*.key
-.wrangler/
-build/
-out/
-.cache/
+.vscode/
 
 
-router_logs.db
 .tools/pwsh.zip
+.tools/pwsh/
