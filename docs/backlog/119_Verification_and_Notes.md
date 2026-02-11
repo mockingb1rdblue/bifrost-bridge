@@ -1,0 +1,3 @@
+## Verification and Notes
+
+Confirm with `$env:PATH -split ';' | Select-String 'PortablePowerShell'` and `pwsh -v` to check the version  [stackoverflow](https://stackoverflow.com/questions/714877/setting-windows-powershell-environment-variables). For full portability across machines, copy the entire folder; updates require re-downloading and re-adding to PATH  [learn.microsoft](https://learn.microsoft.com/en-us/powershell/scripting/learn/shell/creating-profiles?view=powershell-7.5). This aligns with your systems automation workflow, enabling quick deployment on restricted setups like corporate or consulting environments [user-information].

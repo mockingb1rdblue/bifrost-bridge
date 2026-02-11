@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+
 /**
  * Structured Logger with multiple output levels
  */
@@ -13,7 +15,7 @@ export interface LogEntry {
     timestamp: string;
     level: string;
     message: string;
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
     error?: {
         name: string;
         message: string;
@@ -39,7 +41,7 @@ export class Logger {
         this.logFilePath = options.logFilePath;
     }
 
-    private formatEntry(level: LogLevel, message: string, context?: Record<string, any>, error?: Error): LogEntry {
+    private formatEntry(level: LogLevel, message: string, context?: Record<string, unknown>, error?: Error): LogEntry {
         const entry: LogEntry = {
             timestamp: new Date().toISOString(),
             level: LogLevel[level],
@@ -93,30 +95,29 @@ export class Logger {
 
         if (this.enableFile && this.logFilePath) {
             // File logging (append mode)
-            const fs = require('fs');
             fs.appendFileSync(this.logFilePath, formatted + '\n', 'utf-8');
         }
     }
 
-    debug(message: string, context?: Record<string, any>): void {
+    debug(message: string, context?: Record<string, unknown>): void {
         if (this.shouldLog(LogLevel.DEBUG)) {
             this.write(this.formatEntry(LogLevel.DEBUG, message, context));
         }
     }
 
-    info(message: string, context?: Record<string, any>): void {
+    info(message: string, context?: Record<string, unknown>): void {
         if (this.shouldLog(LogLevel.INFO)) {
             this.write(this.formatEntry(LogLevel.INFO, message, context));
         }
     }
 
-    warn(message: string, context?: Record<string, any>): void {
+    warn(message: string, context?: Record<string, unknown>): void {
         if (this.shouldLog(LogLevel.WARN)) {
             this.write(this.formatEntry(LogLevel.WARN, message, context));
         }
     }
 
-    error(message: string, error?: Error, context?: Record<string, any>): void {
+    error(message: string, error?: Error, context?: Record<string, unknown>): void {
         if (this.shouldLog(LogLevel.ERROR)) {
             this.write(this.formatEntry(LogLevel.ERROR, message, context, error));
         }

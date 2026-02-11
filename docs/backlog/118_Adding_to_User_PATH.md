@@ -1,0 +1,3 @@
+## Adding to User PATH
+
+Use PowerShell to persistently append the folder (e.g., C:\PortablePowerShell) to your user PATH via the registry: `$currentPath = [Environment]::GetEnvironmentVariable('Path', 'User'); $newPath = $currentPath + ';C:\PortablePowerShell'; [Environment]::SetEnvironmentVariable('Path', $newPath, 'User')`. Refresh your shell or log out/in for the change to apply—now typing `pwsh` runs your portable version from anywhere. This keeps it user-specific, avoiding admin rights or system-wide edits. [reddit](https://www.reddit.com/r/PowerShell/comments/1c4z227/change_environment_path_and_make_it_stick/)

@@ -10,6 +10,7 @@ export interface RetryOptions {
     maxDelayMs?: number;
     backoffMultiplier?: number;
     jitterFactor?: number;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
     retryableErrors?: Array<new (...args: any[]) => Error>;
     onRetry?: (attempt: number, error: Error, delayMs: number) => void;
 }
@@ -46,6 +47,7 @@ function calculateDelay(
 /**
  * Check if error is retryable
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isRetryable(error: Error, retryableErrors: Array<new (...args: any[]) => Error>): boolean {
     if (retryableErrors.length === 0) {
         // Default: retry on network errors, timeouts, and 5xx status codes
@@ -53,7 +55,9 @@ function isRetryable(error: Error, retryableErrors: Array<new (...args: any[]) =
             error.name === 'NetworkError' ||
             error.name === 'TimeoutError' ||
             (error.name === 'PerplexityError' && 'statusCode' in error &&
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 typeof (error as any).statusCode === 'number' &&
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (error as any).statusCode >= 500)
         );
     }

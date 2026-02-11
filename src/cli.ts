@@ -60,6 +60,7 @@ function validateQuery(query: string): void {
 /**
  * Handle errors with user-friendly messages
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleError(error: Error, spinner?: any): void {
     if (spinner) {
         spinner.fail('Request failed');

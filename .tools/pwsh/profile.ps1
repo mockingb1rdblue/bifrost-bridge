@@ -6,17 +6,20 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 # Get project root
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
-# Add Node.js to PATH (if exists)
-$NodePath = Join-Path $ProjectRoot ".tools\nodejs"
-if (Test-Path $NodePath) {
-    $env:PATH = "$NodePath;$env:PATH"
-}
+# --- Environment Dominance: Force Refresh PATH from Registry ---
+# This bypasses session-caching (e.g. VS Code staying open) by reading directly from source.
+$MachinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+$env:PATH = "$UserPath;$MachinePath"
 
-# Add npm global bin to PATH
+# Add Project Tools (Internal Priority)
+# These are redundant if already in Registry, but good for local-only portability.
+$NodePath = Join-Path $ProjectRoot ".tools\nodejs"
+if (Test-Path $NodePath) { $env:PATH = "$NodePath;$env:PATH" }
+$env:PATH = "$PSScriptRoot;$env:PATH"
 $NpmPath = "$env:APPDATA\npm"
-if (Test-Path $NpmPath) {
-    $env:PATH = "$NpmPath;$env:PATH"
-}
+if (Test-Path $NpmPath) { $env:PATH = "$NpmPath;$env:PATH" }
+
 
 # Set NODE_EXTRA_CA_CERTS for corporate SSL
 $CertBundle = Join-Path $ProjectRoot ".certs\corporate_bundle.pem"
@@ -78,3 +81,10 @@ if (Get-Command npm -ErrorAction SilentlyContinue) {
 Write-Host ""
 Write-Host "Ready to deploy workers! Use 'npx wrangler deploy'" -ForegroundColor Green
 Write-Host ""
+# Try to import PSReadline, but fail silently if missing (common in portable envs)
+try {
+    Import-Module PSReadLine -ErrorAction Stop
+} catch {
+    # Fail silently to avoid user confusion
+}
+

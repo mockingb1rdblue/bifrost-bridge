@@ -1,0 +1,15 @@
+{
+  "terminal.integrated.profiles.windows": {
+    "PwshDev": {
+      "path": "c:\\Users\\ad9840724\\OneDrive - Nutrien\\Documents\\My Role\\01_DEVELOPMENT_LAB\\bifrost-bridge\\.tools\\pwsh\\pwsh.exe",
+      "args": ["-NoExit", "-Command", "python --version; node --version; npx --version; echo 'PwshDev ready - Antigravity optimized'"],
+      "env": {
+        "PATH": "c:\\Users\\ad9840724\\OneDrive - Nutrien\\Documents\\My Role\\01_DEVELOPMENT_LAB\\bifrost-bridge\\.tools\\pwsh;c:\\Users\\ad9840724\\OneDrive - Nutrien\\Documents\\My Role\\01_DEVELOPMENT_LAB\\bifrost-bridge\\.tools\\nodejs;${env:PATH}"
+      }
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "PwshDev",
+  "commands.allow": [
+    "pwsh", "python", "python3", "pip", "npx", "node", "npm", "bun", "git", "ls", "cat", "grep", "mkdir", "mv", "cp", "rm", "echo", "pwd", "cd"
+  ]
+}

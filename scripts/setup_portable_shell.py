@@ -81,11 +81,20 @@ if (Test-Path $NodePath) {
     $env:PATH = "$NodePath;$env:PATH"
 }
 
+# Add Portable PowerShell to PATH
+$env:PATH = "$PSScriptRoot;$env:PATH"
+
+
 # Add npm global bin to PATH
 $NpmPath = "$env:APPDATA\\npm"
 if (Test-Path $NpmPath) {
     $env:PATH = "$NpmPath;$env:PATH"
 }
+
+# Add local Python and Git paths (AppData local programs)
+$env:PATH = "C:\\Users\\ad9840724\\AppData\\Local\\Programs\\Python\\Python314;$env:PATH"
+$env:PATH = "C:\\Users\\ad9840724\\AppData\\Local\\Programs\\Git\\cmd;$env:PATH"
+
 
 # Set NODE_EXTRA_CA_CERTS for corporate SSL
 $CertBundle = Join-Path $ProjectRoot "corporate_bundle.pem"

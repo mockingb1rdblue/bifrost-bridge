@@ -26,7 +26,21 @@ python scripts/bifrost.py extract-certs
 python scripts/bifrost.py setup-shell
 ```
 
-### 2. Enter the "Clean" Environment
+### 2. Editor Setup (Critical)
+To ensure tools like `python`, `node`, and `npx` work seamlessly inside VS Code/Antigravity:
+1.  You must configure the **Global User Settings** (`Ctrl+Shift+P` -> "Open User Settings (JSON)") to use the `PwshDev` profile.
+2.  See [`docs/LEARNINGS.md`](docs/LEARNINGS.md) for the exact JSON snippet to paste.
+3.  **Why?** This prevents the environment from falling back to system defaults.
+
+### 3. Development Setup
+Install dependencies and linting tools:
+```bash
+npm install
+npm run lint      # Check code style
+npm run lint:fix  # Auto-fix issues
+```
+
+### 4. Enter the "Clean" Environment
 Launch the portable shell where tools (npx, wrangler, node) work without SSL errors and with correct secrets loaded:
 ```bash
 python scripts/bifrost.py shell

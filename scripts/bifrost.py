@@ -173,7 +173,20 @@ def check_ssl_interception():
         with socket.create_connection((hostname, 443), timeout=3) as sock:
             with ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
                 cert = ssock.getpeercert()
-                issuer = dict(x[0] for x in cert['issuer'])
+                if not cert:
+                     Colors.print("No certificate received", Colors.FAIL)
+                     return
+
+                # Parse issuer fields securely
+                issuer: dict[str, str] = {}
+                if 'issuer' in cert:
+                    for rdn in cert['issuer']:
+                        if rdn and len(rdn) > 0:
+                            key, value = rdn[0]
+                            # Use casting to avoid linter confusion
+                            if key:
+                                issuer[str(key)] = str(value)
+                
                 org = issuer.get('organizationName')
                 common_name = issuer.get('commonName')
                 
@@ -264,11 +277,9 @@ def main():
     set_node_certs()
     
     if command == "setup":
-        print("[*] Setup verification complete.")
-        print(f"    NODE_EXTRA_CA_CERTS: {os.environ.get('NODE_EXTRA_CA_CERTS', 'Not Set')}")
-        print(f"    PERPLEXITY_API_KEY:  {'Set' if os.environ.get('PERPLEXITY_API_KEY') else 'Missing'}")
-    elif command == "deploy-proxy":
-        deploy_proxy()
+        run_setup()
+    elif command == "refresh":
+        refresh_environment()
     elif command == "detect":
         run_detective()
     elif command == "slice":
@@ -281,8 +292,8 @@ def main():
     elif command in ["ask", "research"]:
         # Pass through to CLI
         # args: bifrost.py ask <query> -> ts-node src/cli.ts ask <query>
-        # args: bifrost.py research <query> -> ts-node src/cli.ts research <query>
-        pass_through_cli(command, sys.argv[2:])
+        cli_args = list(sys.argv[2:])
+        pass_through_cli(command, cli_args)
     elif command == "setup-shell":
         setup_shell()
     elif command == "shell":
@@ -292,7 +303,9 @@ def main():
             print("[!] Usage: bifrost.py deploy <worker-name> [wrangler-args...]")
             list_workers()
         else:
-            deploy_worker(sys.argv[2], *sys.argv[3:])
+            worker = sys.argv[2]
+            wrangler_args = list(sys.argv[3:])
+            deploy_worker(worker, *wrangler_args)
     elif command == "secret":
         if len(sys.argv) < 4:
             print("[!] Usage: bifrost.py secret <worker-name> <secret-name> [secret-value]")
@@ -376,7 +389,7 @@ def run_thinslice(source_pattern):
             if idx > max_index:
                 max_index = idx
     
-    current_index = max_index + 1
+    current_index = int(max_index) + 1
     print(f"[*] Starting backlog index: {current_index:03d}")
 
     for source_file in files:
@@ -461,5 +474,121 @@ def list_workers():
     deploy_script = ROOT_DIR / "scripts" / "deploy_worker.py"
     run_command([sys.executable, str(deploy_script), "list"])
 
+# --- Setup & Environment Dominance ---
+
+def run_setup():
+    """Aggregated setup for fresh environments"""
+    print(f"\n{Colors.HEADER}=== Bifrost Universal Setup ==={Colors.ENDC}")
+    
+    # 1. Extract Certificates (if needed)
+    print("\n[Step 1/4] Checking SSL Certificates...")
+    if not (CERTS_DIR / "corporate_bundle.pem").exists():
+        extract_certs()
+    else:
+        print("[*] Corporate bundle already exists. Use 'extract-certs' to force update.")
+
+    # 2. Setup Portable PowerShell
+    print("\n[Step 2/4] Setting up Portable PowerShell Core...")
+    setup_shell()
+
+    # 3. Setup Portable Node.js
+    print("\n[Step 3/4] Setting up Portable Node.js...")
+    setup_node_script = ROOT_DIR / "scripts" / "setup_portable_node.py"
+    if setup_node_script.exists():
+        run_command([sys.executable, str(setup_node_script)])
+    else:
+        Colors.print("[!] setup_portable_node.py not found!", Colors.WARNING)
+
+    # 4. Record Global Paths
+    print("\n[Step 4/4] Recording Global Tool Paths in Registry...")
+    record_global_paths()
+
+    print(f"\n{Colors.OKGREEN}Setup Complete!{Colors.ENDC}")
+    print("[*] Please restart your terminal/VS Code to refresh environment variables.")
+    print("[*] Or run: python scripts/bifrost.py refresh (in current shell)")
+
+def record_global_paths():
+    """Inject prioritized paths into User Registry"""
+    if not IS_WINDOWS:
+        return
+
+    # Tools to prioritize
+    node_dir = ROOT_DIR / ".tools" / "nodejs"
+    pwsh_dir = ROOT_DIR / ".tools" / "pwsh"
+    
+    # Common AppData paths
+    user_appdata = Path(os.environ.get("APPDATA", ""))
+    user_local_appdata = Path(os.environ.get("LOCALAPPDATA", ""))
+    
+    python_dir = user_local_appdata / "Programs" / "Python" / "Python314"
+    python_scripts = python_dir / "Scripts"
+    git_dir = user_local_appdata / "Programs" / "Git" / "cmd"
+    npm_dir = user_appdata / "npm"
+    
+    tools = [
+        str(python_dir),
+        str(python_scripts),
+        str(git_dir),
+        str(pwsh_dir),
+        str(node_dir),
+        str(npm_dir)
+    ]
+    
+    # Use PowerShell to perform the Registry update safely
+    ps_cmd = f'''
+    $tools = @('{ "','".join(tools) }')
+    $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    $entries = $currentPath -split ";" | Where-Object {{ $_ -and ($tools -notcontains $_) }}
+    $newPath = (($tools + $entries) | Select-Object -Unique) -join ";"
+    [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+    Set-ItemProperty -Path "HKCU:\\Environment" -Name "Path" -Type ExpandString -Value $newPath
+    '''
+    
+    try:
+        subprocess.run(["powershell", "-Command", ps_cmd], check=True)
+        print("[*] User PATH updated and prioritized in Registry.")
+    except Exception as e:
+        Colors.print(f"[!] Failed to update Registry: {e}", Colors.FAIL)
+
+def refresh_environment():
+    """Force current process to reload Registry PATH (Dominance hack)"""
+    if not IS_WINDOWS:
+        return
+        
+    print("[*] Forcing environment dominance (Registry -> Process)...")
+    ps_cmd = '''
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+    $fullPath = "$userPath;$machinePath"
+    [Environment]::SetEnvironmentVariable("Path", $fullPath, "Process")
+    Write-Host "Process PATH refreshed. Tools check:"
+    try { & node --version; & npx --version; & python --version } catch { Write-Host "Some tools still missing in current sub-context." }
+    '''
+    subprocess.run(["powershell", "-Command", ps_cmd])
+
+def extract_certs():
+    """Extract SSL certificates from corporate proxy"""
+    extract_script = ROOT_DIR / "scripts" / "extract_certs.js"
+    if not extract_script.exists():
+        Colors.print(f"[!] extract_certs.js not found at {extract_script}", Colors.FAIL)
+        return
+    
+    CERTS_DIR.mkdir(exist_ok=True)
+    print("[*] Running certificate extraction...")
+    # This requires node to be present. If it fails, we advise setup.
+    try:
+        run_command(["node", str(extract_script)])
+    except Exception:
+        Colors.print("[!] Node.js not found. Run 'python scripts/bifrost.py setup' first.", Colors.FAIL)
+
 if __name__ == "__main__":
-    main()
+    # Ensure commands that need specific args are handled
+    if len(sys.argv) > 1 and sys.argv[1] == "extract-certs":
+        extract_certs()
+    elif len(sys.argv) > 1 and sys.argv[1] in ["ask", "research"]:
+         # Handle ask/research before main to avoid double load_env/set_certs
+         load_env()
+         set_node_certs()
+         pass_through_cli(sys.argv[1], sys.argv[2:])
+    else:
+        main()

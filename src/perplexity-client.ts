@@ -73,13 +73,15 @@ export class PerplexityClient {
                 });
 
                 return response as unknown as PerplexityResponse;
-            } catch (error: any) {
+            } catch (error: unknown) {
                 // Map OpenAI SDK errors to our custom types
-                if (error.status === 401) {
-                    throw new AuthenticationError(error.message);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const err = error as any;
+                if (err.status === 401) {
+                    throw new AuthenticationError(err.message);
                 }
-                if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-                    throw new NetworkError('Network connection failed', error);
+                if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') {
+                    throw new NetworkError('Network connection failed', err);
                 }
                 throw error;
             }
