@@ -31,6 +31,9 @@ $MachinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 $UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
 $env:PATH = "$UserPath;$MachinePath"
 
+# Add local tools to PATH
+$env:PATH = "$ProjectRoot\.tools\flyctl;$ProjectRoot\.tools\gh\bin;$env:PATH"
+
 # Add Project Tools (Internal Priority)
 # These are redundant if already in Registry, but good for local-only portability.
 $NodePath = Join-Path $ProjectRoot ".tools\nodejs"

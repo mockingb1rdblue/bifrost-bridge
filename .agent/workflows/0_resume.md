@@ -1,55 +1,58 @@
 ---
-description: How to pick up this project from scratch and verify the environment
+description: Resume work on Mac after handoff from Windows
 ---
 
-# 🚀 Resume Workflow: Bifrost Bridge
+# 🚀 Resuming Bifrost on MacOS
 
-Use this workflow when starting a new chat session to understand the project state and verify the environment.
+You have successfully transitioned from the constrained Windows environment to your "friendly" Mac environment. All core services (Agent Runner, Event Store, Custom Router) are live on Fly.io and Cloudflare.
 
-## 1. Context Acquisition
+## 1. Local Setup (Mac)
 
-- **Read Strategy**: `README.md` (Root)
-- **Check Architecture**: `docs/PROJECT_SUMMARY.md` (if used) or `docs/reference/`
-- **Check Backlog**: `docs/backlog/` contains sliced tasks from the original vision.
+1.  **Clone / Pull**:
+    ```bash
+    git pull origin hee-haw
+    ```
+2.  **Dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Environment**:
+    Copy `.env.example` to `.env`. You don't _strictly_ need the production keys locally since the cloud is already configured, but they are useful for local script execution.
+    ```bash
+    cp .env.example .env
+    ```
 
-## 2. Environment Verification & Bootstrap
+## 2. Status of Phase 8 (Data Plane Integration)
 
-Run the Universal Runner's setup to ensure all portable tools (PowerShell, Node.js) are installed and global paths are recorded.
+The following items were completed and verified:
 
-```bash
-# Aggregated setup (Python, Git, Node, pwsh)
-npm run setup
-```
+- [x] **Agent Runner (`bifrost-runner`)**: Deployed to Fly.io with auto-shutdown and auth.
+- [x] **Event Store (`bifrost-events`)**: Deployed to Fly.io with SQLite persistence.
+- [x] **Control Plane (`custom-router`)**: Integrated with both runner and events.
+- [x] **Linear Integration**: 33 issues (BIF-103 to BIF-133) created in the backlog.
 
-**Success Criteria**:
+## 3. How to Execute Tasks
 
-- `python`, `git`, `node`, `npx`, and `pwsh` are available globally.
-- If behind a proxy, `extract-certs` has been run.
+To trigger a task and see the flow:
 
-## 3. Environment Dominance (Windows Caching)
+1.  Go to Linear and update a task to "In Progress".
+2.  The `custom-router` webhook will trigger a job.
+3.  Check logs:
 
-Corporate Windows environments often "cache" environment variables (e.g., if VS Code remains open).
+    ```bash
+    # View router logs
+    npx wrangler tail --prefix workers/custom-router
 
-- **The Bifrost Fix**: The portable shell (`npm run shell`) is configured to **force a refresh** from the Registry on startup.
-- **Manual Override**: If tools are missing, run:
-  ```powershell
-  $env:PATH = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
-  ```
+    # View events directly from store
+    curl -H "Authorization: Bearer $EVENTS_SECRET" https://bifrost-events.fly.dev/events
+    ```
 
-## 4. Worker Status
+## 4. Mac Efficiency Tips
 
-Check which proxies are live.
+Since you are no longer behind Zscaler interception/Windows constraints:
 
-```bash
-npm start -- linear projects
-```
+- You don't need `NODE_EXTRA_CA_CERTS`.
+- You don't need the `.tools/pwsh` portable environment.
+- Native `zsh` or `bash` works perfectly.
 
-## 5. Development Tools
-
-- **Safe Environment**: Always use `npm run shell`. It bypasses execution policies and loads the `.env`.
-- **Global Access**: Once `setup` is run, you can use these tools from any terminal, but the `shell` command is the "gold standard" for this project.
-
-## 6. Pro-Tips
-
-- **Bifrost Runner**: `npm start` (CLI) or `npm run` matches commands to the correct environment.
-- **Secrets**: Use `npx wrangler secret put` (or `npm run worker:secret` if added) to manage secrets.
+**Next Priority**: Start on `BIF-103` (Infrastructure verification) or move straight to **Sprites Migration** (BIF-107) for performance gains.

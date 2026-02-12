@@ -21,9 +21,17 @@ This project implements the "Bifrost" pattern: a secure, verifiable bridge betwe
 
 Run the automated setup script to install dependencies (`gh`, `flyctl`, `pwsh`) and check authentication:
 
-```powershell
 .\scripts\setup_dev.ps1
-```
+
+````
+
+### 2. Environment Setup
+
+Copy the example environment file and fill in your secrets (or fetch from 1Password/Manager):
+
+```powershell
+cp .env.example .env
+````
 
 ### 2. Editor Setup
 
