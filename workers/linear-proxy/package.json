@@ -1,23 +1,19 @@
 {
-    "name": "linear-proxy",
-    "version": "1.0.0",
-    "description": "Cloudflare Worker proxy for Linear API",
-    "main": "src/index.ts",
-    "scripts": {
-        "deploy": "wrangler deploy",
-        "dev": "wrangler dev",
-        "tail": "wrangler tail"
-    },
-    "keywords": [
-        "linear",
-        "proxy",
-        "cloudflare",
-        "worker"
-    ],
-    "author": "",
-    "license": "MIT"
-<<<<<<< HEAD
+  "name": "linear-proxy",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker proxy for Linear API",
+  "main": "src/index.ts",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "keywords": [
+    "linear",
+    "proxy",
+    "cloudflare",
+    "worker"
+  ],
+  "author": "",
+  "license": "MIT"
 }
-=======
-}
->>>>>>> feature/060-linear-proxy

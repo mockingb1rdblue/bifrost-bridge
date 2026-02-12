@@ -4,7 +4,7 @@
 
 ```
 Developer prompt:
-"I just finished implementing the certificate extraction feature. 
+"I just finished implementing the certificate extraction feature.
 Log the engineering work, track the successful CI run, and deploy to staging."
 
 Agent executes:
@@ -34,8 +34,8 @@ Agent executes:
 
 ```
 Developer prompt:
-"The MCP proxy deployment failed. Document what went wrong: 
-SSL certificate chain was incomplete, needed root CA. 
+"The MCP proxy deployment failed. Document what went wrong:
+SSL certificate chain was incomplete, needed root CA.
 Fixed by updating cert extraction script. Lesson: always validate full chain."
 
 Agent executes:
@@ -45,4 +45,4 @@ Agent executes:
 4. Suggests creating a checklist issue for future validations
 ```
 
-***
+---

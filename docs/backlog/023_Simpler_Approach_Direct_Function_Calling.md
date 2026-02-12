@@ -20,38 +20,38 @@ const tools = [
           properties: {
             query: {
               type: 'string',
-              description: 'The research question or topic'
+              description: 'The research question or topic',
             },
             depth: {
               type: 'string',
               enum: ['quick', 'standard', 'deep'],
-              description: 'Research depth'
-            }
+              description: 'Research depth',
+            },
           },
-          required: ['query']
-        }
-      }
-    ]
-  }
+          required: ['query'],
+        },
+      },
+    ],
+  },
 ];
 
 const model = genAI.getGenerativeModel({
   model: 'gemini-2.0-flash',
-  tools: tools
+  tools: tools,
 });
 
 // When agent calls the function, execute it
 async function handleFunctionCall(functionCall) {
   const { name, args } = functionCall;
-  
+
   if (name === 'perplexity_research') {
     const result = await perplexityClient.research(args.query, {
-      model: getModelForDepth(args.depth)
+      model: getModelForDepth(args.depth),
     });
-    
+
     return {
       content: result.choices[0].message.content,
-      citations: result.citations
+      citations: result.citations,
     };
   }
 }
@@ -63,15 +63,17 @@ const result = await chat.sendMessage('Research quantum computing');
 if (result.response.functionCalls()) {
   const functionCall = result.response.functionCalls()[0];
   const functionResponse = await handleFunctionCall(functionCall);
-  
+
   // Send function response back to agent
-  const finalResult = await chat.sendMessage([{
-    functionResponse: {
-      name: functionCall.name,
-      response: functionResponse
-    }
-  }]);
-  
+  const finalResult = await chat.sendMessage([
+    {
+      functionResponse: {
+        name: functionCall.name,
+        response: functionResponse,
+      },
+    },
+  ]);
+
   console.log(finalResult.response.text());
 }
 ```
@@ -91,4 +93,4 @@ const research = await pplx.research('topic here');
 console.log(research.choices[0].message.content);
 ```
 
-***
+---

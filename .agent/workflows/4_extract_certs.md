@@ -5,12 +5,14 @@ This workflow uses Antigravity's native Chrome capabilities to extract SSL certi
 ## 1. Direct Extraction (Primary)
 
 // turbo
+
 1. Ask the agent to extract the certificate chain from a target URL.
    > Navigate to https://google.com (or the failing URL). Open the Security panel in DevTools. Export the "Certificate Chain" to a file named `extracted_chain.pem` in `bifrost-bridge/.certs/`.
 
 ## 2. Verification
 
 2. Verify the file exists.
+
    ```powershell
    ls .certs/extracted_chain.pem
    ```
@@ -23,6 +25,7 @@ This workflow uses Antigravity's native Chrome capabilities to extract SSL certi
 ## 3. Deployment
 
 4. Set the environment variable for the current session.
+
    ```powershell
    $env:NODE_EXTRA_CA_CERTS = "$PWD\.certs\extracted_chain.pem"
    ```

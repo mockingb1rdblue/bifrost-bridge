@@ -16,7 +16,7 @@
 // 1. Project entity
 // 2. Milestone structure
 // 3. Epic issues (parents)
-// 4. Task issues (children) 
+// 4. Task issues (children)
 // 5. All relationships
 // 6. Proper priority distribution
 ```
@@ -24,6 +24,7 @@
 ### 2. **Hierarchical Project Structure** [developers.google](https://developers.google.com/issue-tracker/concepts/parent-child-relationships)
 
 Support full issue relationship modeling:
+
 - **Parent → Children** (Epic breakdown into tasks) [developers.google](https://developers.google.com/issue-tracker/concepts/parent-child-relationships)
 - **Blocked By / Blocking** (Dependencies) [community.fibery](https://community.fibery.io/t/done-add-blocking-blocked-by-to-issues-and-projects-in-linear-integration/8483)
 - **Related To** (Cross-references)
@@ -32,6 +33,7 @@ Support full issue relationship modeling:
 ### 3. **Intelligent Milestone Planning**
 
 Agent analyzes project scope and automatically:
+
 - Creates milestone structure (weekly, bi-weekly, or monthly)
 - Distributes issues across milestones
 - Adjusts based on priority and dependencies
@@ -44,4 +46,4 @@ Agent analyzes project scope and automatically:
 - Status progression automation (moves issues through states)
 - SLA tracking for high-priority items
 
-***
+---

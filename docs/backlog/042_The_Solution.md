@@ -10,4 +10,4 @@ Bifrost Bridge is a comprehensive toolkit that embodies the principle: **compete
 4. **Documentation Over Gatekeeping** - Every workaround is explained, reproducible, and shareable
 5. **Adaptability Over Rigidity** - The toolkit learns from your specific corporate environment and adapts its strategies
 
-***
+---

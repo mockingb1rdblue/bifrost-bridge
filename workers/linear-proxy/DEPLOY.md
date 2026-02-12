@@ -7,6 +7,7 @@
 1. **Open a new PowerShell terminal** (not in this IDE)
 
 2. **Navigate to the worker directory:**
+
    ```powershell
    cd "c:\Users\ad9840724\OneDrive - Nutrien\Documents\My Role\01_DEVELOPMENT_LAB\bifrost-bridge\workers\linear-proxy"
    ```
@@ -16,9 +17,10 @@
    npx wrangler deploy
    ```
 
-<<<<<<< HEAD
-=======
+# <<<<<<< HEAD
+
 4. **Set the secrets:**
+
    ```powershell
    # Linear API Key
    npx wrangler secret put LINEAR_API_KEY
@@ -33,10 +35,12 @@
    # When prompted, enter: <YOUR_LINEAR_WEBHOOK_SECRET>
    ```
 
->>>>>>> feature/060-linear-proxy
+> > > > > > > feature/060-linear-proxy
+
 ### Option 2: Use .dev.vars for Local Testing
 
 Create `workers/linear-proxy/.dev.vars`:
+
 ```env
 LINEAR_API_KEY=<YOUR_LINEAR_API_KEY>
 PROXY_API_KEY=your_proxy_key_here
@@ -44,6 +48,7 @@ LINEAR_WEBHOOK_SECRET=<YOUR_LINEAR_WEBHOOK_SECRET>
 ```
 
 Then run locally:
+
 ```powershell
 npx wrangler dev
 ```
@@ -53,11 +58,13 @@ npx wrangler dev
 After successful deployment, you'll get:
 
 **GraphQL API Endpoint:**
+
 ```
 https://linear-proxy.mock1ng.workers.dev/graphql
 ```
 
 **Webhook Endpoint (for Linear settings):**
+
 ```
 https://linear-proxy.mock1ng.workers.dev/webhook
 ```

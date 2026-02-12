@@ -1,11 +1,46 @@
 const eslint = require('@eslint/js');
 const tseslint = require('typescript-eslint');
+const prettierConfig = require('eslint-config-prettier');
+const prettierPlugin = require('eslint-plugin-prettier');
+const globals = require('globals');
 
 module.exports = tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['src/**/*.ts', 'tests/**/*.ts'],
+    files: ['**/*.ts', '**/*.js'],
+    plugins: {
+      prettier: prettierPlugin,
+    },
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        Env: 'readonly',
+        DurableObjectState: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
+        fetch: 'readonly',
+        Headers: 'readonly',
+        crypto: 'readonly',
+      },
+    },
+    rules: {
+      'prettier/prettier': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-require-imports': 'off', // Allow and let TS handle it if needed
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+      'no-undef': 'error',
+    },
+  },
+  {
+    files: ['src/**/*.ts', 'tests/**/*.ts', 'scripts/**/*.ts'],
     languageOptions: {
       parserOptions: {
         project: './tsconfig.json',
@@ -14,14 +49,24 @@ module.exports = tseslint.config(
     },
     rules: {
       'no-console': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { 
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_'
-      }]
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', 'workers/']
-  }
+    files: ['workers/custom-router/src/**/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: './workers/custom-router/tsconfig.json',
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
+  prettierConfig,
+  {
+    ignores: [
+      'dist/',
+      'node_modules/',
+      'workers/custom-router/dist/',
+      'workers/custom-router/worker-configuration.d.ts',
+    ],
+  },
 );

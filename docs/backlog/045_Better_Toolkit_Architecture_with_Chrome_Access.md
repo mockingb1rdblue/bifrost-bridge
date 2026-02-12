@@ -12,7 +12,7 @@ export async function detectCorporateRestrictions() {
     blockedAPIs: ['openai.com', 'anthropic.com'],
     requiresProxy: ['mcp.linear.app'],
     sslInspection: true,
-    proxyHost: 'detected.proxy.corp:8080'
+    proxyHost: 'detected.proxy.corp:8080',
   };
 }
 
@@ -39,8 +39,8 @@ export async function extractAllCorpCerts() {
 // Instead of manual testing, agent creates test page:
 
 // Agent prompt:
-"Create an HTML dashboard that tests connectivity to all my APIs 
-(Perplexity, OpenAI, Linear MCP, etc.), shows status, and reports 
+"Create an HTML dashboard that tests connectivity to all my APIs
+(Perplexity, OpenAI, Linear MCP, etc.), shows status, and reports
 which ones need the proxy"
 
 // Agent:
@@ -50,4 +50,4 @@ which ones need the proxy"
 // - Screenshots the dashboard [web:83]
 ```
 
-***
+---

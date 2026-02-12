@@ -14,4 +14,4 @@
 - **Community contributions**: Developers paying forward the solutions they received
 - **Normalization of autonomy**: Corporate developers reclaim their right to use modern tools
 
-***
+---

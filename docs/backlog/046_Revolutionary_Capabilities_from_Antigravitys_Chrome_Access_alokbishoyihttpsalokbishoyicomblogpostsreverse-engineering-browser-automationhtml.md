@@ -6,7 +6,7 @@ You don't need your separate Puppeteer script anymore. Antigravity can do it nat
 
 ```typescript
 // Just ask the Antigravity agent:
-"Navigate to https://mcp.linear.app and extract the SSL certificate chain, 
+"Navigate to https://mcp.linear.app and extract the SSL certificate chain,
 save it as linear-cert.pem"
 
 // The agent will:
@@ -22,7 +22,7 @@ save it as linear-cert.pem"
 // Ask Antigravity:
 "Test which of these URLs are accessible from this corporate network:
 - https://api.openai.com
-- https://api.anthropic.com  
+- https://api.anthropic.com
 - https://mcp.linear.app
 - https://api.perplexity.ai
 
@@ -39,8 +39,8 @@ For each, capture SSL handshake details and blocked/allowed status"
 
 ```typescript
 // Instead of manual testing, ask:
-"Deploy my MCP proxy to Cloudflare Workers, then test the connection 
-by having the browser navigate to the proxy endpoint and verify it 
+"Deploy my MCP proxy to Cloudflare Workers, then test the connection
+by having the browser navigate to the proxy endpoint and verify it
 forwards requests to Linear correctly"
 
 // Agent does:
@@ -54,7 +54,7 @@ forwards requests to Linear correctly"
 
 ```typescript
 // Ask Antigravity:
-"Call my Perplexity API with a test query, then render the citations 
+"Call my Perplexity API with a test query, then render the citations
 as a webpage and verify they're clickable and load correctly"
 
 // Agent can:
@@ -68,7 +68,7 @@ as a webpage and verify they're clickable and load correctly"
 
 ```typescript
 // Corporate toolkit documentation gathering:
-"Browse to these corporate IT policy pages, extract the sections about 
+"Browse to these corporate IT policy pages, extract the sections about
 network restrictions, and compile them into a reference document"
 
 // Agent autonomously: [web:86]
@@ -78,4 +78,4 @@ network restrictions, and compile them into a reference document"
 // - Compiles markdown
 ```
 
-***
+---

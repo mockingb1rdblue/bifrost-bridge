@@ -15,4 +15,4 @@
 4. **Corporate Cert Harvester** - Agent visits common sites, exports all certs [github](https://github.com/ChromeDevTools/chrome-devtools-mcp)
 5. **Proxy Verification Suite** - Agent deploys Workers, tests in real-time [youtube](https://www.youtube.com/watch?v=r9uUQLHlxAA)
 
-***
+---

@@ -48,6 +48,7 @@ wrangler deploy
 ```
 
 After deployment, you'll get a URL like:
+
 ```
 https://linear-proxy.mock1ng.workers.dev
 ```
@@ -61,6 +62,7 @@ https://linear-proxy.mock1ng.workers.dev
 **Authentication**: Use your `PROXY_API_KEY` as a Bearer token
 
 **Example Request**:
+
 ```bash
 curl -X POST https://linear-proxy.mock1ng.workers.dev/graphql \
   -H "Authorization: Bearer YOUR_PROXY_API_KEY" \
@@ -75,6 +77,7 @@ curl -X POST https://linear-proxy.mock1ng.workers.dev/graphql \
 **URL**: `https://linear-proxy.mock1ng.workers.dev/webhook`
 
 Configure this URL in Linear:
+
 1. Go to Settings → Webhooks
 2. Create new webhook
 3. Set URL to: `https://linear-proxy.mock1ng.workers.dev/webhook`
@@ -109,6 +112,7 @@ LINEAR_WEBHOOK_SECRET=<YOUR_LINEAR_WEBHOOK_SECRET>
 ```
 
 Run locally:
+
 ```bash
 wrangler dev
 ```

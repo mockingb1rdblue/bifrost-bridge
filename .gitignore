@@ -5,8 +5,12 @@ dist/
 *.log
 .vscode/
 
-
 .tools/pwsh.zip
 .tools/pwsh/
 .tools/
-.tools/
+
+# Secrets & Keys
+.dev.vars
+.wrangler/
+*.pem
+*.key

@@ -4,6 +4,7 @@
 2. Set team ID
 3. Deploy MCP server or use directly in code
 4. Integrate with Antigravity agents
+
 ```
 
 This gives you **programmatic control over your entire Linear workspace** while making Antigravity the intelligent project manager that understands context, dependencies, and project structure. [npmjs](https://www.npmjs.com/package/@linear/sdk/v/1.6.0)
@@ -11,3 +12,4 @@ This gives you **programmatic control over your entire Linear workspace** while 
 ---
 
 # Linear Orchestrator with CI/CD, Git Integration & Intelligent Release Management
+```

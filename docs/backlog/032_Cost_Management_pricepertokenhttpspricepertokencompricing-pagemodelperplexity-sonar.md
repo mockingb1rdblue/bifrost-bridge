@@ -4,24 +4,23 @@
 // src/cost-tracker.ts
 export class CostTracker {
   private totalCost = 0;
-  
+
   calculateCost(usage: Usage, model: string): number {
     const pricing = {
-      'sonar': { input: 1, output: 1 },
+      sonar: { input: 1, output: 1 },
       'sonar-pro': { input: 5, output: 15 },
-      'sonar-reasoning-pro': { input: 15, output: 45 }
+      'sonar-reasoning-pro': { input: 15, output: 45 },
     };
-    
+
     const rates = pricing[model] || pricing['sonar-pro'];
-    const cost = (
+    const cost =
       (usage.prompt_tokens / 1_000_000) * rates.input +
-      (usage.completion_tokens / 1_000_000) * rates.output
-    );
-    
+      (usage.completion_tokens / 1_000_000) * rates.output;
+
     this.totalCost += cost;
     return cost;
   }
-  
+
   getTotalCost(): number {
     return this.totalCost;
   }

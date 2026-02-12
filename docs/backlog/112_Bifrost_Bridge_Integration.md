@@ -4,18 +4,19 @@ This becomes the **project management backbone** of Bifrost Bridge:
 
 ```markdown
 # bifrost-bridge/
-├── linear-orchestrator/        # This enhanced system
-│   ├── src/
-│   │   ├── orchestrator.ts     # Core project creation
-│   │   ├── issue-logger.ts     # Engineering logs
-│   │   ├── label-manager.ts    # Intelligent labeling
-│   │   ├── git-integrator.ts   # GitHub integration
-│   │   ├── cicd-tracker.ts     # Pipeline tracking
-│   │   └── release-manager.ts  # Release automation
-│   ├── mcp-server/             # Antigravity integration
-│   └── docs/
-│       ├── workflows.md        # Common workflows
-│       └── best-practices.md   # CI/CD patterns
+
+├── linear-orchestrator/ # This enhanced system
+│ ├── src/
+│ │ ├── orchestrator.ts # Core project creation
+│ │ ├── issue-logger.ts # Engineering logs
+│ │ ├── label-manager.ts # Intelligent labeling
+│ │ ├── git-integrator.ts # GitHub integration
+│ │ ├── cicd-tracker.ts # Pipeline tracking
+│ │ └── release-manager.ts # Release automation
+│ ├── mcp-server/ # Antigravity integration
+│ └── docs/
+│ ├── workflows.md # Common workflows
+│ └── best-practices.md # CI/CD patterns
 ```
 
 ### Key Benefits

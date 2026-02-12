@@ -36,13 +36,14 @@ The developer works on a TypeScript project using Perplexity API, needs Linear i
 
 ### Month 1: Mastery
 
-The developer encounters a new restriction: corporate IT blocks api.anthropic.com. 
+The developer encounters a new restriction: corporate IT blocks api.anthropic.com.
 
 ```bash
 npx bifrost-bridge detect --service anthropic
 ```
 
 Output:
+
 ```
 ❌ api.anthropic.com - BLOCKED (DNS blackhole)
 ✅ Solution: Deploy anthropic-proxy.js to Cloudflare Workers
@@ -64,4 +65,4 @@ The developer discovers their company uses Zscaler in an unusual configuration t
 3. Submit to Bifrost Bridge knowledge base
 4. Now everyone at companies using Zscaler in that mode has the solution
 
-***
+---

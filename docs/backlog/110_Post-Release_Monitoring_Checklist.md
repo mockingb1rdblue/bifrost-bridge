@@ -1,29 +1,32 @@
 ## Post-Release Monitoring Checklist
 
 ### Immediate (First 1 hour)
+
 - [ ] All services healthy in production
 - [ ] Error rates within normal range
 - [ ] Response times acceptable
 - [ ] No spike in support tickets
 
 ### Short-term (First 24 hours)
+
 - [ ] Monitor key metrics dashboards
 - [ ] Review production logs for anomalies
 - [ ] Check user-facing features working
 - [ ] Verify database migrations completed
 
 ### Communication
+
 - [ ] Announce release in #engineering
 - [ ] Update status page
 - [ ] Notify customer success team
 - [ ] Post release notes to changelog
 
 ### Rollback Plan
+
 - [ ] Document rollback procedure
 - [ ] Keep previous version tagged
 - [ ] Identify rollback decision makers
-    `.trim();
-    
+      `.trim();
     await this.orchestrator.createIssue({
       projectId: releaseProjectId,
       title: `${version} - Post-Release Monitoring`,
@@ -31,10 +34,11 @@
       priority: 'urgent',
       labels: ['monitoring', 'release'],
       assigneeId: await this.orchestrator.getDefaultAssignee()
-    });
-  }
-}
-```
+      });
+      }
+      }
+
+````
 
 ***
 
@@ -125,6 +129,6 @@ const enhancedTools = [
     }
   }
 ];
-```
+````
 
-***
+---

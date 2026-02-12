@@ -1,0 +1,5 @@
+dist/
+node_modules/
+workers/custom-router/dist/
+workers/custom-router/worker-configuration.d.ts
+package-lock.json

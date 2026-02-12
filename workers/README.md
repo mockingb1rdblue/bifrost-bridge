@@ -3,7 +3,9 @@
 This directory contains cloud-side logic deployed to Cloudflare Workers.
 
 ## Standard Structure
+
 Each worker should follow this structure:
+
 ```
 worker-name/
 ├── src/
@@ -15,6 +17,7 @@ worker-name/
 ```
 
 ## Shared Standards
+
 - **TypeScript**: Strict mode enabled.
 - **Wrangler**: Use `wrangler` for dev and deploy.
 - **Types**: Include `@cloudflare/workers-types` in `compilerOptions.types`.
