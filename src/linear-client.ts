@@ -35,6 +35,26 @@ export class LinearClient {
    * Generic GraphQL query executor
    */
   async query<T>(query: string, variables?: Record<string, any>): Promise<T> {
+    // CIRCUIT BREAKER: Check for lockfile
+    if (require('fs').existsSync('.auth.lock')) {
+       // Read the lockfile to give context
+       const lockContent = require('fs').readFileSync('.auth.lock', 'utf8');
+       throw new Error(
+         `\n⛔ CIRCUIT BREAKER ACTIVATED ⛔\n` +
+         `--------------------------------\n` +
+         `Execution blocked to protect your Linear API Key.\n` +
+         `Reason: A previous 401 Unauthorized error was detected.\n` +
+         `Context: ${lockContent}\n\n` +
+         `WHY THIS HAPPENED:\n` +
+         `Linear will automatically deactivate API keys if they generate consistent 401 errors.\n` +
+         `We stopped to prevent this.\n\n` +
+         `TO FIX:\n` +
+         `1. Check your .env secrets (LINEAR_API_KEY, LINEAR_WEBHOOK_SECRET, PROXY_API_KEY).\n` +
+         `2. Run 'npm start -- linear projects --direct' to verify the key works without the proxy.\n` +
+         `3. Delete the lockfile to reset: 'rm .auth.lock' (or 'del .auth.lock' on Windows).\n`
+       );
+    }
+
     const makeRequest = async () => {
       try {
         // Only use 'Bearer ' prefix for proxies (workers.dev)
@@ -54,8 +74,28 @@ export class LinearClient {
         if (!response.ok) {
           const text = await response.text();
           if (response.status === 401) {
+            // CIRCUIT BREAKER: Trigger Lock
+            const lockMsg = `401 Error at ${new Date().toISOString()}: ${text.substring(0, 100)}...`;
+            require('fs').writeFileSync('.auth.lock', lockMsg);
+            
+            const helpMsg = `
+  🛑 AUTHENTICATION FAILURE (401) 🛑
+  ----------------------------------
+  Your request was rejected.
+  
+  Possible Causes:
+  1. The API Key or Webhook Secret is invalid or expired.
+  2. The Proxy Key in .env does not match the Worker.
+  
+  🔒 SAFETY LOCK ENGAGED:
+  A '.auth.lock' file has been created. All future requests will be blocked 
+  until you delete this file. This prevents Linear from deactivating your key 
+  due to excessive error rates.
+  
+  Action: Verify secrets at https://linear.app/settings/api before retrying.`;
+  
             throw new LinearAuthenticationError(
-              `Authentication Failed (${response.status}): ${text}`,
+              `${helpMsg}\n\nOriginal Error: ${text}`,
             );
           }
           throw new LinearError(`HTTP Error ${response.status}: ${text}`);

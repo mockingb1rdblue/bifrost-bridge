@@ -15,5 +15,8 @@
     "worker"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260212.0"
+  }
 }

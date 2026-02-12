@@ -15,3 +15,7 @@ dist/
 *.pem
 *.key
 .totaldev
+.env.bak
+
+# Circuit Breaker
+.auth.lock

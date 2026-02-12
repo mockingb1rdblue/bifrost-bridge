@@ -18,7 +18,7 @@ Run the Universal Runner's setup to ensure all portable tools (PowerShell, Node.
 
 ```bash
 # Aggregated setup (Python, Git, Node, pwsh)
-python scripts/bifrost.py setup
+npm run setup
 ```
 
 **Success Criteria**:
@@ -30,7 +30,7 @@ python scripts/bifrost.py setup
 
 Corporate Windows environments often "cache" environment variables (e.g., if VS Code remains open).
 
-- **The Bifrost Fix**: The portable shell (`python scripts/bifrost.py shell`) is configured to **force a refresh** from the Registry on startup.
+- **The Bifrost Fix**: The portable shell (`npm run shell`) is configured to **force a refresh** from the Registry on startup.
 - **Manual Override**: If tools are missing, run:
   ```powershell
   $env:PATH = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
@@ -41,15 +41,15 @@ Corporate Windows environments often "cache" environment variables (e.g., if VS 
 Check which proxies are live.
 
 ```bash
-python scripts/bifrost.py workers
+npm start -- linear projects
 ```
 
 ## 5. Development Tools
 
-- **Safe Environment**: Always use `python scripts/bifrost.py shell`. It bypasses execution policies and loads the `.env`.
+- **Safe Environment**: Always use `npm run shell`. It bypasses execution policies and loads the `.env`.
 - **Global Access**: Once `setup` is run, you can use these tools from any terminal, but the `shell` command is the "gold standard" for this project.
 
 ## 6. Pro-Tips
 
-- **Bifrost Runner**: `scripts/bifrost.py` matches commands to the correct tools/environment. preferring it over direct `npx` calls on Windows avoids quoting/path issues.
-- **Secrets**: Use `bifrost.py secret` to manage Cloudflare secrets safely.
+- **Bifrost Runner**: `npm start` (CLI) or `npm run` matches commands to the correct environment.
+- **Secrets**: Use `npx wrangler secret put` (or `npm run worker:secret` if added) to manage secrets.

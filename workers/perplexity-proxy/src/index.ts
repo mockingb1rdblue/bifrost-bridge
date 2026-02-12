@@ -4,7 +4,13 @@ export interface Env {
 }
 
 // Maximum request body size (10MB)
+// Maximum request body size (10MB)
 const MAX_BODY_SIZE = 10 * 1024 * 1024;
+
+// Rate Limiting (Token Bucket)
+const RL_MAX_TOKENS = 100;
+const RL_REFILL_RATE = 1; // tokens per second
+const RATE_LIMITS = new Map<string, { tokens: number; lastRefill: number }>();
 
 /**
  * Constant-time string comparison to prevent timing attacks
@@ -20,6 +26,37 @@ function constantTimeCompare(a: string, b: string): boolean {
   }
 
   return result === 0;
+}
+
+/**
+ * Check Rate Limit (Token Bucket)
+ */
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  let limitState = RATE_LIMITS.get(key);
+
+  if (!limitState) {
+    limitState = {
+      tokens: RL_MAX_TOKENS,
+      lastRefill: now,
+    };
+    RATE_LIMITS.set(key, limitState);
+  }
+
+  // Refill tokens
+  const timePassed = (now - limitState.lastRefill) / 1000; // seconds
+  const newTokens = timePassed * RL_REFILL_RATE;
+
+  limitState.tokens = Math.min(RL_MAX_TOKENS, limitState.tokens + newTokens);
+  limitState.lastRefill = now;
+
+  // Consume token
+  if (limitState.tokens >= 1) {
+    limitState.tokens -= 1;
+    return true;
+  }
+
+  return false;
 }
 
 export default {
@@ -52,6 +89,14 @@ export default {
     if (!constantTimeCompare(token, env.PROXY_API_KEY)) {
       return new Response('Unauthorized: Invalid Proxy Key', {
         status: 401,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      });
+    }
+
+    // 1.5 Rate Limit Check
+    if (!checkRateLimit(token)) {
+      return new Response('Too Many Requests', {
+        status: 429,
         headers: { 'Access-Control-Allow-Origin': '*' },
       });
     }

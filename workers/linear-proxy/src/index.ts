@@ -14,6 +14,11 @@ interface Env {
 const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB
 const LINEAR_API_URL = 'https://api.linear.app/graphql';
 
+// Rate Limiting (Token Bucket)
+const RL_MAX_TOKENS = 100;
+const RL_REFILL_RATE = 1; // tokens per second
+const RATE_LIMITS = new Map<string, { tokens: number; lastRefill: number }>();
+
 /**
  * Constant-time string comparison to prevent timing attacks
  */
@@ -31,13 +36,66 @@ function constantTimeCompare(a: string, b: string): boolean {
 /**
  * Verify Linear webhook signature
  */
-function verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
+async function verifyWebhookSignature(payload: string, signature: string, secret: string): Promise<boolean> {
   // Linear uses HMAC-SHA256 for webhook signatures
   // Format: "sha256=<hex_digest>"
-  // Note: Cloudflare Workers don't have crypto.createHmac, would need Web Crypto API
-  // For now, we'll use the webhook secret as a simple bearer token
-  // In production, implement proper HMAC verification
-  return constantTimeCompare(signature, secret);
+  const [algorithm, receivedDigest] = signature.split('=');
+  
+  if (algorithm !== 'sha256' || !receivedDigest) {
+    return false;
+  }
+  
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signatureBuffer = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    encoder.encode(payload)
+  );
+  
+  const computedDigest = Array.from(new Uint8Array(signatureBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  return constantTimeCompare(computedDigest, receivedDigest);
+}
+
+/**
+ * Check Rate Limit (Token Bucket)
+ */
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  let limitState = RATE_LIMITS.get(key);
+
+  if (!limitState) {
+    limitState = {
+      tokens: RL_MAX_TOKENS,
+      lastRefill: now,
+    };
+    RATE_LIMITS.set(key, limitState);
+  }
+
+  // Refill tokens
+  const timePassed = (now - limitState.lastRefill) / 1000; // seconds
+  const newTokens = timePassed * RL_REFILL_RATE;
+
+  limitState.tokens = Math.min(RL_MAX_TOKENS, limitState.tokens + newTokens);
+  limitState.lastRefill = now;
+
+  // Consume token
+  if (limitState.tokens >= 1) {
+    limitState.tokens -= 1;
+    return true;
+  }
+
+  return false;
 }
 
 export default {
@@ -93,7 +151,9 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
 
   // Verify webhook signature
   const signature = request.headers.get('Linear-Signature') || '';
-  if (!verifyWebhookSignature('', signature, env.LINEAR_WEBHOOK_SECRET)) {
+  const rawBody = await request.text();
+
+  if (!(await verifyWebhookSignature(rawBody, signature, env.LINEAR_WEBHOOK_SECRET))) {
     return new Response(JSON.stringify({ error: 'Invalid webhook signature' }), {
       status: 401,
       headers: {
@@ -104,7 +164,7 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
   }
 
   // Parse webhook payload
-  const payload = await request.json();
+  const payload = JSON.parse(rawBody);
 
   // Log webhook event (in production, you'd process this)
   console.log('Linear webhook received:', payload);
@@ -135,8 +195,9 @@ async function handleGraphQL(request: Request, env: Env): Promise<Response> {
     });
   }
 
-  const token = authHeader.replace('Bearer ', '');
-  if (!constantTimeCompare(token, env.PROXY_API_KEY)) {
+  const token = authHeader.replace('Bearer ', '').trim();
+  const secret = env.PROXY_API_KEY.trim();
+  if (!constantTimeCompare(token, secret)) {
     return new Response(JSON.stringify({ error: 'Invalid proxy API key' }), {
       status: 401,
       headers: {

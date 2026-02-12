@@ -21,10 +21,10 @@ For detailed instructions for a fresh install, see the [Environment Setup Guide]
 
 ```bash
 # 1. Extract corporate certificates to .certs/
-python scripts/bifrost.py extract-certs
+npm run extract-certs
 
 # 2. Setup portable PowerShell environment
-python scripts/bifrost.py setup-shell
+npm run setup
 ```
 
 ### 2. Editor Setup (Critical)
@@ -50,7 +50,7 @@ npm run lint:fix  # Auto-fix issues
 Launch the portable shell where tools (npx, wrangler, node) work without SSL errors and with correct secrets loaded:
 
 ```bash
-python scripts/bifrost.py shell
+npm run shell
 ```
 
 ### 3. Usage
@@ -59,21 +59,21 @@ Inside the shell (or via `bifrost.py` prefix):
 
 ```bash
 # Ask AI (Perplexity Sonar)
-bifrost ask "How do I fix this SSL error?"
+npm start -- ask "How do I fix this SSL error?"
 
 # Deep Research (Perplexity Sonar Reasoning)
-bifrost research "Best practices for TypeScript SDKs"
+npm start -- research "Best practices for TypeScript SDKs"
 
 # Deploy Workers
-bifrost deploy linear-proxy
+npx wrangler deploy --prefix workers/linear-proxy
 
 # Manage Secrets
-bifrost secret linear-proxy PROXY_API_KEY <value>
+npx wrangler secret put PROXY_API_KEY --prefix workers/linear-proxy
 ```
 
 ## 📂 Project Structure
 
-- `scripts/bifrost.py`: **The Commander**. Use this for everything.
+- `package.json`: **The Commander**. Use `npm run` or `npm start` for tasks.
 - `.tools/pwsh/`: Portable PowerShell Core installation (ignored in git).
 - `.certs/`: Extracted corporate certificates.
 - `workers/`: Cloudflare Worker source code.
@@ -86,7 +86,29 @@ bifrost secret linear-proxy PROXY_API_KEY <value>
 Use `bifrost.py`. It handles SSL context correctly. If writing standalone scripts, see `scripts/verify_linear.py` for how to use `ssl._create_unverified_context()` if necessary for local tools.
 
 **Wrangler Deployment Fails**:
-Ensure you are using the portable shell (`bifrost.py shell`) or `scripts/deploy_worker.py`, which loads the necessary `NODE_EXTRA_CA_CERTS`.
+Ensure you are using the portable shell (`npm run shell`) which loads the necessary `NODE_EXTRA_CA_CERTS`.
+
+## 🛡️ Security Features
+
+### Circuit Breaker
+The Linear client includes a circuit breaker to protect API keys from deactivation:
+- Triggers on 401 errors
+- Creates `.auth.lock` file
+- Blocks all requests until resolved
+
+**To Reset**:
+```bash
+# Verify secrets in .env
+npm start -- linear projects --direct
+
+# Delete lockfile
+rm .auth.lock  # Unix
+del .auth.lock  # Windows
+```
+
+### Rate Limiting
+- **Linear & Perplexity Proxies**: 100 req/min (In-memory Token Bucket)
+- **Custom Router**: 100 req/min (Durable Object Token Bucket, health-aware)
 
 ## 🤖 Agents & LLMs
 
