@@ -3,6 +3,8 @@
 import { Job, RouterState, JulesTask, EngineeringLog } from './types';
 import { LinearClient } from './linear';
 import { GitHubClient } from './github';
+import { FlyClient } from './fly';
+import { EventStoreClient } from './events';
 import {
   JobPayloadSchema,
   JulesTaskSchema,
@@ -31,13 +33,23 @@ export class RouterDO {
     lastMaintenance: Date.now(),
   };
   private llm: LLMRouter;
+  private events: EventStoreClient;
+  private fly: FlyClient;
   private readonly BATCH_SIZE = 10;
-
-  // ... (skipping unchanged lines)
 
   constructor(state: DurableObjectState, env: any) {
     this.state = state;
     this.env = env;
+
+    // Clients
+    this.events = new EventStoreClient({
+      secret: this.env.EVENTS_SECRET || 'dev-secret',
+      baseUrl: this.env.EVENTS_URL || 'http://bifrost-events.flycast:8080',
+    });
+    this.fly = new FlyClient({
+      token: this.env.FLY_API_TOKEN || '',
+      appName: 'bifrost-runner',
+    });
 
     // Restore state from storage
     this.state.blockConcurrencyWhile(async () => {
@@ -367,6 +379,17 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       this.storage.jobs[jobId] = newJob;
       await this.saveState();
 
+      // Log Event
+      await this.events.append({
+        type: 'JOB_CREATED',
+        source: 'custom-router',
+        payload: {
+          jobId: newJob.id,
+          type: newJob.type,
+          priority: newJob.priority,
+        },
+      });
+
       return new Response(JSON.stringify(newJob), {
         status: 201,
         headers: { 'Content-Type': 'application/json' },
@@ -495,6 +518,8 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         }
       } else if (job.type === 'orchestration' && job.status === 'pending') {
         await this.processOrchestrationJob(job);
+      } else if (job.type === 'runner_task' && job.status === 'pending') {
+        await this.executeRunnerTask(job);
       } else if (job.status !== 'awaiting_hitl') {
         job.status = 'processing';
       }
@@ -525,7 +550,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       const isValid = await verifyLinearSignature(
         rawBody,
         signature,
-        this.env.LINEAR_WEBHOOK_SECRET
+        this.env.LINEAR_WEBHOOK_SECRET,
       );
 
       if (!isValid) {
@@ -554,7 +579,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
         // 1. "In Progress" -> Create Branch
         if (stateName === 'In Progress') {
-          // Check if we already have a job for this? 
+          // Check if we already have a job for this?
           // Ideally we just fire and forget the branch creation or create a 'scaffold' job.
           console.log(`Issue ${issueIdentifier} moved to In Progress. Initiating Workspace Setup.`);
 
@@ -569,10 +594,10 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
               action: 'initialize_workspace',
               issueIdentifier,
               issueTitle,
-              issueId
+              issueId,
             },
             createdAt: Date.now(),
-            updatedAt: Date.now()
+            updatedAt: Date.now(),
           };
           this.storage.jobs[jobId] = newJob;
           await this.saveState();
@@ -726,10 +751,10 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
             whatWorked: [
               `Verified issue ${issueIdentifier} exists`,
               `Created GitHub branch ${branchName}`,
-              `Linked branch to Linear issue`
+              `Linked branch to Linear issue`,
             ],
             whatDidntWork: [],
-            lessonsLearned: ['Automated workspace initialization reduces context switching.']
+            lessonsLearned: ['Automated workspace initialization reduces context switching.'],
           };
 
           const logBody = this.formatEngineeringLog(engineeringLog);
@@ -757,6 +782,63 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       await this.logError(e.message, 'ORCHESTRATION_FAILURE', e);
       job.status = 'failed';
       job.error = e.message;
+    }
+  }
+
+  private async executeRunnerTask(job: Job) {
+    try {
+      console.log(`Processing Runner Task: ${job.id}`);
+      // 1. Ensure Runner is Active
+      await this.fly.startRunner(); // Fire and forget or await? Await to ensure machine is starting.
+
+      // 2. Dispatch to Runner (Naive: Retry loop or just one shot?)
+      // Runner might take time to boot.
+      // For V1, we'll try once. If fails, we fail the job (or requeue).
+      // Better: Requeue with backoff?
+      // Let's try to hit the internal DNS.
+
+      const runnerUrl = 'http://bifrost-runner.flycast:8080/execute';
+
+      // We'll give it a moment or retry fetch?
+      // Worker fetch automatically retries connection refused sometimes? No.
+
+      const response = await fetch(runnerUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.env.RUNNER_SECRET || process.env.RUNNER_SECRET || ''}`,
+        },
+        body: JSON.stringify({
+          command: job.payload.command,
+          cwd: job.payload.cwd,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Runner returned ${response.status}: ${await response.text()}`);
+      }
+
+      const result = await response.json();
+      job.status = 'completed';
+      job.result = result;
+
+      // Log Completion
+      await this.events.append({
+        type: 'JOB_COMPLETED',
+        source: 'custom-router',
+        payload: { jobId: job.id, result },
+      });
+    } catch (e: any) {
+      await this.logError(e.message, 'RUNNER_FAILURE', e);
+      job.status = 'failed';
+      job.error = e.message;
+
+      // Log Failure
+      await this.events.append({
+        type: 'JOB_FAILED',
+        source: 'custom-router',
+        payload: { jobId: job.id, error: e.message },
+      });
     }
   }
 
