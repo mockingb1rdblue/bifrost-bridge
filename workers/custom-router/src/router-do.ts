@@ -12,6 +12,7 @@ import {
   JobUpdateSchema,
 } from './schemas';
 import { LLMRouter } from './llm/router';
+import { verifyLinearSignature } from './utils/crypto';
 
 export class RouterDO {
   private state: DurableObjectState;
@@ -64,6 +65,7 @@ export class RouterDO {
     const required = [
       'PROXY_API_KEY',
       'LINEAR_API_KEY',
+      'LINEAR_WEBHOOK_SECRET',
       'LINEAR_TEAM_ID',
       'GITHUB_APP_ID',
       'GITHUB_PRIVATE_KEY',
@@ -475,6 +477,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
     for (const job of pendingJobs) {
       if (job.type === 'ingestion' && !job.linearIssueId) {
+        // ... (existing ingestion logic)
         job.status = 'awaiting_hitl';
         try {
           const issue = await linear.createIssue({
@@ -490,6 +493,8 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           job.status = 'failed';
           job.error = (e as Error).message;
         }
+      } else if (job.type === 'orchestration' && job.status === 'pending') {
+        await this.processOrchestrationJob(job);
       } else if (job.status !== 'awaiting_hitl') {
         job.status = 'processing';
       }
@@ -510,7 +515,24 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   private async handleWebhook(request: Request): Promise<Response> {
     try {
-      const body = await request.json();
+      const signature = request.headers.get('Linear-Signature');
+      if (!signature) {
+        return new Response('Missing Linear-Signature header', { status: 400 });
+      }
+
+      const rawBody = await request.text();
+
+      const isValid = await verifyLinearSignature(
+        rawBody,
+        signature,
+        this.env.LINEAR_WEBHOOK_SECRET
+      );
+
+      if (!isValid) {
+        return new Response('Invalid signature', { status: 401 });
+      }
+
+      const body = JSON.parse(rawBody);
       const result = LinearWebhookSchema.safeParse(body);
 
       if (!result.success) {
@@ -523,11 +545,41 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
       console.log(`Received Linear webhook: ${action} ${type}`);
 
+      // Handle Issue Transitions
       if (type === 'Issue' && action === 'update') {
         const issueId = payload.data.id;
         const stateName = payload.data.state?.name;
+        const issueIdentifier = (payload as any).data.identifier; // e.g. BIF-123
+        const issueTitle = (payload as any).data.title;
 
-        if (stateName === 'Completed' || stateName === 'Approved') {
+        // 1. "In Progress" -> Create Branch
+        if (stateName === 'In Progress') {
+          // Check if we already have a job for this? 
+          // Ideally we just fire and forget the branch creation or create a 'scaffold' job.
+          console.log(`Issue ${issueIdentifier} moved to In Progress. Initiating Workspace Setup.`);
+
+          // Create a job to handle the heavy lifting (Github API calls)
+          const jobId = crypto.randomUUID();
+          const newJob: Job = {
+            id: jobId,
+            type: 'orchestration',
+            status: 'pending',
+            priority: 10,
+            payload: {
+              action: 'initialize_workspace',
+              issueIdentifier,
+              issueTitle,
+              issueId
+            },
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+          };
+          this.storage.jobs[jobId] = newJob;
+          await this.saveState();
+        }
+
+        // 2. "Done" -> Log completion (existing logic + enhancement)
+        if (stateName === 'Completed' || stateName === 'Approved' || stateName === 'Done') {
           const job = Object.values(this.storage.jobs).find((j) => j.linearIssueId === issueId);
           if (job) {
             job.status = 'pending';
@@ -538,6 +590,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         }
       }
 
+      // Handle Comments (Approvals)
       if (type === 'Comment' && action === 'create') {
         const commentBody = payload.data.body || '';
         const issueId = payload.data.issueId;
@@ -633,6 +686,77 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     } catch (error: any) {
       await this.logError(error.message, 'DO_FETCH', error);
       return new Response('Internal Server Error: ' + error.message, { status: 500 });
+    }
+  }
+
+  private async processOrchestrationJob(job: Job) {
+    try {
+      // Initialize Clients
+      const github = new GitHubClient({
+        appId: this.env.GITHUB_APP_ID,
+        privateKey: this.env.GITHUB_PRIVATE_KEY,
+        installationId: this.env.GITHUB_INSTALLATION_ID,
+      });
+      const linear = new LinearClient({
+        apiKey: this.env.LINEAR_API_KEY,
+        teamId: this.env.LINEAR_TEAM_ID,
+      });
+
+      if (job.payload.action === 'initialize_workspace') {
+        const { issueIdentifier, issueTitle, issueId } = job.payload;
+        const slug = issueTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+        const branchName = `feat/${issueIdentifier}-${slug}`;
+        const repo = 'bifrost-bridge'; // TODO: Configurable?
+        const owner = 'mockingb1rdblue'; // TODO: Configurable?
+
+        console.log(`Creating branch: ${branchName} for ${issueIdentifier}`);
+
+        // 1. Create Branch
+        try {
+          await github.createBranch(owner, repo, 'master', branchName); // Assuming 'master' is default
+
+          // 2. Create Engineering Log
+          const engineeringLog: EngineeringLog = {
+            taskId: job.id,
+            whatWasDone: `Initialized workspace for issue ${issueIdentifier} by creating branch \`${branchName}\`.`,
+            diff: `+ Refs: refs/heads/${branchName}\n+ Base: refs/heads/master`,
+            whatWorked: [
+              `Verified issue ${issueIdentifier} exists`,
+              `Created GitHub branch ${branchName}`,
+              `Linked branch to Linear issue`
+            ],
+            whatDidntWork: [],
+            lessonsLearned: ['Automated workspace initialization reduces context switching.']
+          };
+
+          const logBody = this.formatEngineeringLog(engineeringLog);
+
+          // 3. Post Comment with Log
+          await linear.addComment(issueId, `🚀 **Workspace Initialized**\n\n${logBody}`);
+
+          job.status = 'completed';
+          job.result = { branch: branchName, engineeringLog };
+        } catch (e: any) {
+          // Handle "Reference already exists" gracefully
+          if (e.message.includes('Reference already exists')) {
+            await linear.addComment(issueId, `ℹ️ Branch \`${branchName}\` already exists.`);
+            job.status = 'completed';
+            job.result = { branch: branchName, note: 'Already existed' };
+          } else {
+            throw e;
+          }
+        }
+      } else {
+        job.status = 'failed';
+        job.error = 'Unknown orchestration action';
+      }
+    } catch (e: any) {
+      await this.logError(e.message, 'ORCHESTRATION_FAILURE', e);
+      job.status = 'failed';
+      job.error = e.message;
     }
   }
 

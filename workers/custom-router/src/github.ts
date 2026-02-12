@@ -11,7 +11,7 @@ export class GitHubClient {
   private token: string | null = null;
   private tokenExpiry: number = 0;
 
-  constructor(private config: GitHubAppConfig) {}
+  constructor(private config: GitHubAppConfig) { }
 
   /**
    * Generate a JWT for GitHub App authentication
@@ -84,6 +84,25 @@ export class GitHubClient {
     if (response.status === 204) return null;
 
     return await response.json();
+  }
+
+  async getRef(owner: string, repo: string, ref: string): Promise<any> {
+    return await this.request(`/repos/${owner}/${repo}/git/ref/${ref}`);
+  }
+
+  async createBranch(owner: string, repo: string, base: string, name: string): Promise<any> {
+    // 1. Get sha of base branch
+    const baseRef = await this.getRef(owner, repo, `heads/${base}`);
+    const sha = baseRef.object.sha;
+
+    // 2. Create new ref
+    return await this.request(`/repos/${owner}/${repo}/git/refs`, {
+      method: 'POST',
+      body: JSON.stringify({
+        ref: `refs/heads/${name}`,
+        sha,
+      }),
+    });
   }
 
   async getPullRequest(owner: string, repo: string, number: number) {

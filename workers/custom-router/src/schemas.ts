@@ -46,6 +46,8 @@ export const LinearWebhookSchema = z.object({
   type: z.enum(['Issue', 'Comment', 'Project', 'Cycle']),
   data: z.object({
     id: z.string(),
+    identifier: z.string().optional(),
+    title: z.string().optional(),
     state: z.object({ name: z.string() }).optional(),
     body: z.string().optional(),
     issueId: z.string().optional(),
