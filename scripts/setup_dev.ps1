@@ -12,12 +12,29 @@ if (-not (Test-Path $toolsDir)) {
 $ghDir = Join-Path $toolsDir "gh"
 $ghBin = Join-Path $ghDir "bin\gh.exe"
 if (-not (Test-Path $ghBin)) {
-    Write-Host "Installing GitHub CLI..." -ForegroundColor Yellow
-    # Download logic (simplified for example, or reuse previous logic)
-    # Since we can't easily download zip without complex powershell, we'll assume manual or use winget if available? 
-    # Actually, previous steps used a direct download. I'll rely on the user having it or automated via install.ps1?
-    # Better: Re-implement the download logic or direct user.
-    Write-Warning "GitHub CLI not found in .tools/gh. Please run 'winget install GitHub.cli' or download manually."
+    Write-Host "Installing GitHub CLI (Portable)..." -ForegroundColor Yellow
+    # Hardcoded known good version
+    $GhUrl = "https://github.com/cli/cli/releases/download/v2.86.0/gh_2.86.0_windows_amd64.zip"
+    $zipPath = Join-Path $toolsDir "gh.zip"
+    Invoke-WebRequest -Uri $GhUrl -OutFile $zipPath
+    
+    # Use tar for reliability with long paths/DLL issues
+    New-Item -ItemType Directory -Force -Path $ghDir | Out-Null
+    tar -xf $zipPath -C $ghDir
+    
+    # Find bin folder and add to path dynamically in profile, or move here.
+    $ExtractedFolder = Get-ChildItem $ghDir -Directory | Select-Object -First 1
+    if ($ExtractedFolder) {
+        $BinPath = Join-Path $ExtractedFolder.FullName "bin"
+        if (Test-Path $BinPath) {
+            # Move bin contents to .tools/gh/bin
+            New-Item -ItemType Directory -Force -Path (Join-Path $ghDir "bin") | Out-Null
+            Copy-Item "$BinPath\*" (Join-Path $ghDir "bin") -Recurse -Force
+        }
+        Remove-Item $ExtractedFolder.FullName -Recurse -Force
+    }
+    Remove-Item $zipPath
+    Write-Host "✅ GitHub CLI installed." -ForegroundColor Green
 }
 else {
     Write-Host "✅ GitHub CLI found." -ForegroundColor Green
