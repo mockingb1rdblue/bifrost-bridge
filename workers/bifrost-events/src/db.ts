@@ -1,42 +1,37 @@
 import Database from 'better-sqlite3';
-import { mkdirSync } from 'fs';
-import { dirname } from 'path';
+import fs from 'fs';
+import path from 'path';
 
-const DB_PATH = process.env.DB_PATH || './events.db';
+const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data', 'events.db');
 
-// Ensure directory exists
-try {
-  mkdirSync(dirname(DB_PATH), { recursive: true });
-} catch (e) {
-  // Ignore error if directory exists
+// Ensure data directory exists
+const dataDir = path.dirname(DB_PATH);
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
 }
 
-console.log(`Connecting to database at ${DB_PATH}`);
-const db = new Database(DB_PATH);
+export const db = new Database(DB_PATH);
 
-// Enable WAL mode for concurrency
+// Enable WAL mode for better concurrency
 db.pragma('journal_mode = WAL');
 
-// Initialize Schema
-const initSchema = () => {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS events (
-      id TEXT PRIMARY KEY,
-      timestamp TEXT NOT NULL,
-      sprite_id TEXT,
-      batch_id TEXT,
-      agent_id TEXT,
-      event_type TEXT NOT NULL,
-      payload_json TEXT,
-      parent_event_id TEXT,
-      created_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_events_sprite ON events(sprite_id);
-    CREATE INDEX IF NOT EXISTS idx_events_batch ON events(batch_id);
-    CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
-  `);
-  console.log('Database schema initialized');
-};
-
-export { db, initSchema };
+// Simple migration runner
+export function initDB() {
+  const schemaPath = path.join(__dirname, '..', 'schema.sql');
+  if (fs.existsSync(schemaPath)) {
+    const schema = fs.readFileSync(schemaPath, 'utf8');
+    db.exec(schema);
+    console.log('Database initialized with schema from', schemaPath);
+  } else {
+    // If running from src (dev), schema is one level up. If from dist (prod), it might be different.
+    // Let's try explicit path relative to CWD if __dirname fails
+    const localSchema = path.join(process.cwd(), 'schema.sql');
+    if (fs.existsSync(localSchema)) {
+      const schema = fs.readFileSync(localSchema, 'utf8');
+      db.exec(schema);
+      console.log('Database initialized with schema from', localSchema);
+    } else {
+      console.warn('Schema file not found, skipping migration');
+    }
+  }
+}
