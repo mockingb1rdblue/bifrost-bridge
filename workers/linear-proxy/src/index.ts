@@ -207,6 +207,18 @@ async function handleGraphQL(request: Request, env: Env): Promise<Response> {
     });
   }
 
+  // Check Rate Limit
+  if (!checkRateLimit(token)) {
+    return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Retry-After': '60',
+      },
+    });
+  }
+
   // Check request body size
   const contentLength = request.headers.get('Content-Length');
   if (contentLength && parseInt(contentLength) > MAX_BODY_SIZE) {
