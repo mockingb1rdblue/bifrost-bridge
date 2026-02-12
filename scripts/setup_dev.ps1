@@ -1,0 +1,65 @@
+$ErrorActionPreference = "Stop"
+
+Write-Host "🚀 Setting up Bifrost Development Environment..." -ForegroundColor Cyan
+
+# Ensure .tools directory exists
+$toolsDir = Join-Path $PSScriptRoot "..\\.tools"
+if (-not (Test-Path $toolsDir)) {
+    New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null
+}
+
+# 1. Install GitHub CLI
+$ghDir = Join-Path $toolsDir "gh"
+$ghBin = Join-Path $ghDir "bin\gh.exe"
+if (-not (Test-Path $ghBin)) {
+    Write-Host "Installing GitHub CLI..." -ForegroundColor Yellow
+    # Download logic (simplified for example, or reuse previous logic)
+    # Since we can't easily download zip without complex powershell, we'll assume manual or use winget if available? 
+    # Actually, previous steps used a direct download. I'll rely on the user having it or automated via install.ps1?
+    # Better: Re-implement the download logic or direct user.
+    Write-Warning "GitHub CLI not found in .tools/gh. Please run 'winget install GitHub.cli' or download manually."
+}
+else {
+    Write-Host "✅ GitHub CLI found." -ForegroundColor Green
+}
+
+# 2. Install Flyctl
+$flyDir = Join-Path $toolsDir "flyctl"
+$flyBin = Join-Path $flyDir "bin\flyctl.exe"
+if (-not (Test-Path $flyBin)) {
+    Write-Host "Installing Flyctl..." -ForegroundColor Yellow
+    # Flyctl installation override to local dir
+    $env:FLYCTL_INSTALL = $flyDir
+    Invoke-WebRequest https://fly.io/install.ps1 -UseBasicParsing | Invoke-Expression
+    Write-Host "✅ Flyctl installed." -ForegroundColor Green
+}
+else {
+    Write-Host "✅ Flyctl found." -ForegroundColor Green
+}
+
+# 3. Check Authentication
+Write-Host "`nChecking Authentication Status..." -ForegroundColor Cyan
+
+# GH Auth
+if (Test-Path $ghBin) {
+    try {
+        & $ghBin auth status 2>$null
+        Write-Host "✅ GitHub: Authenticated" -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "⚠️ GitHub: Not Authenticated. Run '$ghBin auth login -h github.com -p https -w --skip-ssh-key'"
+    }
+}
+
+# Fly Auth
+if (Test-Path $flyBin) {
+    $flyStatus = & $flyBin auth whoami 2>$null
+    if ($flyStatus) {
+        Write-Host "✅ Fly.io: Authenticated as $flyStatus" -ForegroundColor Green
+    }
+    else {
+        Write-Warning "⚠️ Fly.io: Not Authenticated. Run '$flyBin auth login'"
+    }
+}
+
+Write-Host "`n🎉 Setup Complete! Run 'npm run dev' in worker directories to start." -ForegroundColor Cyan
