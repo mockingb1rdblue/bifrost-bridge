@@ -1,21 +1,17 @@
 node_modules/
 dist/
 .env
-.DS_Store
-*.log
-.vscode/
-
-.tools/pwsh.zip
-.tools/pwsh/
-.tools/
-
-# Secrets & Keys
-.dev.vars
-.wrangler/
-*.pem
-*.key
-.totaldev
-.env.bak
 
 # Circuit Breaker
 .auth.lock
+
+# Corporate certificates (sensitive)
+certs/*.cer
+certs/*.pem
+certs/*.pfx
+
+.tools/
+.fly/
+certs/
+.totaldev
+

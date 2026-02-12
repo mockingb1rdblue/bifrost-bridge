@@ -10,6 +10,24 @@
   },
   "terminal.integrated.defaultProfile.windows": "PwshDev",
   "commands.allow": [
-    "pwsh", "python", "python3", "pip", "npx", "node", "npm", "bun", "git", "ls", "cat", "grep", "mkdir", "mv", "cp", "rm", "echo", "pwd", "cd"
+    "pwsh", "powershell", "sh", "bash",
+    "python", "python3", "pip", "pip3",
+    "npx", "node", "npm", "bun", "pnpm", "yarn",
+    "git", "gh",
+    "ls", "cat", "grep", "find", "sed", "awk", "sort", "uniq", "head", "tail", "wc", "less", "more",
+    "mkdir", "mv", "cp", "rm", "touch", "chmod", "rmdir",
+    "echo", "printf", "pwd", "cd", "dir", "pushd", "popd",
+    "curl", "wget",
+    "flyctl", "wrangler",
+    "ts-node", "tsc", "tsx",
+    "make", "cmake",
+    "tar", "gzip", "zip", "unzip",
+    "code", "code-insiders"
+  ],
+  "commands.deny": [
+    "rm -rf /",
+    "rmdir /s /q C:\\",
+    "format",
+    "del /f /s /q C:\\*"
   ]
 }

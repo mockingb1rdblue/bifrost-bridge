@@ -1,0 +1,31 @@
+name: Deploy Bifrost
+
+on:
+  push:
+    branches:
+      - main
+      - hee-haw
+  workflow_dispatch:
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+jobs:
+  deploy-events:
+    name: Deploy Events Store
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
+        working-directory: workers/bifrost-events
+
+  deploy-runner:
+    name: Deploy Runner
+    needs: deploy-events # Optional sequencing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
+        working-directory: workers/bifrost-runner

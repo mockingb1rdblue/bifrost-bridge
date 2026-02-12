@@ -1,0 +1,11 @@
+name = "bifrost-bridge"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Environment variables
+
+[[kv_namespaces]]
+binding = "BIFROST_KV"
+id = "be16781ec93e4adc8048ba1edee3d10c"
+preview_id = "be16781ec93e4adc8048ba1edee3d10c"
