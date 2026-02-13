@@ -84,16 +84,6 @@ export class LinearClient {
               name
               type
             }
-            progress
-            milestones {
-              nodes {
-                id
-                name
-                description
-                targetDate
-                completedAt
-              }
-            }
           }
         }
       }
@@ -104,9 +94,9 @@ export class LinearClient {
   }
 
   async listLabels(teamId: string): Promise<any[]> {
-      const query = `
-        query Labels($teamId: String!) {
-          issueLabels(filter: { team: { id: { eq: $teamId } } }) {
+    const query = `
+        query Labels {
+          issueLabels(filter: { team: { id: { eq: "${teamId}" } } }) {
             nodes {
               id
               name
@@ -115,32 +105,50 @@ export class LinearClient {
           }
         }
       `;
-      const data = await this.query<{ issueLabels: { nodes: any[] } }>(query, { teamId });
-      return data.issueLabels.nodes;
+    const data = await this.query<{ issueLabels: { nodes: any[] } }>(query);
+    return data.issueLabels.nodes;
   }
 
-  async updateIssue(issueId: string, input: {
+  async updateIssue(
+    issueId: string,
+    input: {
       labelIds?: string[];
       stateId?: string;
       title?: string;
-  }): Promise<boolean> {
-      const mutation = `
+    },
+  ): Promise<boolean> {
+    const mutation = `
         mutation IssueUpdate($id: String!, $input: IssueUpdateInput!) {
             issueUpdate(id: $id, input: $input) {
                 success
             }
         }
       `;
-      const result = await this.query<{ issueUpdate: { success: boolean } }>(mutation, {
-          id: issueId,
-          input
-      });
-      return result.issueUpdate.success;
+    const result = await this.query<{ issueUpdate: { success: boolean } }>(mutation, {
+      id: issueId,
+      input,
+    });
+    return result.issueUpdate.success;
+  }
+
+  async createLabel(input: { teamId: string; name: string; color: string }): Promise<string> {
+    const mutation = `
+        mutation LabelCreate($teamId: String!, $name: String!, $color: String!) {
+            issueLabelCreate(input: { teamId: $teamId, name: $name, color: $color }) {
+                issueLabel { id }
+            }
+        }
+      `;
+    const data = await this.query<{ issueLabelCreate: { issueLabel: { id: string } } }>(
+      mutation,
+      input,
+    );
+    return data.issueLabelCreate.issueLabel.id;
   }
 
   async listMilestones(projectId: string): Promise<any[]> {
-      const query = `
-        query Milestones($projectId: ID!) {
+    const query = `
+        query Milestones($projectId: String!) {
           project(id: $projectId) {
             milestones {
               nodes {
@@ -154,8 +162,10 @@ export class LinearClient {
           }
         }
       `;
-      const data = await this.query<{ project: { milestones: { nodes: any[] } } }>(query, { projectId });
-      return data.project.milestones.nodes;
+    const data = await this.query<{ project: { milestones: { nodes: any[] } } }>(query, {
+      projectId,
+    });
+    return data.project.milestones.nodes;
   }
 
   async getLabelIdByName(teamId: string, name: string): Promise<string | undefined> {
@@ -175,9 +185,11 @@ export class LinearClient {
         }
       }
     `;
-    const data = await this.query<{ issue: { labels: { nodes: { id: string }[] } } }>(query, { id: issueId });
-    const currentLabelIds = data.issue.labels.nodes.map(l => l.id);
-    
+    const data = await this.query<{ issue: { labels: { nodes: { id: string }[] } } }>(query, {
+      id: issueId,
+    });
+    const currentLabelIds = data.issue.labels.nodes.map((l) => l.id);
+
     if (currentLabelIds.includes(labelId)) return true;
 
     return this.updateIssue(issueId, { labelIds: [...currentLabelIds, labelId] });
@@ -194,20 +206,22 @@ export class LinearClient {
         }
       }
     `;
-    const data = await this.query<{ issue: { labels: { nodes: { id: string }[] } } }>(query, { id: issueId });
-    const currentLabelIds = data.issue.labels.nodes.map(l => l.id);
-    
+    const data = await this.query<{ issue: { labels: { nodes: { id: string }[] } } }>(query, {
+      id: issueId,
+    });
+    const currentLabelIds = data.issue.labels.nodes.map((l) => l.id);
+
     if (!currentLabelIds.includes(labelId)) return true;
 
-    return this.updateIssue(issueId, { labelIds: currentLabelIds.filter(id => id !== labelId) });
+    return this.updateIssue(issueId, { labelIds: currentLabelIds.filter((id) => id !== labelId) });
   }
 
   async listIssuesByLabel(labelName: string): Promise<any[]> {
-      const query = `
-        query IssuesByLabel($teamId: String!, $labelName: String!) {
+    const query = `
+        query IssuesByLabel {
           issues(filter: { 
-            team: { id: { eq: $teamId } },
-            labels: { name: { eq: $labelName } },
+            team: { id: { eq: "${this.teamId}" } },
+            labels: { name: { eq: "${labelName}" } },
             state: { name: { nin: ["Completed", "Canceled"] } }
           }) {
             nodes {
@@ -221,10 +235,29 @@ export class LinearClient {
           }
         }
       `;
-      const data = await this.query<{ issues: { nodes: any[] } }>(query, { 
-          teamId: this.teamId, 
-          labelName 
-      });
-      return data.issues.nodes;
+    const data = await this.query<{ issues: { nodes: any[] } }>(query);
+    return data.issues.nodes;
+  }
+
+  async postProjectUpdate(
+    projectId: string,
+    input: {
+      health: 'onTrack' | 'atRisk' | 'offTrack';
+      body: string;
+    },
+  ): Promise<boolean> {
+    const mutation = `
+        mutation ProjectUpdateCreate($projectId: String!, $health: ProjectUpdateHealthType!, $body: String!) {
+            projectUpdateCreate(input: { projectId: $projectId, health: $health, body: $body }) {
+                success
+            }
+        }
+      `;
+    const data = await this.query<{ projectUpdateCreate: { success: boolean } }>(mutation, {
+      projectId,
+      health: input.health,
+      body: input.body,
+    });
+    return data.projectUpdateCreate.success;
   }
 }

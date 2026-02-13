@@ -1,67 +1,70 @@
 ---
-description: Resume work on Mac after handoff from Windows
+description: Universal cold-start resumption workflow for Zero Local Secrets
 ---
 
-# 🚀 Resuming Work on Bifrost
+# 🚀 Universal Resumption Workflow (Cold Start)
 
-## 0. Context Fast-Boot (AI AGENTS START HERE)
-**Read [RESUME.md](../../RESUME.md) immediately.** It contains the current mental model, active architecture, and next strategic steps.
+This workflow is optimized for resuming work on any machine (Windows, Mac, Linux) without requiring local secrets or previous environment state.
 
 ## 1. Local Setup
 
-1.  **Pull Latest Changes**:
+1.  **Sync Code**:
+
     ```bash
     git pull origin main
     ```
 
-2.  **Clean Slate Protocol**:
-    Ensure no secret files have crept in.
-    ```bash
-    ./scripts/check-secrets.sh --fix
-    ```
+2.  **Auth Check (Cloudflare)**:
 
-3.  **Dependencies**:
-    ```bash
-    npm install
-    ```
-
-## 2. Authentication Check
-
-Since we don't use local secrets, your CLI tools must be authenticated.
-
-1.  **Cloudflare (Wrangler)**:
     ```bash
     npx wrangler whoami
-    # If not logged in:
-    # npx wrangler login
+    # If not logged in: npx wrangler login
     ```
 
-2.  **Fly.io**:
+3.  **Auth Check (Fly.io)**:
+
     ```bash
     fly auth whoami
-    # If not logged in:
-    # fly auth login
+    # If not logged in: fly auth login
     ```
 
-## 3. Verify Environment
+4.  **Install Dependencies**:
+    ```bash
+    npm install
+    # Windows only: .\scripts\setup_dev.ps1
+    ```
 
-Run the unit tests to ensure your environment is correctly mocked and ready.
+## 2. Establish the "Auth Bridge"
+
+Since we use **Zero Local Secrets**, your local tools rely on edge configuration. Establish the bridge by deploying/verifying the router:
 
 ```bash
-npm test --prefix workers/custom-router
+# This verifies your credentials and confirms access to edge secrets
+npx wrangler deploy --prefix workers/custom-router
 ```
 
-## 4. How to Execute Tasks
+## 3. Synchronize State
 
-To trigger a task and see the flow:
+Use the `custom-router` bridge to pull current Linear tasks and seed the dev environment:
 
-1.  **Linear**: Update a task to "In Progress".
-2.  **Logs**:
-    ```bash
-    # View router logs
-    npx wrangler tail --prefix workers/custom-router
-    ```
+```bash
+# Trigger remote seeding of prioritized backlog (if needed)
+npm run seed:swarm
+```
 
-## 5. Next Steps
+## 4. Context Fast-Boot
 
-Check `STATUS.md` for the current project status and active tasks.
+Ingest the current strategic state:
+
+1.  Read `RESUME.md` (Mental model).
+2.  Read `STATUS.md` (Daily progress).
+3.  Check Linear Projects for `swarm:ready` issues.
+
+## 5. Verification
+
+Verify the bridge is active:
+
+```bash
+# Check automated health report
+node -e "fetch('https://custom-router.mock1ng.workers.dev/admin/post-update', { method: 'POST', headers: { 'Authorization': 'Bearer test-key-default' } }).then(r => r.json().then(console.log))"
+```

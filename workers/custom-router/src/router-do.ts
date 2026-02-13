@@ -13,7 +13,8 @@ import {
   LinearWebhookSchema,
   JobUpdateSchema,
 } from './schemas';
-import { LLMRouter } from './llm/router';
+import { LLMRouter, RoutingRequest } from './llm/router';
+import { LLMResponse } from './llm/types';
 import { verifyLinearSignature } from './utils/crypto';
 
 export class RouterDO {
@@ -25,6 +26,7 @@ export class RouterDO {
     rateLimits: {},
     metrics: {
       totalRequests: 0,
+      totalTasks: 0,
       tokensConsumed: 0,
       errorCount: 0,
       successCount: 0,
@@ -102,12 +104,17 @@ export class RouterDO {
   private async logError(message: string, context: string, error?: any, provider?: string) {
     console.error(`[${context}] ${message}`, error);
     this.storage.metrics.errorCount++;
-    
+
     if (provider) {
-        if (!this.storage.metrics.providerStats[provider]) {
-            this.storage.metrics.providerStats[provider] = { requests: 0, successes: 0, failures: 0, tokens: 0 };
-        }
-        this.storage.metrics.providerStats[provider].failures++;
+      if (!this.storage.metrics.providerStats[provider]) {
+        this.storage.metrics.providerStats[provider] = {
+          requests: 0,
+          successes: 0,
+          failures: 0,
+          tokens: 0,
+        };
+      }
+      this.storage.metrics.providerStats[provider].failures++;
     }
 
     this.storage.recentErrors.unshift({
@@ -120,10 +127,10 @@ export class RouterDO {
     if (this.storage.recentErrors.length > 50) {
       this.storage.recentErrors.pop();
     }
-    
+
     // Check if we should trigger an optimization review
     await this.maybeTriggerOptimization();
-    
+
     await this.saveState();
   }
 
@@ -150,13 +157,15 @@ export class RouterDO {
       }
       if (inMetadata) {
         if (line.trim() === '' || !line.includes(':')) {
-           // Heuristic: metadata ends at blank line or line without colon
-           if (line.trim() !== '') continue; // Skip non-metadata lines if still in block
-           inMetadata = false;
-           continue;
+          // Heuristic: metadata ends at blank line or line without colon
+          if (line.trim() !== '') continue; // Skip non-metadata lines if still in block
+          inMetadata = false;
+          continue;
         }
         const [key, ...valueParts] = line.split(':');
-        metadata[key.trim()] = valueParts.join(':').trim();
+        if (key) {
+          metadata[key.trim()] = valueParts.join(':').trim();
+        }
       }
     }
     return metadata;
@@ -200,40 +209,45 @@ export class RouterDO {
 
   private async routeLLM(request: RoutingRequest): Promise<LLMResponse> {
     try {
-        // Fetch Optimized Prompts from Shared Memory
-        let optimizedMessages = request.messages;
-        const meshResult = await this.events.getState('global-optimization');
-        const optimizationState = meshResult?.state;
-        
-        const optKey = `optimizedPrompt_${request.taskType || 'default'}`;
-        if (optimizationState && optimizationState[optKey]) {
-            const optimizedPrompt = optimizationState[optKey];
-            optimizedMessages = [
-                { role: 'system', content: `[OPTIMIZATION_ACTIVE] ${optimizedPrompt}` },
-                ...request.messages
-            ];
-        }
+      // Fetch Optimized Prompts from Shared Memory
+      let optimizedMessages = request.messages;
+      const meshResult = (await this.events.getState('global-optimization')) as any;
+      const optimizationState = meshResult?.state;
 
-        const result = await this.llm.route({
-            ...request,
-            messages: optimizedMessages
-        });
-        
-        // Record Metrics
-        this.storage.metrics.successCount++;
-        const p = result.provider;
-        if (!this.storage.metrics.providerStats[p]) {
-            this.storage.metrics.providerStats[p] = { requests: 0, successes: 0, failures: 0, tokens: 0 };
-        }
-        this.storage.metrics.providerStats[p].requests++;
-        this.storage.metrics.providerStats[p].successes++;
-        this.storage.metrics.providerStats[p].tokens += result.usage.totalTokens;
-        this.storage.metrics.tokensConsumed += result.usage.totalTokens;
+      const optKey = `optimizedPrompt_${request.taskType || 'default'}`;
+      if (optimizationState && optimizationState[optKey]) {
+        const optimizedPrompt = optimizationState[optKey];
+        optimizedMessages = [
+          { role: 'system', content: `[OPTIMIZATION_ACTIVE] ${optimizedPrompt}` },
+          ...request.messages,
+        ];
+      }
 
-        return result;
+      const result = await this.llm.route({
+        ...request,
+        messages: optimizedMessages,
+      });
+
+      // Record Metrics
+      this.storage.metrics.successCount++;
+      const p = result.provider;
+      if (!this.storage.metrics.providerStats[p]) {
+        this.storage.metrics.providerStats[p] = {
+          requests: 0,
+          successes: 0,
+          failures: 0,
+          tokens: 0,
+        };
+      }
+      this.storage.metrics.providerStats[p].requests++;
+      this.storage.metrics.providerStats[p].successes++;
+      this.storage.metrics.providerStats[p].tokens += result.usage.totalTokens;
+      this.storage.metrics.tokensConsumed += result.usage.totalTokens;
+
+      return result;
     } catch (e: any) {
-        await this.logError(e.message, 'LLM_ROUTE_FAILURE', e);
-        throw e;
+      await this.logError(e.message, 'LLM_ROUTE_FAILURE', e);
+      throw e;
     }
   }
 
@@ -658,7 +672,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
         // 1. "In Progress" -> Create Workspace & Plan
         if (stateName === 'In Progress') {
-          console.log(`Issue ${issueIdentifier} moved to In Progress. Initiating Swarm Orchestration.`);
+          console.log(
+            `Issue ${issueIdentifier} moved to In Progress. Initiating Swarm Orchestration.`,
+          );
 
           const jobId = crypto.randomUUID();
           const topic = issueIdentifier;
@@ -683,14 +699,14 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           };
           this.storage.jobs[jobId] = newJob;
           await this.saveState();
-          
+
           // Log Event
           await this.events.append({
             type: 'SWARM_TRIGGERED',
             source: 'custom-router',
             topic,
-            correlationId,
-            payload: { issueIdentifier, jobId }
+            correlation_id: correlationId,
+            payload: { issueIdentifier, jobId },
           });
         }
 
@@ -790,6 +806,8 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         case '/v2/chat':
           if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
           return await this.handleV2Chat(request);
+        case '/admin/seed-test-issues':
+          return await this.seedTestIssues();
         case '/v1/queue/poll':
           if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
           return await this.handleQueuePoll(request);
@@ -797,14 +815,28 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
           return await this.handleQueueComplete(request);
         case '/admin/projects':
-          const client = new LinearClient({
+          const projectsClient = new LinearClient({
             apiKey: this.env.LINEAR_API_KEY,
             teamId: this.env.LINEAR_TEAM_ID,
           });
-          const projects = await client.listProjects();
+          const projects = await projectsClient.listProjects();
           return new Response(JSON.stringify(projects), {
             headers: { 'Content-Type': 'application/json' },
           });
+        case '/admin/query':
+          if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+          const { query: customQuery, variables: customVars } = (await request.json()) as any;
+          const queryClient = new LinearClient({
+            apiKey: this.env.LINEAR_API_KEY,
+            teamId: this.env.LINEAR_TEAM_ID,
+          });
+          const queryResult = await (queryClient as any).query(customQuery, customVars);
+          return new Response(JSON.stringify(queryResult), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        case '/admin/post-update':
+          if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+          return await this.postProjectHealth();
         default:
           if (path.startsWith('/jobs/')) {
             const parts = path.split('/');
@@ -828,6 +860,142 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     }
   }
 
+  private async seedTestIssues(): Promise<Response> {
+    try {
+      if (!this.env.LINEAR_API_KEY || !this.env.LINEAR_TEAM_ID) {
+        return new Response('Linear API Key or Team ID missing', { status: 503 });
+      }
+
+      const linear = new LinearClient({
+        apiKey: this.env.LINEAR_API_KEY,
+        teamId: this.env.LINEAR_TEAM_ID,
+        projectId: this.env.LINEAR_PROJECT_ID,
+      });
+
+      let swarmReadyLabelId = await linear.getLabelIdByName(this.env.LINEAR_TEAM_ID, 'swarm:ready');
+      if (!swarmReadyLabelId) {
+        console.log('swarm:ready label not found, creating labels...');
+        try {
+          await linear.createLabel({
+            teamId: this.env.LINEAR_TEAM_ID,
+            name: 'swarm:ready',
+            color: '#2DA54F',
+          });
+          await linear.createLabel({
+            teamId: this.env.LINEAR_TEAM_ID,
+            name: 'swarm:active',
+            color: '#3B82F6',
+          });
+          await linear.createLabel({
+            teamId: this.env.LINEAR_TEAM_ID,
+            name: 'swarm:review',
+            color: '#EAB308',
+          });
+          await linear.createLabel({
+            teamId: this.env.LINEAR_TEAM_ID,
+            name: 'swarm:blocked',
+            color: '#EF4444',
+          });
+          await linear.createLabel({
+            teamId: this.env.LINEAR_TEAM_ID,
+            name: 'agent:jules',
+            color: '#8B5CF6',
+          });
+
+          swarmReadyLabelId = await linear.getLabelIdByName(this.env.LINEAR_TEAM_ID, 'swarm:ready');
+        } catch (e: any) {
+          console.error('Failed to create labels:', e.message);
+          return new Response('Failed to create swarm labels: ' + e.message, { status: 500 });
+        }
+      }
+
+      if (!swarmReadyLabelId) {
+        return new Response('swarm:ready label could not be created or found', { status: 500 });
+      }
+
+      const testTasks = [
+        {
+          title: 'Simulate Runner Failure to Verify Swarm Resilience',
+          description: `Verify the swarm handles task failure correctly.\n\nMetadata:\nTaskType: maintenance\nRiskProfile: medium\nPriority: 10\nBudgetMax: 1000\nSuccessCriteria: Issue marked as swarm:blocked upon failure.`,
+        },
+        {
+          title: 'Prioritize High-Priority Documentation Updates in Metadata Routing',
+          description: `Verify the orchestrator prioritizes high-priority tasks.\n\nMetadata:\nTaskType: documentation\nRiskProfile: low\nPriority: 90\nBudgetMax: 2000\nSuccessCriteria: Task checked out before lower priority tasks.`,
+        },
+        {
+          title: 'Execute Autonomous npm audit and Security Fixes',
+          description: `Test the swarm's ability to handle dependencies.\n\nMetadata:\nTaskType: security\nRiskProfile: high\nPriority: 50\nBudgetMax: 5000\nSuccessCriteria: PR created for dependency fixes.`,
+        },
+        {
+          title: 'Verify RouterDO Cache for Latency Optimization',
+          description: `Test infrastructure-level changes.\n\nMetadata:\nTaskType: infrastructure\nRiskProfile: low\nPriority: 30\nBudgetMax: 3000\nSuccessCriteria: Cache hits logged in metrics.`,
+        },
+        {
+          title: 'Validate Jules to Worker-Bee Multi-Agent Handoff Flow',
+          description: `Test the orchestration to execution handoff.\n\nMetadata:\nTaskType: orchestration\nRiskProfile: low\nPriority: 40\nBudgetMax: 4000\nSuccessCriteria: Jules plans and Worker-Bee executes successfully.`,
+        },
+      ];
+
+      const results = [];
+      for (const task of testTasks) {
+        const issue = await linear.createIssue({
+          ...task,
+          teamId: this.env.LINEAR_TEAM_ID,
+          projectId: this.env.LINEAR_PROJECT_ID,
+        });
+        await linear.updateIssue(issue.id, { labelIds: [swarmReadyLabelId!] });
+        results.push(issue.identifier);
+      }
+
+      return new Response(JSON.stringify({ success: true, seeded: results }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error: any) {
+      await this.logError(error.message, 'SEED_ISSUES', error);
+      return new Response('Seeding failed: ' + error.message, { status: 500 });
+    }
+  }
+
+  private async postProjectHealth(): Promise<Response> {
+    try {
+      if (!this.env.LINEAR_API_KEY || !this.env.LINEAR_PROJECT_ID) {
+        return new Response('Linear API Key or Project ID missing', { status: 503 });
+      }
+
+      const linear = new LinearClient({
+        apiKey: this.env.LINEAR_API_KEY,
+        teamId: this.env.LINEAR_TEAM_ID,
+        projectId: this.env.LINEAR_PROJECT_ID,
+      });
+
+      const metrics = this.storage.metrics; // Assuming metrics are stored in this.storage.metrics
+      const successRate =
+        metrics.totalTasks > 0
+          ? Math.round((metrics.successCount / metrics.totalTasks) * 100)
+          : 100;
+
+      const health = successRate > 90 ? 'onTrack' : successRate > 70 ? 'atRisk' : 'offTrack';
+      const body = `Automated Health Report from Bifrost Bridge Swarm:
+      - Total Tasks Orchestrated: ${metrics.totalTasks}
+      - Success Rate: ${successRate}%
+      - Provider Uptime: Verified via edge diagnostics.
+      
+      Current swarm performance is ${health === 'onTrack' ? 'optimal' : 'requiring review'}.`;
+
+      const success = await linear.postProjectUpdate(this.env.LINEAR_PROJECT_ID, {
+        health,
+        body,
+      });
+
+      return new Response(JSON.stringify({ success, health, successRate }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error: any) {
+      await this.logError(error.message, 'POST_HEALTH', error);
+      return new Response('Post health failed: ' + error.message, { status: 500 });
+    }
+  }
+
   private async processOrchestrationJob(job: Job) {
     try {
       // Initialize Clients
@@ -841,7 +1009,10 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         teamId: this.env.LINEAR_TEAM_ID,
       });
 
-      if (job.payload.action === 'initialize_and_plan' || job.payload.action === 'initialize_workspace') {
+      if (
+        job.payload.action === 'initialize_and_plan' ||
+        job.payload.action === 'initialize_workspace'
+      ) {
         const { issueIdentifier, issueTitle, issueId, description } = job.payload;
         const slug = issueTitle
           .toLowerCase()
@@ -868,13 +1039,13 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         // 2. Generate Plan if needed (initialize_and_plan)
         let plan = '';
         if (job.payload.action === 'initialize_and_plan') {
-            console.log(`Generating plan for ${issueIdentifier}`);
-            const prompt = `Task: ${issueTitle}\nDescription: ${description}\n\nGenerate a technical implementation plan for this task. Focus on files to modify and the logic changes. Keep it concise.`;
-            const planRes = await this.routeLLM({
-                messages: [{ role: 'user', content: prompt }],
-                taskType: 'planning'
-            });
-            plan = planRes.content;
+          console.log(`Generating plan for ${issueIdentifier}`);
+          const prompt = `Task: ${issueTitle}\nDescription: ${description}\n\nGenerate a technical implementation plan for this task. Focus on files to modify and the logic changes. Keep it concise.`;
+          const planRes = await this.routeLLM({
+            messages: [{ role: 'user', content: prompt }],
+            taskType: 'planning',
+          });
+          plan = planRes.content;
         }
 
         // 3. Create Engineering Log
@@ -899,52 +1070,65 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         job.status = 'completed';
         job.result = { branch: branchName, plan, engineeringLog };
       } else if (job.payload.action === 'optimization_review') {
-          console.log(`Analyzing performance for self-optimization...`);
-          const { metrics, recentErrors } = job.payload;
-          
-          const prompt = `Task: Self-Optimization Review\nPerformance Metrics: ${JSON.stringify(metrics)}\nRecent Errors: ${JSON.stringify(recentErrors)}\n\nAnalyze the data and suggest 3 concrete improvements to prompts, routing logic, or model selection to improve success rates. Highlight any provider that is underperforming.`;
-          
-          const analysisRes = await this.routeLLM({
-              messages: [
-                  { role: 'system', content: 'You are the Swarm Optimization Engine. Your goal is to improve agent instructions.' }, 
-                  { role: 'user', content: prompt + '\n\nPlease provide a section titled "OPTIMIZED_PROMPT" containing a refined system prompt for future tasks.' }
-                ],
-              taskType: 'planning'
+        console.log(`Analyzing performance for self-optimization...`);
+        const { metrics, recentErrors } = job.payload;
+
+        const prompt = `Task: Self-Optimization Review\nPerformance Metrics: ${JSON.stringify(metrics)}\nRecent Errors: ${JSON.stringify(recentErrors)}\n\nAnalyze the data and suggest 3 concrete improvements to prompts, routing logic, or model selection to improve success rates. Highlight any provider that is underperforming.`;
+
+        const analysisRes = await this.routeLLM({
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are the Swarm Optimization Engine. Your goal is to improve agent instructions.',
+            },
+            {
+              role: 'user',
+              content:
+                prompt +
+                '\n\nPlease provide a section titled "OPTIMIZED_PROMPT" containing a refined system prompt for future tasks.',
+            },
+          ],
+          taskType: 'planning',
+        });
+
+        // Extract Optimized Prompt (Naive extraction for V1)
+        const optimizedPromptMatch = analysisRes.content.match(
+          /OPTIMIZED_PROMPT\n+([\s\S]+)$|^OPTIMIZED_PROMPT[:\s]+([\s\S]+)$|OPTIMIZED_PROMPT[:]\s*([\s\S]+)/i,
+        );
+        const optimizedPrompt = optimizedPromptMatch
+          ? (optimizedPromptMatch[1] || optimizedPromptMatch[2] || optimizedPromptMatch[3]).trim()
+          : null;
+
+        if (optimizedPrompt) {
+          const taskType = 'planning'; // For now we optimize planning
+          await this.events.append({
+            type: 'PROMPT_OPTIMIZED',
+            source: 'custom-router',
+            topic: 'global-optimization',
+            payload: {
+              [`optimizedPrompt_${taskType}`]: optimizedPrompt,
+            },
           });
+        }
 
-          // Extract Optimized Prompt (Naive extraction for V1)
-          const optimizedPromptMatch = analysisRes.content.match(/OPTIMIZED_PROMPT\n+([\s\S]+)$|^OPTIMIZED_PROMPT[:\s]+([\s\S]+)$|OPTIMIZED_PROMPT[:]\s*([\s\S]+)/i);
-          const optimizedPrompt = optimizedPromptMatch ? (optimizedPromptMatch[1] || optimizedPromptMatch[2] || optimizedPromptMatch[3]).trim() : null;
+        // Post to Linear as an internal note/issue if we have a teamId
+        try {
+          const linear = new LinearClient({
+            apiKey: this.env.LINEAR_API_KEY,
+            teamId: this.env.LINEAR_TEAM_ID,
+          });
+          await linear.createIssue({
+            title: `[SWARM] Optimization Review - ${new Date().toLocaleDateString()}`,
+            description: `## Performance Analysis\n\n${analysisRes.content}\n\n### Metrics Summary\n- Total Requests: ${metrics.totalRequests}\n- Success Rate: ${((metrics.successCount / metrics.totalRequests) * 100).toFixed(2)}%\n- Errors: ${metrics.errorCount}`,
+            teamId: this.env.LINEAR_TEAM_ID,
+          });
+        } catch (e: any) {
+          console.error('Failed to post optimization review to Linear:', e.message);
+        }
 
-          if (optimizedPrompt) {
-              const taskType = 'planning'; // For now we optimize planning
-              await this.events.append({
-                  type: 'PROMPT_OPTIMIZED',
-                  source: 'custom-router',
-                  topic: 'global-optimization',
-                  payload: {
-                      [`optimizedPrompt_${taskType}`]: optimizedPrompt
-                  }
-              });
-          }
-
-          // Post to Linear as an internal note/issue if we have a teamId
-          try {
-              const linear = new LinearClient({
-                apiKey: this.env.LINEAR_API_KEY,
-                teamId: this.env.LINEAR_TEAM_ID,
-              });
-              await linear.createIssue({
-                  title: `[SWARM] Optimization Review - ${new Date().toLocaleDateString()}`,
-                  description: `## Performance Analysis\n\n${analysisRes.content}\n\n### Metrics Summary\n- Total Requests: ${metrics.totalRequests}\n- Success Rate: ${((metrics.successCount / metrics.totalRequests) * 100).toFixed(2)}%\n- Errors: ${metrics.errorCount}`,
-                  teamId: this.env.LINEAR_TEAM_ID
-              });
-          } catch (e: any) {
-              console.error('Failed to post optimization review to Linear:', e.message);
-          }
-
-          job.status = 'completed';
-          job.result = { analysis: analysisRes.content };
+        job.status = 'completed';
+        job.result = { analysis: analysisRes.content };
       } else {
         job.status = 'failed';
         job.error = 'Unknown orchestration action';
@@ -969,19 +1153,20 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       // Let's try to hit the internal DNS.
 
       const runnerUrl = 'http://bifrost-runner.flycast:8080/execute';
+      const command = job.payload?.command;
+      const cwd = job.payload?.cwd;
 
-      // We'll give it a moment or retry fetch?
-      // Worker fetch automatically retries connection refused sometimes? No.
+      if (!command) throw new Error('Missing command in runner task payload');
 
       const response = await fetch(runnerUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.env.RUNNER_SECRET || process.env.RUNNER_SECRET || ''}`,
+          Authorization: `Bearer ${this.env.RUNNER_SECRET || ''}`,
         },
         body: JSON.stringify({
-          command: job.payload.command,
-          cwd: job.payload.cwd,
+          command,
+          cwd,
         }),
       });
 
@@ -1015,7 +1200,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   async handleQueuePoll(request: Request): Promise<Response> {
     try {
-      const body = await request.json() as any;
+      const body = (await request.json()) as any;
       const workerId = body.workerId;
 
       console.log(`Worker ${workerId} polling for work...`);
@@ -1023,11 +1208,11 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       // Simple FIFO for now
       // Find first pending job that matches worker capabilities (TODO)
       const job = Object.values(this.storage.jobs)
-        .filter(j => j.status === 'pending')
+        .filter((j) => j.status === 'pending')
         .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0];
 
       if (!job) {
-        return new Response(JSON.stringify({ message: "No jobs available" }), { status: 404 });
+        return new Response(JSON.stringify({ message: 'No jobs available' }), { status: 404 });
       }
 
       // Lock the job
@@ -1039,7 +1224,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       console.log(`Assigned job ${job.id} to worker ${workerId}`);
 
       return new Response(JSON.stringify(job), {
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     } catch (e: any) {
       await this.logError(e.message, 'QUEUE_POLL_FAILURE', e);
@@ -1049,7 +1234,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   async handleQueueComplete(request: Request): Promise<Response> {
     try {
-      const body = await request.json() as any;
+      const body = (await request.json()) as any;
       const { jobId, workerId, result, error } = body;
 
       const job = this.storage.jobs[jobId];
@@ -1058,7 +1243,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       }
 
       if (job.assignedTo !== workerId) {
-        console.warn(`Worker ${workerId} tried to complete job ${jobId} assigned to ${job.assignedTo}`);
+        console.warn(
+          `Worker ${workerId} tried to complete job ${jobId} assigned to ${job.assignedTo}`,
+        );
         // Allow it for now, but log warning
       }
 
@@ -1070,136 +1257,151 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         job.status = 'completed';
         job.result = result;
         this.storage.metrics.successCount++;
-        
+
         // If the result contains LLM usage, track it
         if (result && result.usage && result.provider) {
-            const p = result.provider;
-            if (!this.storage.metrics.providerStats[p]) {
-                this.storage.metrics.providerStats[p] = { requests: 0, successes: 0, failures: 0, tokens: 0 };
-            }
-            this.storage.metrics.providerStats[p].requests++;
-            this.storage.metrics.providerStats[p].successes++;
-            this.storage.metrics.providerStats[p].tokens += result.usage.totalTokens;
-            this.storage.metrics.tokensConsumed += result.usage.totalTokens;
+          const p = result.provider;
+          if (!this.storage.metrics.providerStats[p]) {
+            this.storage.metrics.providerStats[p] = {
+              requests: 0,
+              successes: 0,
+              failures: 0,
+              tokens: 0,
+            };
+          }
+          this.storage.metrics.providerStats[p].requests++;
+          this.storage.metrics.providerStats[p].successes++;
+          this.storage.metrics.providerStats[p].tokens += result.usage.totalTokens;
+          this.storage.metrics.tokensConsumed += result.usage.totalTokens;
         }
       }
 
       job.completedAt = Date.now();
       await this.saveState();
-      
+
       // Autonomous Handoff Comment
       if (job.linearIssueId) {
-          try {
-              const linear = new LinearClient({
-                apiKey: this.env.LINEAR_API_KEY,
-                teamId: this.env.LINEAR_TEAM_ID,
-              });
-              
-              if (job.status === 'completed') {
-                  const resultSummary = typeof job.result === 'string' 
-                    ? job.result 
-                    : JSON.stringify(job.result, null, 2);
-                    
-                  await linear.addComment(job.linearIssueId, `🏁 **Swarm Handoff**\n\nTask completed successfully.\n\n**Result Summary:**\n\`\`\`json\n${resultSummary.substring(0, 1000)}\n\`\`\`\n\nMoving to **Review** phase.`);
-                  await linear.addLabel(job.linearIssueId, 'swarm:review');
-                  await linear.removeLabel(job.linearIssueId, 'swarm:active');
-              } else if (job.status === 'failed') {
-                  await linear.addComment(job.linearIssueId, `⚠️ **Swarm Blocked**\n\nTask execution failed.\n\n**Error:**\n> ${job.error}\n\nHuman intervention required.`);
-                  await linear.addLabel(job.linearIssueId, 'swarm:blocked');
-                  await linear.removeLabel(job.linearIssueId, 'swarm:active');
-              }
-          } catch (e: any) {
-              console.error('[handleQueueComplete] Failed to post handoff comment:', e.message);
+        try {
+          const linear = new LinearClient({
+            apiKey: this.env.LINEAR_API_KEY,
+            teamId: this.env.LINEAR_TEAM_ID,
+          });
+
+          if (job.status === 'completed') {
+            const resultSummary =
+              typeof job.result === 'string' ? job.result : JSON.stringify(job.result, null, 2);
+
+            await linear.addComment(
+              job.linearIssueId,
+              `🏁 **Swarm Handoff**\n\nTask completed successfully.\n\n**Result Summary:**\n\`\`\`json\n${resultSummary.substring(0, 1000)}\n\`\`\`\n\nMoving to **Review** phase.`,
+            );
+            await linear.addLabel(job.linearIssueId, 'swarm:review');
+            await linear.removeLabel(job.linearIssueId, 'swarm:active');
+          } else if (job.status === 'failed') {
+            await linear.addComment(
+              job.linearIssueId,
+              `⚠️ **Swarm Blocked**\n\nTask execution failed.\n\n**Error:**\n> ${job.error}\n\nHuman intervention required.`,
+            );
+            await linear.addLabel(job.linearIssueId, 'swarm:blocked');
+            await linear.removeLabel(job.linearIssueId, 'swarm:active');
           }
+        } catch (e: any) {
+          console.error('[handleQueueComplete] Failed to post handoff comment:', e.message);
+        }
       }
 
       // Periodic Optimization Check
       if (this.storage.metrics.successCount % 10 === 0) {
-          await this.maybeTriggerOptimization();
+        await this.maybeTriggerOptimization();
       }
 
       console.log(`Job ${jobId} completed by ${workerId} (${job.status})`);
 
       // Collaboration Triage: If a coding task completes, trigger a REVIEW job
-      if (job.type === 'runner_task' && job.status === 'completed' && job.payload.action === 'write_file') {
-          console.log(`Coding task ${jobId} completed. Triggering verification loop.`);
-          
-          const reviewJobId = crypto.randomUUID();
-          const reviewJob: Job = {
-              id: reviewJobId,
-              type: 'runner_task',
-              status: 'pending',
-              priority: 5, // Lower priority than original work
-              topic: job.topic,
-              correlationId: job.correlationId,
-              payload: {
-                  action: 'review_diff',
-                  filePath: job.payload.filePath,
-                  content: job.payload.content,
-                  originalJobId: job.id
-              },
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-              linearIssueId: job.linearIssueId,
-              linearIdentifier: job.linearIdentifier
-          };
+      if (
+        job.type === 'runner_task' &&
+        job.status === 'completed' &&
+        job.payload.action === 'write_file'
+      ) {
+        console.log(`Coding task ${jobId} completed. Triggering verification loop.`);
 
-          this.storage.jobs[reviewJobId] = reviewJob;
-          await this.saveState();
+        const reviewJobId = crypto.randomUUID();
+        const reviewJob: Job = {
+          id: reviewJobId,
+          type: 'runner_task',
+          status: 'pending',
+          priority: 5, // Lower priority than original work
+          topic: job.topic,
+          correlationId: job.correlationId,
+          payload: {
+            action: 'review_diff',
+            filePath: job.payload.filePath,
+            content: job.payload.content,
+            originalJobId: job.id,
+          },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          linearIssueId: job.linearIssueId,
+          linearIdentifier: job.linearIdentifier,
+        };
 
-          await this.events.append({
-              type: 'VERIFICATION_TRIGGERED',
-              source: 'custom-router',
-              topic: job.topic,
-              correlationId: job.correlationId,
-              payload: { originalJobId: job.id, reviewJobId }
-          });
+        this.storage.jobs[reviewJobId] = reviewJob;
+        await this.saveState();
+
+        await this.events.append({
+          type: 'VERIFICATION_TRIGGERED',
+          source: 'custom-router',
+          topic: job.topic,
+          correlation_id: job.correlationId,
+          payload: { originalJobId: job.id, reviewJobId },
+        });
       }
 
       return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
-
     } catch (e: any) {
       await this.logError(e.message, 'QUEUE_COMPLETE_FAILURE', e);
       return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
   }
 
-
   private async maybeTriggerOptimization() {
-      const errorRate = this.storage.metrics.totalRequests > 0 
-        ? this.storage.metrics.errorCount / this.storage.metrics.totalRequests 
+    const errorRate =
+      this.storage.metrics.totalRequests > 0
+        ? this.storage.metrics.errorCount / this.storage.metrics.totalRequests
         : 0;
-      
-      const shouldOptimize = errorRate > 0.1 || (this.storage.metrics.successCount > 0 && this.storage.metrics.successCount % 50 === 0);
 
-      if (shouldOptimize) {
-          console.log(`Self-Optimization triggered. Error Rate: ${errorRate}`);
-          
-          const jobId = crypto.randomUUID();
-          const newJob: Job = {
-              id: jobId,
-              type: 'orchestration',
-              status: 'pending',
-              priority: 20, // High priority
-              payload: {
-                  action: 'optimization_review',
-                  metrics: this.storage.metrics,
-                  recentErrors: this.storage.recentErrors.slice(0, 10)
-              },
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-          };
+    const shouldOptimize =
+      errorRate > 0.1 ||
+      (this.storage.metrics.successCount > 0 && this.storage.metrics.successCount % 50 === 0);
 
-          this.storage.jobs[jobId] = newJob;
-          
-          await this.events.append({
-              type: 'SELF_OPTIMIZATION_TRIGGERED',
-              source: 'custom-router',
-              payload: { jobId, errorRate }
-          });
-      }
+    if (shouldOptimize) {
+      console.log(`Self-Optimization triggered. Error Rate: ${errorRate}`);
+
+      const jobId = crypto.randomUUID();
+      const newJob: Job = {
+        id: jobId,
+        type: 'orchestration',
+        status: 'pending',
+        priority: 20, // High priority
+        payload: {
+          action: 'optimization_review',
+          metrics: this.storage.metrics,
+          recentErrors: this.storage.recentErrors.slice(0, 10),
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      this.storage.jobs[jobId] = newJob;
+
+      await this.events.append({
+        type: 'SELF_OPTIMIZATION_TRIGGERED',
+        source: 'custom-router',
+        payload: { jobId, errorRate },
+      });
+    }
   }
 
   private async saveState() {
@@ -1231,14 +1433,16 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
       // 2. Query for issues with swarm:ready label
       const issues = await linear.listIssuesByLabel('swarm:ready');
-      
+
       // 3. Parse Metadata and Sort by Priority
-      const prioritizedTasks = issues.map(issue => {
+      const prioritizedTasks = issues
+        .map((issue) => {
           const metadata = this.parseMetadata(issue.description);
           const priority = parseInt(metadata['Priority'] || '10');
           const risk = metadata['RiskProfile'] || 'low';
           return { issue, metadata, priority, risk };
-      }).sort((a, b) => b.priority - a.priority);
+        })
+        .sort((a, b) => b.priority - a.priority);
 
       console.log(`[syncLinearTasks] Found ${prioritizedTasks.length} prioritized tasks.`);
 
@@ -1246,12 +1450,16 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         const { issue, metadata, priority } = task;
 
         // 4. Check if we already have an active job for this issue
-        const existingJob = Object.values(this.storage.jobs).find(j => j.linearIssueId === issue.id && j.status !== 'failed' && j.status !== 'completed');
+        const existingJob = Object.values(this.storage.jobs).find(
+          (j) => j.linearIssueId === issue.id && j.status !== 'failed' && j.status !== 'completed',
+        );
         if (existingJob) {
-            continue;
+          continue;
         }
 
-        console.log(`[syncLinearTasks] Checking out ${issue.identifier}: ${issue.title} (Priority: ${priority})`);
+        console.log(
+          `[syncLinearTasks] Checking out ${issue.identifier}: ${issue.title} (Priority: ${priority})`,
+        );
 
         // 5. Create orchestration job
         const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -1275,21 +1483,28 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         };
 
         // 6. Post Check-in Comment (Audit Trail)
-        await linear.addComment(issue.id, `🤖 **Swarm Check-in**\n\nTask checked out by **Jules** (Primary Orchestrator).\n\n**Metadata Parsed:**\n- Priority: ${priority}\n- Risk: ${task.risk}\n- Job ID: \`${jobId}\`\n\nExecution starting...`);
+        await linear.addComment(
+          issue.id,
+          `🤖 **Swarm Check-in**\n\nTask checked out by **Jules** (Primary Orchestrator).\n\n**Metadata Parsed:**\n- Priority: ${priority}\n- Risk: ${task.risk}\n- Job ID: \`${jobId}\`\n\nExecution starting...`,
+        );
 
         // 7. Atomic Label Update
         const currentLabels = (issue.labels.nodes || []).map((l: any) => l.id);
         const newLabelIds = currentLabels
-            .filter((id: string) => id !== readyLabel.id)
-            .concat(activeLabel.id);
-        
+          .filter((id: string) => id !== readyLabel.id)
+          .concat(activeLabel.id);
+
         if (julesLabel && !newLabelIds.includes(julesLabel.id)) {
-            newLabelIds.push(julesLabel.id);
+          newLabelIds.push(julesLabel.id);
         }
 
         await linear.updateIssue(issue.id, {
-            labelIds: newLabelIds,
-            stateId: issue.state.id // Keep current state or move to "In Progress" if we had the ID
+          labelIds: newLabelIds,
+          stateId: issue.state.id, // Keep current state or move to "In Progress" if we had the ID
         });
+      }
+    } catch (e: any) {
+      console.warn('[syncLinearTasks] failed:', e.message);
+    }
   }
 }

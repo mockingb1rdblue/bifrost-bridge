@@ -36,34 +36,34 @@ function constantTimeCompare(a: string, b: string): boolean {
 /**
  * Verify Linear webhook signature
  */
-async function verifyWebhookSignature(payload: string, signature: string, secret: string): Promise<boolean> {
+async function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string,
+): Promise<boolean> {
   // Linear uses HMAC-SHA256 for webhook signatures
   // Format: "sha256=<hex_digest>"
   const [algorithm, receivedDigest] = signature.split('=');
-  
+
   if (algorithm !== 'sha256' || !receivedDigest) {
     return false;
   }
-  
+
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
-    ['sign']
+    ['sign'],
   );
-  
-  const signatureBuffer = await crypto.subtle.sign(
-    'HMAC',
-    key,
-    encoder.encode(payload)
-  );
-  
+
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+
   const computedDigest = Array.from(new Uint8Array(signatureBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
+    .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
-  
+
   return constantTimeCompare(computedDigest, receivedDigest);
 }
 

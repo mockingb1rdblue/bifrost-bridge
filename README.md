@@ -13,7 +13,49 @@ This project implements the "Bifrost" pattern: a secure, verifiable bridge betwe
     - `linear-proxy`: Connects to Linear GraphQL API (Queries & Mutations).
 4.  **Universal Runner**: `scripts/bifrost.py` orchestrates everything.
 
-## 🛠️ Quick Start
+## 🚀 Resuming Work ("Cold Start")
+
+If you are a human or an AI agent picking up this project from a fresh clone:
+
+### 1. The Auth Bridge
+
+We follow a **"Zero Local Secrets"** policy. You do not need a `.env` file. Instead, use your authenticated session as the secret provider:
+
+```bash
+# Verify your Cloudflare session
+npx wrangler whoami
+
+# Establish the "Auth Bridge"
+# This deploys the latest code and confirms you have the necessary edge secrets.
+npx wrangler deploy --prefix workers/custom-router
+```
+
+### 2. Prepare Environment
+
+Run the setup script to trust corporate certs and initialize the portable shell:
+
+```bash
+.\scripts\setup_dev.ps1
+npm run shell
+```
+
+### 3. Synchronize State
+
+Use the edge bridge to seed test issues or pull live status:
+
+```bash
+# Seed the backlog with prioritized "Direct Problem" issues
+npm run seed:swarm
+```
+
+### 4. Context Ingestion
+
+Read the following files to align with the current strategic state:
+
+- `BOOTSTRAP.md`: End-to-end setup guide from scratch (Local to Cloud).
+- `RESUME.md`: Fast-boot mental model.
+- `STATUS.md`: Current day's accomplishments.
+- `.agent/workflows/0_resume.md`: Step-by-step resumption workflow.
 
 ## 🛠️ Quick Start
 
@@ -140,3 +182,4 @@ If you are an AI agent picking up this project:
 ---
 
 _Documentation maintained by Antigravity Agent._
+````

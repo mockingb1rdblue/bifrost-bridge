@@ -18,6 +18,9 @@ export interface Job {
   updatedAt: number;
   linearIssueId?: string;
   linearIdentifier?: string;
+  assignedTo?: string;
+  startedAt?: number;
+  completedAt?: number;
   topic?: string;
   correlationId?: string;
 }
@@ -51,11 +54,12 @@ export interface RateLimitState {
 }
 export interface RouterMetrics {
   totalRequests: number;
+  totalTasks: number;
   tokensConsumed: number;
   errorCount: number;
-  successCount: number; // Added
+  successCount: number;
   startTime: number;
-  providerStats: Record<string, ProviderMetrics>; // Added
+  providerStats: Record<string, ProviderMetrics>;
 }
 export interface ProviderMetrics {
   requests: number;
@@ -76,7 +80,7 @@ export interface ServiceHealth {
   timestamp: number;
 }
 export interface ErrorLog {
-// ...
+  // ...
   timestamp: number;
   message: string;
   context: string;
