@@ -23,7 +23,8 @@
         "worker:test": "npm run test --prefix workers/custom-router",
         "worker:types": "npm run typegen --prefix workers/custom-router",
         "proxy:linear:deploy": "npm run deploy --prefix workers/linear-proxy",
-        "proxy:perplexity:deploy": "npm run deploy --prefix workers/perplexity-proxy"
+        "proxy:perplexity:deploy": "npm run deploy --prefix workers/perplexity-proxy",
+        "seed:swarm": "./scripts/seed-swarm.sh"
     },
     "keywords": [
         "corporate",

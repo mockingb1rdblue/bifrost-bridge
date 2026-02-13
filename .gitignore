@@ -19,4 +19,6 @@ certs/
 *.db
 *.db-shm
 *.db-wal
+.dev.vars
+.wrangler/
 

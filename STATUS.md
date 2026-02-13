@@ -13,6 +13,16 @@
 - ✅ **Centralized Routing**: Refactored `RouterDO` with a metrics-aware `routeLLM` wrapper for unified performance monitoring.
 - ✅ **Event State Replay**: Enhanced `bifrost-events` to support topic-based state reconstruction for global optimization settings.
 
+### 2026-02-13: Phase 8: Packaging Swarm Seeding Protocol (COMPLETED)
+- ✅ **Antigravity Skill**: Created a reusable `swarm-seeding` skill for future agents.
+- ✅ **Interactive Wrapper**: Developed `seed-swarm.sh` to handle Linear authentication safely.
+- ✅ **npm Integration**: Integrated `npm run seed:swarm` into the root `package.json`.
+
+### 2026-02-13: Phase 7: CI/CD Infrastructure Restoration (COMPLETED)
+- ✅ **Secret Rotation**: Resolved "No access token" error by re-keying `FLY_API_TOKEN` via CLI.
+- ✅ **Robust Pipelines**: Fixed environment injection in `deploy.yml` for reliable multi-service deployment.
+- ✅ **Verification**: All services (`bifrost-events`, `bifrost-runner`, `worker-bees`) now live and green.
+
 ### 2026-02-13: Phase 6.1: Swarm Management Optimization (COMPLETED)
 - ✅ **Advanced Metadata Protocol**: Implemented YAML-based metadata parsing in `RouterDO` for Priority, Risk, and Budget control.
 - ✅ **Automated Audit Trail**: Implemented autonomous **Check-in** and **Handoff** comments directly to Linear issues.
