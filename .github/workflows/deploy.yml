@@ -19,6 +19,8 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only
         working-directory: workers/bifrost-events
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   deploy-runner:
     name: Deploy Runner
@@ -29,6 +31,8 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only
         working-directory: workers/bifrost-runner
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   deploy-worker-bees:
     name: Deploy Worker Bees
@@ -39,3 +43,5 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only
         working-directory: workers/worker-bees
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
