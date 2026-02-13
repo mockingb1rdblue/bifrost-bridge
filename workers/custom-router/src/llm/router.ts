@@ -16,7 +16,13 @@ export class LLMRouter {
     }
 
     async route(request: RoutingRequest): Promise<LLMResponse> {
-        const provider = this.selectProvider(request);
+        let provider = this.selectProvider(request);
+        
+        // Key-check fallback
+        if (!this.isValidProvider(provider)) {
+            provider = this.getFallbackProvider(provider);
+        }
+
         const client = this.factory.get(provider);
 
         // Auto-adjust models based on provider and task
@@ -28,6 +34,16 @@ export class LLMRouter {
         return client.chat(request.messages, options);
     }
 
+    private isValidProvider(provider: LLMProvider): boolean {
+        // factory knows the keys
+        return !!this.factory.get(provider);
+    }
+
+    private getFallbackProvider(failed: LLMProvider): LLMProvider {
+        const priority: LLMProvider[] = ['anthropic', 'deepseek', 'gemini', 'openai'];
+        return priority.find(p => p !== failed && this.isValidProvider(p)) || 'gemini';
+    }
+
     private selectProvider(request: RoutingRequest): LLMProvider {
         if (request.preferredProvider) return request.preferredProvider;
 
@@ -35,14 +51,16 @@ export class LLMRouter {
             case 'planning':
                 return 'anthropic';
             case 'troubleshooting':
-                return 'openai'; // Perplexity Sonar
+                return 'openai'; // Perplexity / Sonar
             case 'context-analysis':
+            case 'research':
                 return 'gemini';
+            case 'triage':
+                return 'gemini'; // Fast/Cheap
             case 'coding':
             default:
-                // For coding, we check token counts (simplified check here)
                 const totalCharCount = request.messages.reduce((sum, m) => sum + m.content.length, 0);
-                if (totalCharCount > 100000) return 'gemini'; // Huge context
+                if (totalCharCount > 100000) return 'gemini';
                 return 'deepseek';
         }
     }
@@ -54,7 +72,7 @@ export class LLMRouter {
             case 'deepseek':
                 return 'deepseek-chat';
             case 'gemini':
-                return 'gemini-1.5-pro';
+                return taskType === 'triage' ? 'gemini-1.5-flash' : 'gemini-1.5-pro';
             case 'openai':
                 return 'sonar-reasoning-pro';
             default:

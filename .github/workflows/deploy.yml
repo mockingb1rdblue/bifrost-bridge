@@ -29,3 +29,13 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only
         working-directory: workers/bifrost-runner
+
+  deploy-worker-bees:
+    name: Deploy Worker Bees
+    needs: deploy-events # Optional sequencing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
+        working-directory: workers/worker-bees

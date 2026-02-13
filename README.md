@@ -26,49 +26,34 @@ Run the automated setup script to install dependencies (`gh`, `flyctl`, `pwsh`) 
 ````
 
 ### 2. Environment Setup
+The project follows a **strict "Zero Local Secrets" policy**.
+- **Do NOT** store API keys in `.env` files for Cloudflare Workers or Fly.io apps.
+- **Do** use `wrangler secret put` or `fly secrets set`.
 
-Copy the example environment file and fill in your secrets (or fetch from 1Password/Manager):
+See `.agent/workflows/secure-secrets.md` for the full protocol.
 
-```powershell
-cp .env.example .env
-````
-
-### 2. Editor Setup
-
+### 3. Editor Setup
 Ensure VS Code uses the `PwshDev` profile to bypass corporate restrictions.
 
-### 2. Editor Setup (Critical)
-
-To ensure tools like `python`, `node`, and `npx` work seamlessly inside VS Code/Antigravity:
-
-1.  You must configure the **Global User Settings** (`Ctrl+Shift+P` -> "Open User Settings (JSON)") to use the `PwshDev` profile.
-2.  See [`docs/LEARNINGS.md`](docs/LEARNINGS.md) for the exact JSON snippet to paste.
-3.  **Why?** This prevents the environment from falling back to system defaults.
-
-### 3. Development Setup
-
+### 4. Development Setup
 Install dependencies and linting tools:
-
 ```bash
 npm install
 npm run lint      # Check code style
 npm run lint:fix  # Auto-fix issues
 ```
 
-### 4. Enter the "Clean" Environment
-
-Launch the portable shell where tools (npx, wrangler, node) work without SSL errors and with correct secrets loaded:
+### 5. Enter the "Clean" Environment
+Launch the portable shell where tools (npx, wrangler, node) work without SSL errors and with correct secrets loaded (fetched from remote or mocked):
 
 ```bash
 npm run shell
 ```
 
-### 3. Usage
-
+### 6. Usage
 Inside the shell (or via `bifrost.py` prefix):
 
-### Infrastructure Deployment (CI/CD)
-
+#### Infrastructure Deployment (CI/CD)
 Because of corporate proxy restrictions, we use **GitHub Actions** to deploy to Fly.io.
 
 1.  **Push Changes**:
@@ -81,7 +66,7 @@ Because of corporate proxy restrictions, we use **GitHub Actions** to deploy to 
     gh run watch
     ```
 
-### Tools
+#### Tools
 
 ```bash
 # Ask AI (Perplexity Sonar)
@@ -93,8 +78,11 @@ npm start -- research "Best practices for TypeScript SDKs"
 # Deploy Workers
 npx wrangler deploy --prefix workers/linear-proxy
 
-# Manage Secrets
+# Manage Secrets (Zero Local Secrets!)
+# Interactive
 npx wrangler secret put PROXY_API_KEY --prefix workers/linear-proxy
+# Non-interactive
+echo "my-key" | npx wrangler secret put PROXY_API_KEY --prefix workers/linear-proxy
 ```
 
 ## 📂 Project Structure

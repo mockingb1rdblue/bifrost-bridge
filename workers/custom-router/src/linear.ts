@@ -69,4 +69,26 @@ export class LinearClient {
 
     return result.commentCreate.success;
   }
+
+  async listProjects(): Promise<any[]> {
+    const query = `
+      query {
+        projects {
+          nodes {
+            id
+            name
+            description
+            status {
+              name
+              type
+            }
+            progress
+          }
+        }
+      }
+    `;
+
+    const data = await this.query<{ projects: { nodes: any[] } }>(query);
+    return data.projects.nodes;
+  }
 }

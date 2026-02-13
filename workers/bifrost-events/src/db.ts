@@ -18,20 +18,34 @@ db.pragma('journal_mode = WAL');
 // Simple migration runner
 export function initDB() {
   const schemaPath = path.join(__dirname, '..', 'schema.sql');
-  if (fs.existsSync(schemaPath)) {
-    const schema = fs.readFileSync(schemaPath, 'utf8');
+  const localSchema = path.join(process.cwd(), 'schema.sql');
+  const finalSchemaPath = fs.existsSync(schemaPath) ? schemaPath : (fs.existsSync(localSchema) ? localSchema : null);
+
+  if (finalSchemaPath) {
+    const schema = fs.readFileSync(finalSchemaPath, 'utf8');
     db.exec(schema);
-    console.log('Database initialized with schema from', schemaPath);
-  } else {
-    // If running from src (dev), schema is one level up. If from dist (prod), it might be different.
-    // Let's try explicit path relative to CWD if __dirname fails
-    const localSchema = path.join(process.cwd(), 'schema.sql');
-    if (fs.existsSync(localSchema)) {
-      const schema = fs.readFileSync(localSchema, 'utf8');
-      db.exec(schema);
-      console.log('Database initialized with schema from', localSchema);
-    } else {
-      console.warn('Schema file not found, skipping migration');
+    console.log('Database initialized with schema from', finalSchemaPath);
+    
+    // Explicit Migrations for Phase 4
+    try {
+        const columns = db.prepare("PRAGMA table_info(events)").all() as any[];
+        const hasTopic = columns.some(c => c.name === 'topic');
+        const hasCorrelationId = columns.some(c => c.name === 'correlation_id');
+
+        if (!hasTopic) {
+            db.exec("ALTER TABLE events ADD COLUMN topic TEXT");
+            db.exec("CREATE INDEX IF NOT EXISTS idx_events_topic ON events(topic)");
+            console.log("Migration: Added 'topic' column to events table.");
+        }
+        if (!hasCorrelationId) {
+            db.exec("ALTER TABLE events ADD COLUMN correlation_id TEXT");
+            db.exec("CREATE INDEX IF NOT EXISTS idx_events_correlation_id ON events(correlation_id)");
+            console.log("Migration: Added 'correlation_id' column to events table.");
+        }
+    } catch (e: any) {
+        console.error("Migration Error:", e.message);
     }
+  } else {
+    console.warn('Schema file not found, skipping migration');
   }
 }

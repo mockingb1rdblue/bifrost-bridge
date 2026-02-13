@@ -18,22 +18,22 @@ export class LLMFactory {
         this.config = config;
     }
 
-    get(provider: LLMProvider): LLMClient {
+    get(provider: LLMProvider): LLMClient | null {
         switch (provider) {
             case 'deepseek':
-                if (!this.config.deepseekKey) throw new Error('Missing DEEPSEEK_API_KEY');
+                if (!this.config.deepseekKey) return null;
                 return new DeepSeekClient(this.config.deepseekKey);
             case 'anthropic':
-                if (!this.config.anthropicKey) throw new Error('Missing ANTHROPIC_API_KEY');
+                if (!this.config.anthropicKey) return null;
                 return new AnthropicClient(this.config.anthropicKey);
             case 'gemini':
-                if (!this.config.geminiKey) throw new Error('Missing GEMINI_API_KEY');
+                if (!this.config.geminiKey) return null;
                 return new GeminiClient(this.config.geminiKey);
             case 'openai': // Used for Perplexity or others
-                if (!this.config.perplexityKey) throw new Error('Missing PERPLEXITY_API_KEY');
+                if (!this.config.perplexityKey) return null;
                 return new PerplexityClient(this.config.perplexityKey);
             default:
-                throw new Error(`Unknown provider: ${provider}`);
+                return null;
         }
     }
 }

@@ -9,6 +9,17 @@ Cloudflare Worker that proxies requests to Linear's GraphQL API and handles webh
 - **Security**: Constant-time authentication, CORS support, request size limits
 - **Corporate SSL Bypass**: Works around SSL certificate interception
 
+## 🐝 Swarm Architecture & Security Lessons
+
+### 1. Zero Local Secrets Policy
+**CRITICAL**: We do NOT use `.env` or `.dev.vars` files for any worker in this ecosystem. 
+- **Production**: All secrets MUST be set via `wrangler secret put`.
+- **Local Dev**: Use `wrangler dev --remote` to leverage the encrypted Cloudflare environment directly. This prevents local SSL/corporate proxy issues and maintains a single source of truth for secrets.
+
+### 2. Authentication Protocol
+- **Shared Secret**: Use a `PROXY_API_KEY` as a Bearer token.
+- **Constant-Time Verification**: All security-sensitive comparisons use constant-time algorithms to prevent timing attacks.
+
 ## Deployment
 
 ### 1. Install Wrangler (if not already installed)
@@ -102,19 +113,13 @@ LINEAR_WEBHOOK_URL=https://linear-proxy.mock1ng.workers.dev/webhook
 - All secrets are stored in Cloudflare's encrypted secret storage
 
 ## Local Development
+ **Zero Local Secrets Policy**: Do NOT create `.dev.vars` or `.env` files.
 
-Create `.dev.vars` file:
-
-```env
-LINEAR_API_KEY=<YOUR_LINEAR_API_KEY>
-PROXY_API_KEY=your_local_proxy_key
-LINEAR_WEBHOOK_SECRET=<YOUR_LINEAR_WEBHOOK_SECRET>
-```
-
-Run locally:
+Instead, use the remote secrets directly:
 
 ```bash
-wrangler dev
+# Run with remote secrets
+npx wrangler dev --remote
 ```
 
 ## Troubleshooting

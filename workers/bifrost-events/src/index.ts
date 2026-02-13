@@ -24,22 +24,47 @@ initDB();
 interface EventBody {
   type: string;
   source: string;
+  topic?: string;
+  correlation_id?: string;
   payload: any;
   meta?: any;
 }
 
 // Routes
 fastify.post<{ Body: EventBody }>('/events', async (request, reply) => {
-  const { type, source, payload, meta } = request.body;
+  const { type, source, topic, correlation_id, payload, meta } = request.body;
 
   if (!type || !source || !payload) {
     return reply.code(400).send({ error: 'Missing required fields' });
   }
 
-  const stmt = db.prepare('INSERT INTO events (type, source, payload, meta) VALUES (?, ?, ?, ?)');
-  const info = stmt.run(type, source, JSON.stringify(payload), meta ? JSON.stringify(meta) : null);
+  const stmt = db.prepare('INSERT INTO events (type, source, topic, correlation_id, payload, meta) VALUES (?, ?, ?, ?, ?, ?)');
+  const info = stmt.run(
+    type, 
+    source, 
+    topic || null, 
+    correlation_id || null, 
+    JSON.stringify(payload), 
+    meta ? JSON.stringify(meta) : null
+  );
 
   return { id: info.lastInsertRowid, status: 'ok' };
+});
+
+// Replay state for a topic
+fastify.get<{ Params: { topic: string } }>('/state/:topic', async (request, reply) => {
+  const { topic } = request.params;
+  
+  const stmt = db.prepare('SELECT * FROM events WHERE topic = ? ORDER BY id ASC');
+  const events = stmt.all(topic);
+
+  // Naive state reconstruction: merge payloads
+  const state = events.reduce((acc: any, e: any) => {
+    const payload = JSON.parse(e.payload);
+    return { ...acc, ...payload };
+  }, {});
+
+  return { topic, state, eventCount: events.length };
 });
 
 fastify.get<{ Querystring: { limit?: number; type?: string } }>(

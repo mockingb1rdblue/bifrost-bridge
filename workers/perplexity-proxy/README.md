@@ -20,11 +20,10 @@ You need a Cloudflare API Token to deploy this worker. The "Global API Key" is i
 5.  Copy the token value immediately.
 
 ### B. Environment Setup
-
-1.  Copy `.env.template` to `.env` in the project root (if you haven't already).
-2.  Fill in your `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`.
-3.  Fill in your `PERPLEXITY_API_KEY` (Get it from [Perplexity Settings](https://www.perplexity.ai/settings/api)).
-4.  Create a strong `PROXY_API_KEY`. This is a password YOU create. Your local MCP client will use this to authenticate with your Cloudflare Worker.
+The project follows a **strict "Zero Local Secrets" policy**.
+- **Do NOT** store API keys in `.env` or `.dev.vars` files.
+- **Do** use `wrangler secret put` to upload secrets to Cloudflare.
+- **Do** use `npx wrangler dev --remote` for local development.
 
 ## 2. Deployment
 

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const JobPayloadSchema = z.object({
-  type: z.enum(['orchestration', 'ingestion', 'test']),
+  type: z.enum(['orchestration', 'ingestion', 'test', 'echo']),
   priority: z.number().int().min(0).max(100).optional().default(0),
   data: z.record(z.any()).optional().default({}),
 });

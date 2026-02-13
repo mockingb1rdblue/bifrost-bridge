@@ -27,7 +27,9 @@ export class RouterDO {
       totalRequests: 0,
       tokensConsumed: 0,
       errorCount: 0,
+      successCount: 0,
       startTime: Date.now(),
+      providerStats: {},
     },
     recentErrors: [],
     lastMaintenance: Date.now(),
@@ -97,9 +99,17 @@ export class RouterDO {
     return null;
   }
 
-  private async logError(message: string, context: string, error?: any) {
+  private async logError(message: string, context: string, error?: any, provider?: string) {
     console.error(`[${context}] ${message}`, error);
     this.storage.metrics.errorCount++;
+    
+    if (provider) {
+        if (!this.storage.metrics.providerStats[provider]) {
+            this.storage.metrics.providerStats[provider] = { requests: 0, successes: 0, failures: 0, tokens: 0 };
+        }
+        this.storage.metrics.providerStats[provider].failures++;
+    }
+
     this.storage.recentErrors.unshift({
       timestamp: Date.now(),
       message,
@@ -110,6 +120,10 @@ export class RouterDO {
     if (this.storage.recentErrors.length > 50) {
       this.storage.recentErrors.pop();
     }
+    
+    // Check if we should trigger an optimization review
+    await this.maybeTriggerOptimization();
+    
     await this.saveState();
   }
 
@@ -160,6 +174,45 @@ export class RouterDO {
     return false;
   }
 
+  private async routeLLM(request: RoutingRequest): Promise<LLMResponse> {
+    try {
+        // Fetch Optimized Prompts from Shared Memory
+        let optimizedMessages = request.messages;
+        const result = await this.events.getState('global-optimization');
+        const optimizationState = result?.state;
+        
+        const optKey = `optimizedPrompt_${request.taskType || 'default'}`;
+        if (optimizationState && optimizationState[optKey]) {
+            const optimizedPrompt = optimizationState[optKey];
+            optimizedMessages = [
+                { role: 'system', content: `[OPTIMIZATION_ACTIVE] ${optimizedPrompt}` },
+                ...request.messages
+            ];
+        }
+
+        const result = await this.llm.route({
+            ...request,
+            messages: optimizedMessages
+        });
+        
+        // Record Metrics
+        this.storage.metrics.successCount++;
+        const p = result.provider;
+        if (!this.storage.metrics.providerStats[p]) {
+            this.storage.metrics.providerStats[p] = { requests: 0, successes: 0, failures: 0, tokens: 0 };
+        }
+        this.storage.metrics.providerStats[p].requests++;
+        this.storage.metrics.providerStats[p].successes++;
+        this.storage.metrics.providerStats[p].tokens += result.usage.totalTokens;
+        this.storage.metrics.tokensConsumed += result.usage.totalTokens;
+
+        return result;
+    } catch (e: any) {
+        await this.logError(e.message, 'LLM_ROUTE_FAILURE', e);
+        throw e;
+    }
+  }
+
   private async handleV2Chat(request: Request): Promise<Response> {
     try {
       const body = await request.json();
@@ -169,7 +222,7 @@ export class RouterDO {
         return new Response('Missing or invalid messages', { status: 400 });
       }
 
-      const result = await this.llm.route({
+      const result = await this.routeLLM({
         messages,
         options,
         taskType,
@@ -180,7 +233,6 @@ export class RouterDO {
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (e: any) {
-      await this.logError(e.message, 'V2_CHAT_FAILURE', e);
       return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
   }
@@ -577,30 +629,42 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         const issueIdentifier = (payload as any).data.identifier; // e.g. BIF-123
         const issueTitle = (payload as any).data.title;
 
-        // 1. "In Progress" -> Create Branch
+        // 1. "In Progress" -> Create Workspace & Plan
         if (stateName === 'In Progress') {
-          // Check if we already have a job for this?
-          // Ideally we just fire and forget the branch creation or create a 'scaffold' job.
-          console.log(`Issue ${issueIdentifier} moved to In Progress. Initiating Workspace Setup.`);
+          console.log(`Issue ${issueIdentifier} moved to In Progress. Initiating Swarm Orchestration.`);
 
-          // Create a job to handle the heavy lifting (Github API calls)
           const jobId = crypto.randomUUID();
+          const topic = issueIdentifier;
+          const correlationId = crypto.randomUUID();
+
           const newJob: Job = {
             id: jobId,
             type: 'orchestration',
             status: 'pending',
             priority: 10,
+            topic,
+            correlationId,
             payload: {
-              action: 'initialize_workspace',
+              action: 'initialize_and_plan',
               issueIdentifier,
               issueTitle,
               issueId,
+              description: (payload as any).data.description || '',
             },
             createdAt: Date.now(),
             updatedAt: Date.now(),
           };
           this.storage.jobs[jobId] = newJob;
           await this.saveState();
+          
+          // Log Event
+          await this.events.append({
+            type: 'SWARM_TRIGGERED',
+            source: 'custom-router',
+            topic,
+            correlationId,
+            payload: { issueIdentifier, jobId }
+          });
         }
 
         // 2. "Done" -> Log completion (existing logic + enhancement)
@@ -691,6 +755,21 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         case '/v2/chat':
           if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
           return await this.handleV2Chat(request);
+        case '/v1/queue/poll':
+          if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+          return await this.handleQueuePoll(request);
+        case '/v1/queue/complete':
+          if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+          return await this.handleQueueComplete(request);
+        case '/admin/projects':
+          const client = new LinearClient({
+            apiKey: this.env.LINEAR_API_KEY,
+            teamId: this.env.LINEAR_TEAM_ID,
+          });
+          const projects = await client.listProjects();
+          return new Response(JSON.stringify(projects), {
+            headers: { 'Content-Type': 'application/json' },
+          });
         default:
           if (path.startsWith('/jobs/')) {
             const parts = path.split('/');
@@ -727,53 +806,110 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         teamId: this.env.LINEAR_TEAM_ID,
       });
 
-      if (job.payload.action === 'initialize_workspace') {
-        const { issueIdentifier, issueTitle, issueId } = job.payload;
+      if (job.payload.action === 'initialize_and_plan' || job.payload.action === 'initialize_workspace') {
+        const { issueIdentifier, issueTitle, issueId, description } = job.payload;
         const slug = issueTitle
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '');
         const branchName = `feat/${issueIdentifier}-${slug}`;
-        const repo = 'bifrost-bridge'; // TODO: Configurable?
-        const owner = 'mockingb1rdblue'; // TODO: Configurable?
+        const repo = 'bifrost-bridge';
+        const owner = 'mockingb1rdblue';
 
-        console.log(`Creating branch: ${branchName} for ${issueIdentifier}`);
+        console.log(`Orchestrating workspace: ${branchName} for ${issueIdentifier}`);
 
         // 1. Create Branch
+        let branchResult = 'Created';
         try {
-          await github.createBranch(owner, repo, 'master', branchName); // Assuming 'master' is default
-
-          // 2. Create Engineering Log
-          const engineeringLog: EngineeringLog = {
-            taskId: job.id,
-            whatWasDone: `Initialized workspace for issue ${issueIdentifier} by creating branch \`${branchName}\`.`,
-            diff: `+ Refs: refs/heads/${branchName}\n+ Base: refs/heads/master`,
-            whatWorked: [
-              `Verified issue ${issueIdentifier} exists`,
-              `Created GitHub branch ${branchName}`,
-              `Linked branch to Linear issue`,
-            ],
-            whatDidntWork: [],
-            lessonsLearned: ['Automated workspace initialization reduces context switching.'],
-          };
-
-          const logBody = this.formatEngineeringLog(engineeringLog);
-
-          // 3. Post Comment with Log
-          await linear.addComment(issueId, `🚀 **Workspace Initialized**\n\n${logBody}`);
-
-          job.status = 'completed';
-          job.result = { branch: branchName, engineeringLog };
+          await github.createBranch(owner, repo, 'master', branchName);
         } catch (e: any) {
-          // Handle "Reference already exists" gracefully
           if (e.message.includes('Reference already exists')) {
-            await linear.addComment(issueId, `ℹ️ Branch \`${branchName}\` already exists.`);
-            job.status = 'completed';
-            job.result = { branch: branchName, note: 'Already existed' };
+            branchResult = 'Existing';
           } else {
             throw e;
           }
         }
+
+        // 2. Generate Plan if needed (initialize_and_plan)
+        let plan = '';
+        if (job.payload.action === 'initialize_and_plan') {
+            console.log(`Generating plan for ${issueIdentifier}`);
+            const prompt = `Task: ${issueTitle}\nDescription: ${description}\n\nGenerate a technical implementation plan for this task. Focus on files to modify and the logic changes. Keep it concise.`;
+            const planRes = await this.routeLLM({
+                messages: [{ role: 'user', content: prompt }],
+                taskType: 'planning'
+            });
+            plan = planRes.content;
+        }
+
+        // 3. Create Engineering Log
+        const engineeringLog: EngineeringLog = {
+          taskId: job.id,
+          whatWasDone: `Initialized workspace (\`${branchResult}\`) and generated initial implementation plan.`,
+          diff: `+ Refs: refs/heads/${branchName}\n+ Base: refs/heads/master`,
+          whatWorked: [
+            `Created/Verified GitHub branch ${branchName}`,
+            `Generated technical plan via ${this.llm.constructor.name}`,
+          ],
+          whatDidntWork: [],
+          lessonsLearned: ['Parallelized workspace and planning speeds up agent onboarding.'],
+        };
+
+        const logBody = this.formatEngineeringLog(engineeringLog);
+        const comment = `🚀 **Workspace Initialized**\n\n${logBody}${plan ? `\n\n### 📋 Implementation Plan\n${plan}` : ''}`;
+
+        // 4. Post Comment
+        await linear.addComment(issueId, comment);
+
+        job.status = 'completed';
+        job.result = { branch: branchName, plan, engineeringLog };
+      } else if (job.payload.action === 'optimization_review') {
+          console.log(`Analyzing performance for self-optimization...`);
+          const { metrics, recentErrors } = job.payload;
+          
+          const prompt = `Task: Self-Optimization Review\nPerformance Metrics: ${JSON.stringify(metrics)}\nRecent Errors: ${JSON.stringify(recentErrors)}\n\nAnalyze the data and suggest 3 concrete improvements to prompts, routing logic, or model selection to improve success rates. Highlight any provider that is underperforming.`;
+          
+          const analysisRes = await this.routeLLM({
+              messages: [
+                  { role: 'system', content: 'You are the Swarm Optimization Engine. Your goal is to improve agent instructions.' }, 
+                  { role: 'user', content: prompt + '\n\nPlease provide a section titled "OPTIMIZED_PROMPT" containing a refined system prompt for future tasks.' }
+                ],
+              taskType: 'planning'
+          });
+
+          // Extract Optimized Prompt (Naive extraction for V1)
+          const optimizedPromptMatch = analysisRes.content.match(/OPTIMIZED_PROMPT\n+([\s\S]+)$|^OPTIMIZED_PROMPT[:\s]+([\s\S]+)$|OPTIMIZED_PROMPT[:]\s*([\s\S]+)/i);
+          const optimizedPrompt = optimizedPromptMatch ? (optimizedPromptMatch[1] || optimizedPromptMatch[2] || optimizedPromptMatch[3]).trim() : null;
+
+          if (optimizedPrompt) {
+              const taskType = 'planning'; // For now we optimize planning
+              await this.events.append({
+                  type: 'PROMPT_OPTIMIZED',
+                  source: 'custom-router',
+                  topic: 'global-optimization',
+                  payload: {
+                      [`optimizedPrompt_${taskType}`]: optimizedPrompt
+                  }
+              });
+          }
+
+          // Post to Linear as an internal note/issue if we have a teamId
+          try {
+              const linear = new LinearClient({
+                apiKey: this.env.LINEAR_API_KEY,
+                teamId: this.env.LINEAR_TEAM_ID,
+              });
+              await linear.createIssue({
+                  title: `[SWARM] Optimization Review - ${new Date().toLocaleDateString()}`,
+                  description: `## Performance Analysis\n\n${analysisRes.content}\n\n### Metrics Summary\n- Total Requests: ${metrics.totalRequests}\n- Success Rate: ${((metrics.successCount / metrics.totalRequests) * 100).toFixed(2)}%\n- Errors: ${metrics.errorCount}`,
+                  teamId: this.env.LINEAR_TEAM_ID
+              });
+          } catch (e: any) {
+              console.error('Failed to post optimization review to Linear:', e.message);
+          }
+
+          job.status = 'completed';
+          job.result = { analysis: analysisRes.content };
       } else {
         job.status = 'failed';
         job.error = 'Unknown orchestration action';
@@ -840,6 +976,169 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         payload: { jobId: job.id, error: e.message },
       });
     }
+  }
+
+  async handleQueuePoll(request: Request): Promise<Response> {
+    try {
+      const body = await request.json() as any;
+      const workerId = body.workerId;
+
+      console.log(`Worker ${workerId} polling for work...`);
+
+      // Simple FIFO for now
+      // Find first pending job that matches worker capabilities (TODO)
+      const job = Object.values(this.storage.jobs)
+        .filter(j => j.status === 'pending')
+        .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0];
+
+      if (!job) {
+        return new Response(JSON.stringify({ message: "No jobs available" }), { status: 404 });
+      }
+
+      // Lock the job
+      job.status = 'processing';
+      job.assignedTo = workerId;
+      job.startedAt = Date.now();
+      await this.saveState();
+
+      console.log(`Assigned job ${job.id} to worker ${workerId}`);
+
+      return new Response(JSON.stringify(job), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (e: any) {
+      await this.logError(e.message, 'QUEUE_POLL_FAILURE', e);
+      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+  }
+
+  async handleQueueComplete(request: Request): Promise<Response> {
+    try {
+      const body = await request.json() as any;
+      const { jobId, workerId, result, error } = body;
+
+      const job = this.storage.jobs[jobId];
+      if (!job) {
+        return new Response('Job not found', { status: 404 });
+      }
+
+      if (job.assignedTo !== workerId) {
+        console.warn(`Worker ${workerId} tried to complete job ${jobId} assigned to ${job.assignedTo}`);
+        // Allow it for now, but log warning
+      }
+
+      if (error) {
+        job.status = 'failed';
+        job.error = error;
+        await this.logError(`Job ${jobId} failed: ${error}`, 'JOB_FAILURE');
+      } else {
+        job.status = 'completed';
+        job.result = result;
+        this.storage.metrics.successCount++;
+        
+        // If the result contains LLM usage, track it
+        if (result && result.usage && result.provider) {
+            const p = result.provider;
+            if (!this.storage.metrics.providerStats[p]) {
+                this.storage.metrics.providerStats[p] = { requests: 0, successes: 0, failures: 0, tokens: 0 };
+            }
+            this.storage.metrics.providerStats[p].requests++;
+            this.storage.metrics.providerStats[p].successes++;
+            this.storage.metrics.providerStats[p].tokens += result.usage.totalTokens;
+            this.storage.metrics.tokensConsumed += result.usage.totalTokens;
+        }
+      }
+
+      job.completedAt = Date.now();
+      await this.saveState();
+      
+      // Periodic Optimization Check
+      if (this.storage.metrics.successCount % 10 === 0) {
+          await this.maybeTriggerOptimization();
+      }
+
+      console.log(`Job ${jobId} completed by ${workerId} (${job.status})`);
+
+      // Collaboration Triage: If a coding task completes, trigger a REVIEW job
+      if (job.type === 'runner_task' && job.status === 'completed' && job.payload.action === 'write_file') {
+          console.log(`Coding task ${jobId} completed. Triggering verification loop.`);
+          
+          const reviewJobId = crypto.randomUUID();
+          const reviewJob: Job = {
+              id: reviewJobId,
+              type: 'runner_task',
+              status: 'pending',
+              priority: 5, // Lower priority than original work
+              topic: job.topic,
+              correlationId: job.correlationId,
+              payload: {
+                  action: 'review_diff',
+                  filePath: job.payload.filePath,
+                  content: job.payload.content,
+                  originalJobId: job.id
+              },
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              linearIssueId: job.linearIssueId,
+              linearIdentifier: job.linearIdentifier
+          };
+
+          this.storage.jobs[reviewJobId] = reviewJob;
+          await this.saveState();
+
+          await this.events.append({
+              type: 'VERIFICATION_TRIGGERED',
+              source: 'custom-router',
+              topic: job.topic,
+              correlationId: job.correlationId,
+              payload: { originalJobId: job.id, reviewJobId }
+          });
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+    } catch (e: any) {
+      await this.logError(e.message, 'QUEUE_COMPLETE_FAILURE', e);
+      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+  }
+
+
+  private async maybeTriggerOptimization() {
+      const errorRate = this.storage.metrics.totalRequests > 0 
+        ? this.storage.metrics.errorCount / this.storage.metrics.totalRequests 
+        : 0;
+      
+      const shouldOptimize = errorRate > 0.1 || (this.storage.metrics.successCount > 0 && this.storage.metrics.successCount % 50 === 0);
+
+      if (shouldOptimize) {
+          console.log(`Self-Optimization triggered. Error Rate: ${errorRate}`);
+          
+          const jobId = crypto.randomUUID();
+          const newJob: Job = {
+              id: jobId,
+              type: 'orchestration',
+              status: 'pending',
+              priority: 20, // High priority
+              payload: {
+                  action: 'optimization_review',
+                  metrics: this.storage.metrics,
+                  recentErrors: this.storage.recentErrors.slice(0, 10)
+              },
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+          };
+
+          this.storage.jobs[jobId] = newJob;
+          
+          await this.events.append({
+              type: 'SELF_OPTIMIZATION_TRIGGERED',
+              source: 'custom-router',
+              payload: { jobId, errorRate }
+          });
+      }
   }
 
   private async saveState() {

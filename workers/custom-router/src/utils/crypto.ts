@@ -16,8 +16,9 @@ export async function verifyLinearSignature(
         ['verify']
     );
 
-    // Linear sends the signature as a hex string
-    const signatureBuffer = hexStringToBuffer(signature);
+    // Linear sends the signature as a hex string, possibly prefixed with 'sha256='
+    const cleanSignature = signature.replace(/^sha256=/, '');
+    const signatureBuffer = hexStringToBuffer(cleanSignature);
 
     return await crypto.subtle.verify(
         'HMAC',

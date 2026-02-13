@@ -2,57 +2,66 @@
 description: Resume work on Mac after handoff from Windows
 ---
 
-# 🚀 Resuming Bifrost on MacOS
+# 🚀 Resuming Work on Bifrost
 
-You have successfully transitioned from the constrained Windows environment to your "friendly" Mac environment. All core services (Agent Runner, Event Store, Custom Router) are live on Fly.io and Cloudflare.
+## 0. Context Fast-Boot (AI AGENTS START HERE)
+**Read [RESUME.md](../../RESUME.md) immediately.** It contains the current mental model, active architecture, and next strategic steps.
 
-## 1. Local Setup (Mac)
+## 1. Local Setup
 
-1.  **Clone / Pull**:
+1.  **Pull Latest Changes**:
     ```bash
-    git pull origin hee-haw
+    git pull origin main
     ```
-2.  **Dependencies**:
+
+2.  **Clean Slate Protocol**:
+    Ensure no secret files have crept in.
+    ```bash
+    ./scripts/check-secrets.sh --fix
+    ```
+
+3.  **Dependencies**:
     ```bash
     npm install
     ```
-3.  **Environment**:
-    Copy `.env.example` to `.env`. You don't _strictly_ need the production keys locally since the cloud is already configured, but they are useful for local script execution.
+
+## 2. Authentication Check
+
+Since we don't use local secrets, your CLI tools must be authenticated.
+
+1.  **Cloudflare (Wrangler)**:
     ```bash
-    cp .env.example .env
+    npx wrangler whoami
+    # If not logged in:
+    # npx wrangler login
     ```
 
-## 2. Status of Phase 8 (Data Plane Integration)
+2.  **Fly.io**:
+    ```bash
+    fly auth whoami
+    # If not logged in:
+    # fly auth login
+    ```
 
-The following items were completed and verified:
+## 3. Verify Environment
 
-- [x] **Agent Runner (`bifrost-runner`)**: Deployed to Fly.io with auto-shutdown and auth.
-- [x] **Event Store (`bifrost-events`)**: Deployed to Fly.io with SQLite persistence.
-- [x] **Control Plane (`custom-router`)**: Integrated with both runner and events.
-- [x] **Linear Integration**: 33 issues (BIF-103 to BIF-133) created in the backlog.
+Run the unit tests to ensure your environment is correctly mocked and ready.
 
-## 3. How to Execute Tasks
+```bash
+npm test --prefix workers/custom-router
+```
+
+## 4. How to Execute Tasks
 
 To trigger a task and see the flow:
 
-1.  Go to Linear and update a task to "In Progress".
-2.  The `custom-router` webhook will trigger a job.
-3.  Check logs:
-
+1.  **Linear**: Update a task to "In Progress".
+2.  **Logs**:
     ```bash
     # View router logs
     npx wrangler tail --prefix workers/custom-router
-
-    # View events directly from store
-    curl -H "Authorization: Bearer $EVENTS_SECRET" https://bifrost-events.fly.dev/events
     ```
 
-## 4. Mac Efficiency Tips
+## 5. Next Steps
 
-Since you are no longer behind Zscaler interception/Windows constraints:
-
-- You don't need `NODE_EXTRA_CA_CERTS`.
-- You don't need the `.tools/pwsh` portable environment.
-- Native `zsh` or `bash` works perfectly.
-
-**Next Priority**: Start on `BIF-103` (Infrastructure verification) or move straight to **Sprites Migration** (BIF-107) for performance gains.
+Check `STATUS.md` for the current project status and active tasks.

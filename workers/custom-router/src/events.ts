@@ -7,7 +7,7 @@ export class EventStoreClient {
     this.baseUrl = config.baseUrl;
   }
 
-  async append(event: { type: string; source: string; payload: any; meta?: any }) {
+  async append(event: { type: string; source: string; topic?: string; correlation_id?: string; payload: any; meta?: any }) {
     try {
       const res = await fetch(`${this.baseUrl}/events`, {
         method: 'POST',
@@ -23,5 +23,19 @@ export class EventStoreClient {
     } catch (e) {
       console.error('EventStore connection failed:', e);
     }
+  }
+
+  async getState(topic: string) {
+    try {
+      const res = await fetch(`${this.baseUrl}/state/${topic}`, {
+        headers: { Authorization: `Bearer ${this.secret}` },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.error('EventStore getState failed:', e);
+    }
+    return null;
   }
 }

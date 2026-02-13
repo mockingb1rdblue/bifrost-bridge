@@ -18,6 +18,8 @@ export interface Job {
   updatedAt: number;
   linearIssueId?: string;
   linearIdentifier?: string;
+  topic?: string;
+  correlationId?: string;
 }
 
 // ... keep existing definitions
@@ -51,9 +53,30 @@ export interface RouterMetrics {
   totalRequests: number;
   tokensConsumed: number;
   errorCount: number;
+  successCount: number; // Added
   startTime: number;
+  providerStats: Record<string, ProviderMetrics>; // Added
+}
+export interface ProviderMetrics {
+  requests: number;
+  successes: number;
+  failures: number;
+  tokens: number;
+}
+export interface AgentMetrics {
+  agentId: string;
+  tasksCompleted: number;
+  successRate: number;
+  averageLatency: number;
+  lastActive: number;
+}
+export interface ServiceHealth {
+  status: 'healthy' | 'degraded' | 'critical';
+  details: string;
+  timestamp: number;
 }
 export interface ErrorLog {
+// ...
   timestamp: number;
   message: string;
   context: string;
