@@ -178,8 +178,8 @@ export class RouterDO {
     try {
         // Fetch Optimized Prompts from Shared Memory
         let optimizedMessages = request.messages;
-        const result = await this.events.getState('global-optimization');
-        const optimizationState = result?.state;
+        const meshResult = await this.events.getState('global-optimization');
+        const optimizationState = meshResult?.state;
         
         const optKey = `optimizedPrompt_${request.taskType || 'default'}`;
         if (optimizationState && optimizationState[optKey]) {
@@ -540,6 +540,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
   }
 
   private async processBatch(): Promise<Response> {
+    // Autonomously checkout new tasks from Linear first
+    await this.syncLinearTasks();
+
     const pendingJobs = Object.values(this.storage.jobs)
       .filter((j) => j.status === 'pending')
       .sort((a, b) => b.priority - a.priority)
@@ -748,6 +751,14 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           return await this.getJulesNextTask();
         case '/jules/update':
           return await this.updateJulesTask(request);
+        case '/admin/sync-linear':
+          await this.syncLinearTasks();
+          return new Response(JSON.stringify({ message: 'Linear tasks sync completed' }), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        case '/admin/maintenance':
+          await this.syncLinearTasks();
+          return await this.processBatch();
         case '/github/action':
           return await this.handleGitHubAction(request);
         case '/webhooks/linear':
@@ -1143,5 +1154,77 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   private async saveState() {
     await this.state.storage.put('router_state', this.storage);
+  }
+
+  private async syncLinearTasks() {
+    try {
+      if (!this.env.LINEAR_API_KEY || !this.env.LINEAR_TEAM_ID) {
+        console.warn('[syncLinearTasks] Missing Linear configuration, skipping sync.');
+        return;
+      }
+
+      const linear = new LinearClient({
+        apiKey: this.env.LINEAR_API_KEY,
+        teamId: this.env.LINEAR_TEAM_ID,
+      });
+
+      // 1. Fetch labels to find swarm:ready and swarm:active IDs
+      const labels = await linear.listLabels(this.env.LINEAR_TEAM_ID);
+      const readyLabel = labels.find((l: any) => l.name === 'swarm:ready');
+      const activeLabel = labels.find((l: any) => l.name === 'swarm:active');
+
+      if (!readyLabel || !activeLabel) {
+        console.log('[syncLinearTasks] Swarm labels (swarm:ready/swarm:active) not found. Run init-swarm-labels.ts script.');
+        return;
+      }
+
+      // 2. Query for issues with swarm:ready label
+      const issues = await linear.listIssuesByLabel('swarm:ready');
+      console.log(`[syncLinearTasks] Found ${issues.length} ready issues.`);
+
+      for (const issue of issues) {
+        // 3. Check if we already have a job for this issue
+        const existingJob = Object.values(this.storage.jobs).find(j => j.linearIssueId === issue.id && j.status !== 'failed');
+        if (existingJob) {
+            console.log(`[syncLinearTasks] Job already exists for issue ${issue.identifier}, skipping.`);
+            continue;
+        }
+
+        // 4. Create orchestration job for initialize_and_plan
+        const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        this.storage.jobs[jobId] = {
+          id: jobId,
+          type: 'orchestration',
+          status: 'pending',
+          priority: 5,
+          payload: {
+            action: 'initialize_and_plan',
+            issueId: issue.id,
+            identifier: issue.identifier,
+            title: issue.title,
+            description: issue.description,
+          },
+          linearIssueId: issue.id,
+          linearIdentifier: issue.identifier,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        // 5. Update Linear issue: Change label from swarm:ready to swarm:active
+        const otherLabels = (issue.labels.nodes || [])
+            .filter((l: any) => l.name !== 'swarm:ready')
+            .map((l: any) => l.id);
+        
+        await linear.updateIssue(issue.id, {
+            labelIds: [...otherLabels, activeLabel.id]
+        });
+
+        console.log(`[syncLinearTasks] Checked out issue ${issue.identifier} as job ${jobId}`);
+      }
+      
+      await this.saveState();
+    } catch (error) {
+      await this.logError('Failed to sync Linear tasks', 'syncLinearTasks', error);
+    }
   }
 }

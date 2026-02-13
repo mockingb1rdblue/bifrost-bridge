@@ -1,0 +1,30 @@
+{
+    "name": "bifrost-bridge",
+    "version": "1.5.0",
+    "swarm": {
+        "protocol": "Bifrost-v2",
+        "metadata_labels": [
+            "swarm:ready",
+            "swarm:active",
+            "swarm:blocked",
+            "swarm:review"
+        ],
+        "orchestration": {
+            "router": "bifrost-custom-router",
+            "event_bus": "bifrost-events",
+            "primary_agent": "Jules"
+        },
+        "monitoring": {
+            "health_threshold": 0.8,
+            "optimization_trigger": "error_rate > 0.05"
+        }
+    },
+    "phases": {
+        "1": "Infrastructure Hardening",
+        "2": "Bifrost Protocol Alignment",
+        "3": "Autonomous Swarm Scaling",
+        "4": "Autonomous Neural Mesh",
+        "5": "Autonomous Self-Optimization",
+        "6": "Project Management & Autonomous Integration"
+    }
+}
