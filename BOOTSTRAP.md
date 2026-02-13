@@ -18,6 +18,9 @@ This guide document the end-to-end process of bringing the Bifrost Bridge from a
     - `gh auth login`
     - `npx wrangler login`
     - `fly auth login`
+4.  **WireGuard Reconstruction (Optional)**: If you need direct internal access to Fly services:
+    - Run: `fly wireguard create`
+    - Note: This is usually unneeded for the standard "Zero Local Secrets" deployment flow.
 
 ---
 
