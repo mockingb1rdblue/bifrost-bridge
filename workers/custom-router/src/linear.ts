@@ -158,6 +158,50 @@ export class LinearClient {
       return data.project.milestones.nodes;
   }
 
+  async getLabelIdByName(teamId: string, name: string): Promise<string | undefined> {
+    const labels = await this.listLabels(teamId);
+    return labels.find((l) => l.name === name)?.id;
+  }
+
+  async addLabel(issueId: string, labelName: string): Promise<boolean> {
+    const labelId = await this.getLabelIdByName(this.teamId, labelName);
+    if (!labelId) return false;
+
+    // First get current labels to avoid overwriting
+    const query = `
+      query IssueLabels($id: String!) {
+        issue(id: $id) {
+          labels { nodes { id } }
+        }
+      }
+    `;
+    const data = await this.query<{ issue: { labels: { nodes: { id: string }[] } } }>(query, { id: issueId });
+    const currentLabelIds = data.issue.labels.nodes.map(l => l.id);
+    
+    if (currentLabelIds.includes(labelId)) return true;
+
+    return this.updateIssue(issueId, { labelIds: [...currentLabelIds, labelId] });
+  }
+
+  async removeLabel(issueId: string, labelName: string): Promise<boolean> {
+    const labelId = await this.getLabelIdByName(this.teamId, labelName);
+    if (!labelId) return false;
+
+    const query = `
+      query IssueLabels($id: String!) {
+        issue(id: $id) {
+          labels { nodes { id } }
+        }
+      }
+    `;
+    const data = await this.query<{ issue: { labels: { nodes: { id: string }[] } } }>(query, { id: issueId });
+    const currentLabelIds = data.issue.labels.nodes.map(l => l.id);
+    
+    if (!currentLabelIds.includes(labelId)) return true;
+
+    return this.updateIssue(issueId, { labelIds: currentLabelIds.filter(id => id !== labelId) });
+  }
+
   async listIssuesByLabel(labelName: string): Promise<any[]> {
       const query = `
         query IssuesByLabel($teamId: String!, $labelName: String!) {

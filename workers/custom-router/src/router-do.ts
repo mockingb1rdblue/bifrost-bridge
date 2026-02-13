@@ -138,6 +138,30 @@ export class RouterDO {
     return 0.1; // Critical
   }
 
+  private parseMetadata(description: string = ''): Record<string, string> {
+    const metadata: Record<string, string> = {};
+    const lines = description.split('\n');
+    let inMetadata = false;
+
+    for (const line of lines) {
+      if (line.trim().toLowerCase().startsWith('metadata:')) {
+        inMetadata = true;
+        continue;
+      }
+      if (inMetadata) {
+        if (line.trim() === '' || !line.includes(':')) {
+           // Heuristic: metadata ends at blank line or line without colon
+           if (line.trim() !== '') continue; // Skip non-metadata lines if still in block
+           inMetadata = false;
+           continue;
+        }
+        const [key, ...valueParts] = line.split(':');
+        metadata[key.trim()] = valueParts.join(':').trim();
+      }
+    }
+    return metadata;
+  }
+
   private checkRateLimit(key: string): boolean {
     const now = Date.now();
     let limitState = this.storage.rateLimits[key];
@@ -1063,6 +1087,32 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       job.completedAt = Date.now();
       await this.saveState();
       
+      // Autonomous Handoff Comment
+      if (job.linearIssueId) {
+          try {
+              const linear = new LinearClient({
+                apiKey: this.env.LINEAR_API_KEY,
+                teamId: this.env.LINEAR_TEAM_ID,
+              });
+              
+              if (job.status === 'completed') {
+                  const resultSummary = typeof job.result === 'string' 
+                    ? job.result 
+                    : JSON.stringify(job.result, null, 2);
+                    
+                  await linear.addComment(job.linearIssueId, `🏁 **Swarm Handoff**\n\nTask completed successfully.\n\n**Result Summary:**\n\`\`\`json\n${resultSummary.substring(0, 1000)}\n\`\`\`\n\nMoving to **Review** phase.`);
+                  await linear.addLabel(job.linearIssueId, 'swarm:review');
+                  await linear.removeLabel(job.linearIssueId, 'swarm:active');
+              } else if (job.status === 'failed') {
+                  await linear.addComment(job.linearIssueId, `⚠️ **Swarm Blocked**\n\nTask execution failed.\n\n**Error:**\n> ${job.error}\n\nHuman intervention required.`);
+                  await linear.addLabel(job.linearIssueId, 'swarm:blocked');
+                  await linear.removeLabel(job.linearIssueId, 'swarm:active');
+              }
+          } catch (e: any) {
+              console.error('[handleQueueComplete] Failed to post handoff comment:', e.message);
+          }
+      }
+
       // Periodic Optimization Check
       if (this.storage.metrics.successCount % 10 === 0) {
           await this.maybeTriggerOptimization();
@@ -1168,41 +1218,55 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         teamId: this.env.LINEAR_TEAM_ID,
       });
 
-      // 1. Fetch labels to find swarm:ready and swarm:active IDs
+      // 1. Fetch labels to find operational tags
       const labels = await linear.listLabels(this.env.LINEAR_TEAM_ID);
       const readyLabel = labels.find((l: any) => l.name === 'swarm:ready');
       const activeLabel = labels.find((l: any) => l.name === 'swarm:active');
+      const julesLabel = labels.find((l: any) => l.name === 'agent:jules');
 
       if (!readyLabel || !activeLabel) {
-        console.log('[syncLinearTasks] Swarm labels (swarm:ready/swarm:active) not found. Run init-swarm-labels.ts script.');
+        console.log('[syncLinearTasks] Swarm labels (swarm:ready/swarm:active) not found.');
         return;
       }
 
       // 2. Query for issues with swarm:ready label
       const issues = await linear.listIssuesByLabel('swarm:ready');
-      console.log(`[syncLinearTasks] Found ${issues.length} ready issues.`);
+      
+      // 3. Parse Metadata and Sort by Priority
+      const prioritizedTasks = issues.map(issue => {
+          const metadata = this.parseMetadata(issue.description);
+          const priority = parseInt(metadata['Priority'] || '10');
+          const risk = metadata['RiskProfile'] || 'low';
+          return { issue, metadata, priority, risk };
+      }).sort((a, b) => b.priority - a.priority);
 
-      for (const issue of issues) {
-        // 3. Check if we already have a job for this issue
-        const existingJob = Object.values(this.storage.jobs).find(j => j.linearIssueId === issue.id && j.status !== 'failed');
+      console.log(`[syncLinearTasks] Found ${prioritizedTasks.length} prioritized tasks.`);
+
+      for (const task of prioritizedTasks) {
+        const { issue, metadata, priority } = task;
+
+        // 4. Check if we already have an active job for this issue
+        const existingJob = Object.values(this.storage.jobs).find(j => j.linearIssueId === issue.id && j.status !== 'failed' && j.status !== 'completed');
         if (existingJob) {
-            console.log(`[syncLinearTasks] Job already exists for issue ${issue.identifier}, skipping.`);
             continue;
         }
 
-        // 4. Create orchestration job for initialize_and_plan
+        console.log(`[syncLinearTasks] Checking out ${issue.identifier}: ${issue.title} (Priority: ${priority})`);
+
+        // 5. Create orchestration job
         const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         this.storage.jobs[jobId] = {
           id: jobId,
           type: 'orchestration',
           status: 'pending',
-          priority: 5,
+          priority: priority,
           payload: {
             action: 'initialize_and_plan',
             issueId: issue.id,
             identifier: issue.identifier,
             title: issue.title,
             description: issue.description,
+            metadata: metadata,
           },
           linearIssueId: issue.id,
           linearIdentifier: issue.identifier,
@@ -1210,21 +1274,22 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           updatedAt: Date.now(),
         };
 
-        // 5. Update Linear issue: Change label from swarm:ready to swarm:active
-        const otherLabels = (issue.labels.nodes || [])
-            .filter((l: any) => l.name !== 'swarm:ready')
-            .map((l: any) => l.id);
-        
-        await linear.updateIssue(issue.id, {
-            labelIds: [...otherLabels, activeLabel.id]
-        });
+        // 6. Post Check-in Comment (Audit Trail)
+        await linear.addComment(issue.id, `🤖 **Swarm Check-in**\n\nTask checked out by **Jules** (Primary Orchestrator).\n\n**Metadata Parsed:**\n- Priority: ${priority}\n- Risk: ${task.risk}\n- Job ID: \`${jobId}\`\n\nExecution starting...`);
 
-        console.log(`[syncLinearTasks] Checked out issue ${issue.identifier} as job ${jobId}`);
-      }
-      
-      await this.saveState();
-    } catch (error) {
-      await this.logError('Failed to sync Linear tasks', 'syncLinearTasks', error);
-    }
+        // 7. Atomic Label Update
+        const currentLabels = (issue.labels.nodes || []).map((l: any) => l.id);
+        const newLabelIds = currentLabels
+            .filter((id: string) => id !== readyLabel.id)
+            .concat(activeLabel.id);
+        
+        if (julesLabel && !newLabelIds.includes(julesLabel.id)) {
+            newLabelIds.push(julesLabel.id);
+        }
+
+        await linear.updateIssue(issue.id, {
+            labelIds: newLabelIds,
+            stateId: issue.state.id // Keep current state or move to "In Progress" if we had the ID
+        });
   }
 }
