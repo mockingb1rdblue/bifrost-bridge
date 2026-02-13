@@ -15,12 +15,15 @@ This guide document the end-to-end process of bringing the Bifrost Bridge from a
     - Run: `.\scripts\setup_dev.ps1`
     - This script configures the local `PowerShell_Profile.ps1` to trust the extracted certs and set up the local `.tools` path.
 3.  **Authentication Bridge**: Authenticate your CLIs.
-    - `gh auth login`
-    - `npx wrangler login`
-    - `fly auth login`
-4.  **WireGuard Reconstruction (Optional)**: If you need direct internal access to Fly services:
-    - Run: `fly wireguard create`
-    - Note: This is usually unneeded for the standard "Zero Local Secrets" deployment flow.
+    - `gh auth login`: Connects to GitHub (Repo & Actions).
+    - `npx wrangler login`: Connects to Cloudflare (Proxies & Edge Secrets).
+    - `fly auth login`: Connects to Fly.io (Runners & Persistence).
+4.  **Re-Authentication Checklist (Workstation Switch)**:
+    - [ ] Run `npx wrangler whoami` to verify Cloudflare session.
+    - [ ] Run `fly auth whoami` to verify Fly.io session.
+    - [ ] Run `gh auth status` to verify GitHub session.
+    - [ ] Run `fly wireguard create` (Only if you need internal VPN access).
+    - [ ] Run `node scripts/extract_certs.js` (Only if the new machine is also behind a corporate proxy).
 
 ---
 
