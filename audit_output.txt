@@ -1,0 +1,72 @@
+[32m[2026-02-16T05:34:42.709Z] INFO[0m: Initializing LinearClient
+  Context: { baseURL: 'https://api.linear.app/graphql' }
+🔍 Auditing Linear Tags (Labels):
+
+Found 50 labels:
+
+   agent:jules [Potential Cleanup]
+   caused-by:bug
+   Issue caused by a bug or regression
+   caused-by:performance
+   Issue caused by performance optimization need
+   caused-by:tech-debt
+   Issue caused by technical debt or refactoring requirement
+   caused-by:user-request
+   Issue caused by user feedback or request
+   complexity:complex
+   complexity:moderate
+   complexity:simple
+   component:annals
+   component:crypt-core
+   component:worker-bees
+   context-micro
+   Context budget < 10k tokens (2-4 files)
+   context-mini
+   Context budget < 15k tokens (3-6 files)
+   context-nano
+   Context budget < 5k tokens (1-2 files)
+   context:large
+   15k+ tokens
+   context:micro
+   < 10k tokens
+   context:mini
+   < 15k tokens
+   context:nano
+   < 5k tokens
+   deployed-dev
+   discord
+   docs
+   Epic
+   gurps
+   L1: Initiative
+   Strategic Phase level work (L1)
+   L2: Project
+   Specific Deliverable level work (L2)
+   L3: Epic
+   Parent issue for features (L3)
+   L4: Story
+   Small feature parent (L4)
+   L5: Task
+   Atomic execution item (L5)
+   M1: Production Stability
+   M2: Mechanics Complete
+   M3: Operations Alpha
+   M3: Social & Factions
+   M4: Public Beta
+   Needs Triage
+   Priority: High
+   sluagh:active
+   sluagh:autonomous
+   sluagh:blocked
+   sluagh:hitl
+   sluagh:ready
+   sluagh:review
+   sluagh:supervised
+   Target: Feb Sprint 1
+   technical-debt
+   testing
+   type:bug
+   type:docs
+   type:feature
+   type:refactor
+   type:test

@@ -600,6 +600,64 @@ This is how you build near-infinite velocity: Agents that learn from comprehensi
 
 ---
 
+## Documentation Crawling: Thin-Sliced Linear Issues
+
+### Week 1: Foundation & Discovery (Issues 1-5)
+
+**Issue 1: Initialize Documentation SQLite Schema**
+Create the database schema for the documentation crawling system as defined in Phase 1 & 8 of the crawl plan. Include tables for `documentation_urls`, `documentation_content`, `code_examples`, and `api_patterns`. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 2: Build Gemini-Based Sitemap Extractor**
+Implement a tool that uses Gemini's large context window to parse documentation homepages and extract organized URL lists. Test on Linear and Fly.io homepages. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 3: Implement DeepSeek URL Prioritization**
+Create a script that uses DeepSeek to rank discovered URLs based on their relevance to Bifrost's core capabilities (orchestration, Linear management, Fly.io control). [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 4: Create Discovery Agent MCP Server Stub**
+Initialize the `documentation-discovery-agent` MCP server directory. Define the basic project structure and dependencies for the discovery tools. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 5: Implement Perplexity Initial Search**
+Build the integration for the discovery agent to query Perplexity for canonical documentation URLs for any given tool/API name. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+### Weeks 2-4: Extraction & Knowledge (Issues 6-10)
+
+**Issue 6: Implement Respectful Documentation Crawler**
+Build the batch downloader that respects robots.txt and implements rate-limiting (1 req/sec). Ensure robust handling of connection-level errors. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 7: Build Gemini Content Extraction Pipeline**
+Implement the Gemini-powered parsing logic to extract structured JSON (titles, code snippets, API signatures, error codes) from raw HTML documentation pages. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 8: Create Code Example Isolation Logic**
+Develop the script to isolate code examples into a dedicated table, classified by language and category (auth, CRUD, errors). [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 9: Implement Pattern & Anti-Pattern Extraction**
+Use DeepSeek and Gemini to identify recurring API usage patterns and semantic warnings ("deprecated", "avoid") from the extracted content. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 10: Build API Dependency Mapper**
+Develop the logic to identify cross-platform dependencies (e.g., Linear issue needing GitHub PR) from the documentation corpus. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+### Week 5: Semantic Search (Issues 11-13)
+
+**Issue 11: Implement Markdown/HTML Semantic Chunking**
+Build the preprocessing logic to split documentation content into semantic chunks based on header hierarchy. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 12: Integrate Gemini Embedding Generation**
+Implement batch processing to generate vector embeddings for all documentation chunks using the Gemini Embedding API. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 13: Deploy Cloudflare Vectorize Search Index**
+Set up the `DOCS_INDEX` in Vectorize and implement the hybrid search tool (semantic + keyword) via MCP. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+### Week 6: System Integration (Issues 14-15)
+
+**Issue 14: Implement Self-Updating Monitor**
+Build the weekly task that queries Perplexity for changelogs and triggers targeted re-crawls for updated API sections. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+**Issue 15: Create Documentation Audit MCP Tool**
+Develop a tool that allows agents to audit their own API integration code against the crawled documentation patterns. [doc_crawl.md](file:///docs/knowledge/doc_crawl.md)
+
+
+---
+
 ## Documentation Links for Bifrost Stack
 
 ### Core Platform APIs

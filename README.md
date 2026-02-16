@@ -11,7 +11,28 @@ This project implements the "Bifrost" pattern: a secure, verifiable bridge betwe
 3.  **Cloudflare Proxies**: Deploys workers to forward traffic to external APIs, handling auth and cors.
     - `perplexity-proxy`: Connects to Perplexity Sonar models.
     - `linear-proxy`: Connects to Linear GraphQL API (Queries & Mutations).
-4.  **Universal Runner**: `scripts/bifrost.py` orchestrates everything.
+    - `custom-router`: The central "Swarm" orchestrator (Durable Object).
+
+## 🧠 Advanced Architecture
+
+For a deep dive into the autonomous capabilities of this project, see:
+
+- [Swarm Architecture](./docs/swarm-architecture.md): How the `custom-router` orchestrates tasks.
+- [Agent Ecosystem](./docs/agent-ecosystem.md): The roles of Jules and Worker Bees.
+- [Infrastructure: Sprites](./docs/infrastructure-sprites.md): Repo-specific persistent execution environments.
+- [Scripts Reference](./docs/scripts-reference.md): Catalog of utility and management scripts.
+- [Pending Backlog](./PENDING_BACKLOG.md): High-priority architected issues blocked by Linear limits.
+- [Backlog Archive](./docs/backlog_archive_2026-02-16.md): Historical record of superseded/canceled issues.
+
+## 📜 Event Sourcing: Annals of Ankou
+
+The swarm uses an immutable event store, **Annals of Ankou**, to record every critical decision, action, and state transition. This provides a high-fidelity audit trail and enables multi-agent coordination through state replay.
+
+- **Immutable Log**: Every action is recorded with a unique correlation ID.
+- **State Replay**: Agents can reconstruct the "ground truth" of any issue by replaying its event stream.
+- **Auditability**: Complete transparency into AI reasoning and execution steps.
+
+For more details, see the [Annals of Ankou Architecture](file:///Users/mock1ng/Documents/Projects/Antigravity-Github/bifrost-bridge/workers/annals-of-ankou/ARCHITECTURE.md).
 
 ## 🚀 Resuming Work ("Cold Start")
 
@@ -133,13 +154,11 @@ echo "my-key" | npx wrangler secret put PROXY_API_KEY --prefix workers/linear-pr
 - `.tools/pwsh/`: Portable PowerShell Core installation (ignored in git).
 - `.certs/`: Extracted corporate certificates.
 - `workers/`: Cloudflare Worker source code.
+- `scripts/`: Utility and management scripts (see [Scripts Reference](./docs/scripts-reference.md)).
 - `src/`: TypeScript SDK and CLI source code.
-- `docs/`: Project documentation and backlog.
+- `docs/`: Project documentation and architecture deep dives.
 
 ## 🔧 Troubleshooting
-
-**"Missing Authority Key Identifier" in Python**:
-Use `bifrost.py`. It handles SSL context correctly. If writing standalone scripts, see `scripts/verify_linear.py` for how to use `ssl._create_unverified_context()` if necessary for local tools.
 
 **Wrangler Deployment Fails**:
 Ensure you are using the portable shell (`npm run shell`) which loads the necessary `NODE_EXTRA_CA_CERTS`.
@@ -175,7 +194,7 @@ del .auth.lock  # Windows
 If you are an AI agent picking up this project:
 
 1.  Read `.agent/workflows/0_resume.md`.
-2.  Run `python scripts/bifrost.py detect` to verify your environment.
+2.  See [Agent Ecosystem](./docs/agent-ecosystem.md) for architectural details.
 
 ---
 

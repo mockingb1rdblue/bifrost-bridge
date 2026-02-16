@@ -6,7 +6,7 @@ const fastify = Fastify({
 });
 
 // Middleware for Auth
-fastify.addHook('onRequest', async (request, reply) => {
+fastify.addHook('onRequest', async (request: any, reply: any) => {
   const authHeader = request.headers.authorization;
   const secret = process.env.EVENTS_SECRET;
 
@@ -31,11 +31,16 @@ interface EventBody {
 }
 
 // Routes
-fastify.post<{ Body: EventBody }>('/events', async (request, reply) => {
+fastify.post<{ Body: EventBody }>('/events', async (request: any, reply: any) => {
   const { type, source, topic, correlation_id, payload, meta } = request.body;
 
   if (!type || !source || !payload) {
-    return reply.code(400).send({ error: 'Missing required fields' });
+    return reply.code(400).send({ error: 'Missing required fields: type, source, and payload are required' });
+  }
+
+  // BIF-165: Correlation ID Validation
+  if (correlation_id && (typeof correlation_id !== 'string' || correlation_id.trim().length === 0)) {
+    return reply.code(400).send({ error: 'correlation_id must be a non-empty string' });
   }
 
   const stmt = db.prepare('INSERT INTO events (type, source, topic, correlation_id, payload, meta) VALUES (?, ?, ?, ?, ?, ?)');
@@ -52,7 +57,7 @@ fastify.post<{ Body: EventBody }>('/events', async (request, reply) => {
 });
 
 // Replay state for a topic
-fastify.get<{ Params: { topic: string } }>('/state/:topic', async (request, reply) => {
+fastify.get<{ Params: { topic: string } }>('/state/:topic', async (request: any, reply: any) => {
   const { topic } = request.params;
 
   const stmt = db.prepare('SELECT * FROM events WHERE topic = ? ORDER BY id ASC');
@@ -67,21 +72,42 @@ fastify.get<{ Params: { topic: string } }>('/state/:topic', async (request, repl
   return { topic, state, eventCount: events.length };
 });
 
-fastify.get<{ Querystring: { limit?: number; type?: string } }>(
+// BIF-164/167: Advanced Filtering for History
+fastify.get<{ Querystring: { limit?: number; type?: string | string[]; topic?: string; startDate?: string; endDate?: string } }>(
   '/events',
-  async (request, reply) => {
-    const { limit = 100, type } = request.query;
+  async (request: any, reply: any) => {
+    const { limit = 100, type, topic, startDate, endDate } = request.query;
 
-    let query = 'SELECT * FROM events';
+    let query = 'SELECT * FROM events WHERE 1=1';
     const params: any[] = [];
 
     if (type) {
-      query += ' WHERE type = ?';
-      params.push(type);
+      if (Array.isArray(type)) {
+        query += ` AND type IN (${type.map(() => '?').join(',')})`;
+        params.push(...type);
+      } else {
+        query += ' AND type = ?';
+        params.push(type);
+      }
+    }
+
+    if (topic) {
+      query += ' AND topic = ?';
+      params.push(topic);
+    }
+
+    if (startDate) {
+      query += ' AND timestamp >= ?';
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      query += ' AND timestamp <= ?';
+      params.push(endDate);
     }
 
     query += ' ORDER BY id DESC LIMIT ?';
-    params.push(limit);
+    params.push(Number(limit));
 
     const stmt = db.prepare(query);
     const events = stmt.all(...params);
@@ -93,6 +119,13 @@ fastify.get<{ Querystring: { limit?: number; type?: string } }>(
     }));
   },
 );
+
+// BIF-166: List Unique Topics
+fastify.get('/events/topics', async () => {
+  const stmt = db.prepare('SELECT DISTINCT topic FROM events WHERE topic IS NOT NULL');
+  const result = stmt.all() as { topic: string }[];
+  return { topics: result.map(r => r.topic) };
+});
 
 // Count total events
 fastify.get('/events/count', async () => {
@@ -106,7 +139,7 @@ fastify.get('/health', async () => {
   return { status: 'ok' };
 });
 
-const start = async () => {
+export const start = async () => {
   try {
     const port = parseInt(process.env.PORT || '8080');
     const host = '0.0.0.0'; // Listen on all interfaces (for Fly)
@@ -119,4 +152,8 @@ const start = async () => {
   }
 };
 
-start();
+export const app = fastify;
+
+if (require.main === module) {
+  start();
+}

@@ -1,0 +1,40 @@
+name = "custom-router"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+RATE_LIMIT_MAX_TOKENS = "100"
+RATE_LIMIT_REFILL_RATE = "1"
+RATE_LIMIT_DEGRADATION_THRESHOLD = "50"
+PROXY_API_KEY = "test-key-default"
+LINEAR_PROJECT_ID = "9aeceb58-dc0e-46ab-9b26-f12c8a083815"
+LINEAR_TEAM_ID = "d43e265a-cbc3-4f07-afcd-7792ce875ad3"
+
+[env.test.vars]
+RATE_LIMIT_MAX_TOKENS = "100"
+RATE_LIMIT_REFILL_RATE = "1"
+RATE_LIMIT_DEGRADATION_THRESHOLD = "50"
+PROXY_API_KEY = "test-key"
+LINEAR_API_KEY = "test-linear-key"
+LINEAR_TEAM_ID = "test-team-id"
+LINEAR_PROJECT_ID = "test-project-id"
+GITHUB_APP_ID = "test-app-id"
+GITHUB_PRIVATE_KEY = "test-private-key"
+GITHUB_INSTALLATION_ID = "test-install-id"
+JULES_API_KEY = "test-jules-key"
+DEEPSEEK_API_KEY = "test-deepseek-key"
+ANTHROPIC_API_KEY = "test-anthropic-key"
+GEMINI_API_KEY = "test-gemini-key"
+PERPLEXITY_API_KEY = "test-perplexity-key"
+
+[[env.test.durable_objects.bindings]]
+name = "ROUTER_DO"
+class_name = "RouterDO"
+
+[[durable_objects.bindings]]
+name = "ROUTER_DO"
+class_name = "RouterDO"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RouterDO"]

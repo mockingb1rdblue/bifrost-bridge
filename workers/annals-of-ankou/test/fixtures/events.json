@@ -1,0 +1,120 @@
+[
+  {
+    "type": "JOB_CREATED",
+    "source": "custom-router",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "id": "job_1", "priority": 10 },
+    "timestamp": "2026-02-16T00:00:01Z"
+  },
+  {
+    "type": "AGENT_ASSIGNED",
+    "source": "worker-bees",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "agentId": "bee-001" },
+    "timestamp": "2026-02-16T00:00:10Z"
+  },
+  {
+    "type": "LLM_DECISION",
+    "source": "custom-router",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "decision": "REPRODUCTION_REQUIRED", "reason": "Conflicting repo structure" },
+    "timestamp": "2026-02-16T00:01:00Z"
+  },
+  {
+    "type": "FILE_READ",
+    "source": "worker-bees",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "path": "package.json" },
+    "timestamp": "2026-02-16T00:01:15Z"
+  },
+  {
+    "type": "ERROR_LOGGED",
+    "source": "worker-bees",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "error": "native module build failed", "type": "BUILD_ERROR" },
+    "timestamp": "2026-02-16T00:02:00Z"
+  },
+  {
+    "type": "RETRY_TRIGGERED",
+    "source": "custom-router",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "attempt": 2 },
+    "timestamp": "2026-02-16T00:02:05Z"
+  },
+  {
+    "type": "JOB_STATUS_UPDATED",
+    "source": "worker-bees",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "status": "completed" },
+    "timestamp": "2026-02-16T00:05:00Z"
+  },
+  {
+    "type": "LLM_SUMMARY",
+    "source": "custom-router",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "summary": "Task completed successfully after addressing build issues." },
+    "timestamp": "2026-02-16T00:05:30Z"
+  },
+  {
+    "type": "SWARM_TERMINATED",
+    "source": "custom-router",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "reason": "Goal reached" },
+    "timestamp": "2026-02-16T00:06:00Z"
+  },
+  {
+    "type": "JOB_CREATED",
+    "source": "custom-router",
+    "topic": "BIF-160",
+    "correlation_id": "c2-999",
+    "payload": { "id": "job_2", "priority": 5 },
+    "timestamp": "2026-02-16T01:00:00Z"
+  },
+  {
+    "type": "AGENT_ASSIGNED",
+    "source": "worker-bees",
+    "topic": "BIF-160",
+    "correlation_id": "c2-999",
+    "payload": { "agentId": "bee-002" },
+    "timestamp": "2026-02-16T01:00:05Z"
+  },
+  {
+    "type": "HEALTH_CHECK",
+    "source": "monitor",
+    "topic": "system",
+    "payload": { "status": "ok", "memoryUsage": "256MB" },
+    "timestamp": "2026-02-16T01:10:00Z"
+  },
+  {
+    "type": "SECRET_ROTATED",
+    "source": "security-service",
+    "topic": "security",
+    "payload": { "keyId": "key_456" },
+    "timestamp": "2026-02-16T01:15:00Z"
+  },
+  {
+    "type": "GIT_COMMIT",
+    "source": "worker-bees",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "hash": "a1b2c3d", "message": "feat: add jsdoc" },
+    "timestamp": "2026-02-16T00:07:00Z"
+  },
+  {
+    "type": "PR_CREATED",
+    "source": "custom-router",
+    "topic": "BIF-151",
+    "correlation_id": "c1-888",
+    "payload": { "prNumber": 42, "url": "https://github.com/..." },
+    "timestamp": "2026-02-16T00:08:00Z"
+  }
+]

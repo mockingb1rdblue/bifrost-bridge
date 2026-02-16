@@ -97,3 +97,33 @@ New workstation setup = git clone + flyctl auth login = done (90 seconds total)
 No key plane worker needed because Fly.io is your key plane—secrets stored there, injected into Sprites at runtime, never touch local disk.
 
 Alternative (if local testing becomes critical): Build Secret Resolution Service (Cloudflare Worker) in Month 3+, but only if deploy-test loop becomes bottleneck (unlikely with Sprites + fast deploys).
+
+---
+
+## Authentication & Secrets: Thin-Sliced Linear Issues
+
+### Phase 1: Zero Local Secrets (Issues 1-5)
+
+**Issue 1: Update .gitignore for Global Secret Protection**
+Update the root `.gitignore` to explicitly exclude all variations of `.env` files (e.g., `.env`, `.env.local`, `.dev.vars`) and any newly created `.certs/` or logic related to local secrets. Ensure no existing `.env` files are tracked by Git. [new_auth.md](file:///docs/infrastructure/new_auth.md)
+
+**Issue 2: Configure Fly.io Secrets for Bifrost-Dev**
+Using `flyctl`, set the core secrets (`LINEAR_API_KEY`, `GITHUB_TOKEN`, `DEEPSEEK_API_KEY`, `GEMINI_API_KEY`) for the `bifrost-dev` application. Verify secrets are stored in the Cloudflare/Fly.io environment instead of local files. [new_auth.md](file:///docs/infrastructure/new_auth.md)
+
+**Issue 3: Refactor Deployment Workflow for Secret Injection**
+Update the GitHub Actions `deploy.yml` to remove app-specific secrets, keeping only `FLY_API_TOKEN`. Ensure that the deployment process relies on Fly.io to inject environment variables at runtime into persistent Sprites. [new_auth.md](file:///docs/infrastructure/new_auth.md)
+
+**Issue 4: Document Zero-Secret Developer Onboarding**
+Update the project README with the new onboarding flow: `git clone` + `flyctl auth login`. Explain that testing happens in Sprites via `flyctl deploy` and `flyctl logs`, eliminating local `.env` configuration steps. [new_auth.md](file:///docs/infrastructure/new_auth.md)
+
+**Issue 5: Audit Existing Repositories for Secret Leakage**
+Perform a manual and automated audit (e.g., using `gitleaks`) to ensure no historical secrets remain in the Git history. Perform rotation for any secrets found to have been previously committed.
+
+### Phase 2: Secret Resolution Service (Future)
+
+**Issue 6: Design Secret Resolver Worker Schema**
+Create a design document for a Cloudflare Worker that acts as a secure proxy for local development tools to fetch secrets without storing them locally. Define the authentication handshake between the local script and the resolver. [new_auth.md](file:///docs/infrastructure/new_auth.md)
+
+**Issue 7: Implement Secret Resolver Worker Skeleton**
+Build the initial Cloudflare Worker for secret resolution. Implement an `/access` endpoint that verifies a one-time-token and returns a signed payload of necessary environment variables. [new_auth.md](file:///docs/infrastructure/new_auth.md)
+
