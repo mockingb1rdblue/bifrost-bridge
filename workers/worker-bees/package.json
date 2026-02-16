@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm update && tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "dev": "npm update && ts-node src/index.ts",
+    "deploy": "npm update && fly deploy --app bifrost-worker-bees",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
