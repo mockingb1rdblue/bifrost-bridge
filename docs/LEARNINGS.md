@@ -89,7 +89,30 @@
 
 **Lesson**: Always trim secrets and use constant-time comparison for security.
 
-## 10. System Architecture
+## 11. SQLite Migration Idempotency
+**Problem**: The Event Store (`annals-of-ankou`) crashed during deployment because the initialization script attempted to create an index on a column that hadn't been added yet, or tried to add a column that already existed in the persistent volume.
+**Solution**:
+- Refactored `db.ts` to check `PRAGMA table_info(events)` before executing `ALTER TABLE`.
+- Wrapped schema execution in a statement-by-statement loop with `try/catch` to ignore "already exists" errors.
+- **Lesson**: Persistent volumes on Fly.io mean your database survives deployments; initialization code must be defensive and idempotent.
+
+## 12. Cross-Cloud Networking (Cloudflare to Fly.io)
+**Problem**: The Orchestrator (`crypt-core`) on Cloudflare could not reach the Event Store on Fly.io using the internal `.flycast` address.
+**Root Cause**: `.flycast` and `.internal` domains are private to the Fly.io 6PN network. Cloudflare Workers operate outside this network.
+**Solution**:
+- Switched the `EVENTS_URL` to the public `.fly.dev` endpoint.
+- Secured the endpoint with the `EVENTS_SECRET` middleware.
+- **Lesson**: Use public endpoints with strong shared secrets for inter-cloud communication unless a dedicated tunnel (like Cloudflare Tunnel) is established.
+
+## 13. GitHub Push Protection & Secret Scrubbing
+**Problem**: Deployment was blocked by GitHub's push protection because API keys were accidentally committed in utility scripts.
+**Solution**:
+- Scrubbed all hardcoded keys and replaced them with `process.env` calls.
+- Restored the local `.env` file (git-ignored) for local development stability.
+- Used `git commit --amend` to purge secrets from the commit history.
+- **Lesson**: "Zero Local Secrets" applies to committed code, but local `.env` is a valid fallback for reliability as long as it's never pushed.
+
+## 14. System Architecture
 ```mermaid
 graph LR
     A[Antigravity Agent] -->|Bearer Token| B[linear-proxy.workers.dev]
