@@ -7,6 +7,19 @@ This file tracks technical issues that have been thin-sliced and architected but
 
 ---
 
+## 🐝 Swarm Infrastructure: Telemetry & Resilience
+
+### 1. Idempotent Migration Enforcement
+**Description**: Refactor `db.ts` to use a schema versioning table (e.g., `schema_migrations`) instead of ad-hoc `PRAGMA table_info` checks. Ensure all future `ALTER TABLE` operations are wrapped in a transaction that updates the version.
+
+### 2. Automatic Secret Environment Validation
+**Description**: Add a pre-deploy check to `maintenance-loop.sh` that verifies if the targeted Cloudflare environment exists. Fail fast if `--env production` is used but no `[env.production]` block exists in `wrangler.toml`, preventing the creation of duplicate workers.
+
+### 3. Event Store Health Probe Chaining
+**Description**: Implement a health check in `crypt-core` that pings the Event Store's `/health` endpoint before attempting to deliver a batch. If the Event Store is down (e.g., Fly.io machine stopped), trigger an alert or attempt to wake the machine via Fly API.
+
+---
+
 ## 🔐 Infrastructure: Secret Resolution Service
 
 ### 1. Design Secret Resolver Worker Schema

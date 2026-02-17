@@ -20,11 +20,15 @@ Bifrost is a multi-agent orchestration bridge designed to bypass corporate SSL/p
 
 ## 📍 Current State & Next Steps
 
-### Phase 4: Autonomous Neural Mesh (Completed)
+### Phase 4: Autonomous Neural Mesh (Active 🟢)
 
-- **Shared Memory**: `bifrost-events` is the source of truth for swarm history.
-- **Collaboration**: Agents now review peer code edits via triggered verification jobs.
-- **Production**: All workers (Cloudflare + Fly.io) are synchronized.
+- **Shared Memory**: `annals-of-ankou` (on Fly.io) is the source of truth for swarm history.
+- **Persistence**: Database uses a Fly.io volume (`/data/events.db`) with WAL mode enabled.
+- **Recovery**: If telemetry stalls, check `RESUME.md` for secret resync commands.
+- **Deployment**: `maintenance-loop.sh` is the authoritative deployment path.
+- **Learnings**: 
+    - ⚠️ **Migrations**: SQLite migrations must be idempotent (check `PRAGMA table_info`).
+    - ⚠️ **Secrets**: Cloudflare secrets must target the top-level env (avoid `--env production` unless configured).
 
 ### Next Session Goals (Phase 5)
 

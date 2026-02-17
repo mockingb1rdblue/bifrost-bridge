@@ -1,21 +1,26 @@
 # STATUS.md - bifrost-bridge
 
-> **Last Updated**: 2026-02-13
-> **Status**: 🟢 Phase 5 Complete - Autonomous Self-Optimization Active
+> **Last Updated**: 2026-02-16
+> **Status**: 🟢 Phase 5: Autonomous Self-Optimization Active
 > **Phase**: Phase 5: Autonomous Self-Optimization
 
 ## What Was Accomplished
 
-### 2026-02-13: Phase 5 - Autonomous Self-Optimization
-### 2026-02-16: Swarm Hardening & Internalization
+### 2026-02-16: Swarm Hardening & Strategic Rundown
+- ✅ **Project Rundown**: Created `docs/strategy/260216_rundown.md` as the authoritative project state document.
 - ✅ **Jules/Cursor Deactivation**: Removed all external agent dependencies to ensure 100% internal swarm execution.
 - ✅ **Standardized Swarm Tasks**: Renamed all `JulesTask` references to `SwarmTask` for internal identity.
 - ✅ **Internal Handoff**: Standardized orchestrator-to-worker handoff via `/v1/swarm/*` endpoints.
 - ✅ **Autonomous Merge & Close**: Implemented autonomous PR approval, squashing/merging, and Linear issue closure (to "Done") upon successful swarm verification.
-- ✅ **Metadata Tracking**: Enhanced `SwarmTask` to track repository and PR metadata for autonomous lifecycle management.
+- ✅ **Metadata Tracking**: Enhanced `SwarmTask` to track repository and PR metadata.
+- ✅ **Event-Driven Orchestration**: Swarm polling replaced with completion-driven chaining and manual trigger.
+- ✅ **Production Deployment**: Hardened `custom-router` and `worker-bees` live on Cloudflare/Fly.io.
+- ✅ **Event Store Health**: Verified `annals-of-ankou` (Event Store) as the source of truth for swarm actions.
 - ✅ **Build Verification**: Achieved zero lint/type errors across the consolidated `RouterDO` and worker agent.
 
-### 2026-02-13: Phase 8: Packaging Swarm Seeding Protocol (COMPLETED)
+### 2026-02-13: Phase 5 - Autonomous Self-Optimization
+- ✅ **Zero Local Secrets**: Transitioned fully to edge secrets on Cloudflare/Fly.io.
+- ✅ **Secret Sync Recovery**: Fixed the "401 Loop of Death" by synchronizing keys across all planes.
 - ✅ **Antigravity Skill**: Created a reusable `swarm-seeding` skill for future agents.
 - ✅ **Interactive Wrapper**: Developed `seed-swarm.sh` to handle Linear authentication safely.
 - ✅ **npm Integration**: Integrated `npm run seed:swarm` into the root `package.json`.

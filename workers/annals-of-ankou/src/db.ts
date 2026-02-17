@@ -17,35 +17,78 @@ db.pragma('journal_mode = WAL');
 
 // Simple migration runner
 export function initDB() {
-  const schemaPath = path.join(__dirname, '..', 'schema.sql');
-  const localSchema = path.join(process.cwd(), 'schema.sql');
-  const finalSchemaPath = fs.existsSync(schemaPath) ? schemaPath : (fs.existsSync(localSchema) ? localSchema : null);
+  console.log('--- Database Initialization Starting ---');
+  try {
+    // 1. Ensure the events table exists (basic version)
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        source TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        meta TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Base table verified.');
 
-  if (finalSchemaPath) {
-    const schema = fs.readFileSync(finalSchemaPath, 'utf8');
-    db.exec(schema);
-    console.log('Database initialized with schema from', finalSchemaPath);
-    
-    // Explicit Migrations for Phase 4
-    try {
-        const columns = db.prepare("PRAGMA table_info(events)").all() as any[];
-        const hasTopic = columns.some(c => c.name === 'topic');
-        const hasCorrelationId = columns.some(c => c.name === 'correlation_id');
+    // 2. Safely add columns if they are missing
+    const columns = db.prepare("PRAGMA table_info(events)").all() as any[];
+    const columnNames = columns.map(c => c.name.toLowerCase());
 
-        if (!hasTopic) {
-            db.exec("ALTER TABLE events ADD COLUMN topic TEXT");
-            db.exec("CREATE INDEX IF NOT EXISTS idx_events_topic ON events(topic)");
-            console.log("Migration: Added 'topic' column to events table.");
-        }
-        if (!hasCorrelationId) {
-            db.exec("ALTER TABLE events ADD COLUMN correlation_id TEXT");
-            db.exec("CREATE INDEX IF NOT EXISTS idx_events_correlation_id ON events(correlation_id)");
-            console.log("Migration: Added 'correlation_id' column to events table.");
-        }
-    } catch (e: any) {
-        console.error("Migration Error:", e.message);
+    if (!columnNames.includes('topic')) {
+      try {
+        db.exec("ALTER TABLE events ADD COLUMN topic TEXT");
+        console.log("Migration: Added 'topic' column.");
+      } catch (e: any) {
+        console.warn("Migration warning (topic):", e.message);
+      }
     }
-  } else {
-    console.warn('Schema file not found, skipping migration');
+
+    if (!columnNames.includes('correlation_id')) {
+      try {
+        db.exec("ALTER TABLE events ADD COLUMN correlation_id TEXT");
+        console.log("Migration: Added 'correlation_id' column.");
+      } catch (e: any) {
+        console.warn("Migration warning (correlation_id):", e.message);
+      }
+    }
+
+    // 3. Apply schema.sql for any additional indices or tables, but wrap in try/catch
+    // to prevent crashing on duplicate indices or missing columns in indices
+    const schemaPath = path.join(__dirname, '..', 'schema.sql');
+    const localSchema = path.join(process.cwd(), 'schema.sql');
+    const finalSchemaPath = fs.existsSync(schemaPath) ? schemaPath : (fs.existsSync(localSchema) ? localSchema : null);
+
+    if (finalSchemaPath) {
+      console.log('Reading full schema from:', finalSchemaPath);
+      const schema = fs.readFileSync(finalSchemaPath, 'utf8');
+
+      // Split schema into individual statements to handle errors gracefully
+      const statements = schema
+        .split(';')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      for (const statement of statements) {
+        try {
+          db.exec(statement);
+        } catch (e: any) {
+          if (e.message.includes('already exists') || e.message.includes('duplicate column')) {
+            // Safe to ignore duplicate migrations
+          } else {
+            console.warn(`Migration statement failed: ${statement.substring(0, 50)}...`, e.message);
+          }
+        }
+      }
+      console.log('Schema processing complete.');
+    } else {
+      console.warn('⚠️  CRITICAL: Schema file not found. Database may be empty.');
+    }
+    console.log('--- Database Initialization Complete ---');
+  } catch (e: any) {
+    console.error('🛑 DATABASE INITIALIZATION FAILED:', e.message);
+    if (e.stack) console.error(e.stack);
+    throw e; // Bubble up to crash the process so Fly restarts
   }
 }

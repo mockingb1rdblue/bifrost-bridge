@@ -1,0 +1,14 @@
+name = "annals-of-ankou"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+# EVENTS_SECRET is managed via Cloudflare Secrets
+
+[[durable_objects.bindings]]
+name = "ANNALS_DO"
+class_name = "AnnalsOfAnkouDO"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["AnnalsOfAnkouDO"]

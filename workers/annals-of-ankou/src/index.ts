@@ -1,3 +1,7 @@
+console.log("🚀 BOOTSTRAP: Annals of Ankou starting up...");
+console.log("Environment PORT:", process.env.PORT);
+console.log("Environment DB_PATH:", process.env.DB_PATH);
+
 import Fastify from 'fastify';
 import { db, initDB } from './db';
 
@@ -154,6 +158,9 @@ export const start = async () => {
 
 export const app = fastify;
 
-if (require.main === module) {
-  start();
-}
+// Auto-start for Fly.io/Production
+start().catch(err => {
+  console.error("🔥 FATAL STARTUP ERROR:", err);
+  process.exit(1);
+});
+

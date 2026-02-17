@@ -23,6 +23,7 @@ For a deep dive into the autonomous capabilities of this project, see:
 - [Scripts Reference](./docs/scripts-reference.md): Catalog of utility and management scripts.
 - [Pending Backlog](./PENDING_BACKLOG.md): High-priority architected issues blocked by Linear limits.
 - [Backlog Archive](./docs/backlog_archive_2026-02-16.md): Historical record of superseded/canceled issues.
+- [Project Rundown](./docs/strategy/260216_rundown.md): Current strategic state and architectural summary.
 
 ## 📜 Event Sourcing: Annals of Ankou
 
@@ -48,7 +49,7 @@ npx wrangler whoami
 
 # Establish the "Auth Bridge"
 # This deploys the latest code and confirms you have the necessary edge secrets.
-npx wrangler deploy --prefix workers/custom-router
+npx wrangler deploy --prefix workers/crypt-core
 ```
 
 ### 2. Prepare Environment
@@ -76,6 +77,7 @@ Read the following files to align with the current strategic state:
 - `BOOTSTRAP.md`: End-to-end setup guide from scratch (Local to Cloud).
 - `RESUME.md`: Fast-boot mental model.
 - `STATUS.md`: Current day's accomplishments.
+- `docs/strategy/260216_rundown.md`: Current strategic state and architectural summary.
 - `.agent/workflows/0_resume.md`: Step-by-step resumption workflow.
 
 ## 🛠️ Quick Start
@@ -84,21 +86,16 @@ Read the following files to align with the current strategic state:
 
 Run the automated setup script to install dependencies (`gh`, `flyctl`, `pwsh`) and check authentication:
 
+```bash
 .\scripts\setup_dev.ps1
-
-````
+```
 
 ### 2. Environment Setup
 The project follows a **strict "Zero Local Secrets" policy**.
 - **Do NOT** store API keys in `.env` files for Cloudflare Workers or Fly.io apps.
 - **Do** use `wrangler secret put` or `fly secrets set`.
 
-See `.agent/workflows/secure-secrets.md` for the full protocol.
-
-### 3. Editor Setup
-Ensure VS Code uses the `PwshDev` profile to bypass corporate restrictions.
-
-### 4. Development Setup
+### 3. Development Setup
 Install dependencies and linting tools:
 ```bash
 npm install
@@ -106,46 +103,11 @@ npm run lint      # Check code style
 npm run lint:fix  # Auto-fix issues
 ```
 
-### 5. Enter the "Clean" Environment
-Launch the portable shell where tools (npx, wrangler, node) work without SSL errors and with correct secrets loaded (fetched from remote or mocked):
+### 4. Enter the "Clean" Environment
+Launch the portable shell where tools (npx, wrangler, node) work without SSL errors and with correct secrets loaded:
 
 ```bash
 npm run shell
-```
-
-### 6. Usage
-Inside the shell (or via `bifrost.py` prefix):
-
-#### Infrastructure Deployment (CI/CD)
-Because of corporate proxy restrictions, we use **GitHub Actions** to deploy to Fly.io.
-
-1.  **Push Changes**:
-    ```bash
-    git push origin main
-    ```
-2.  **Monitor Deployment**:
-    ```bash
-    gh run list --workflow deploy.yml
-    gh run watch
-    ```
-
-#### Tools
-
-```bash
-# Ask AI (Perplexity Sonar)
-npm start -- ask "How do I fix this SSL error?"
-
-# Deep Research (Perplexity Sonar Reasoning)
-npm start -- research "Best practices for TypeScript SDKs"
-
-# Deploy Workers
-npx wrangler deploy --prefix workers/linear-proxy
-
-# Manage Secrets (Zero Local Secrets!)
-# Interactive
-npx wrangler secret put PROXY_API_KEY --prefix workers/linear-proxy
-# Non-interactive
-echo "my-key" | npx wrangler secret put PROXY_API_KEY --prefix workers/linear-proxy
 ```
 
 ## 📂 Project Structure
@@ -158,47 +120,6 @@ echo "my-key" | npx wrangler secret put PROXY_API_KEY --prefix workers/linear-pr
 - `src/`: TypeScript SDK and CLI source code.
 - `docs/`: Project documentation and architecture deep dives.
 
-## 🔧 Troubleshooting
-
-**Wrangler Deployment Fails**:
-Ensure you are using the portable shell (`npm run shell`) which loads the necessary `NODE_EXTRA_CA_CERTS`.
-
-## 🛡️ Security Features
-
-### Circuit Breaker
-
-The Linear client includes a circuit breaker to protect API keys from deactivation:
-
-- Triggers on 401 errors
-- Creates `.auth.lock` file
-- Blocks all requests until resolved
-
-**To Reset**:
-
-```bash
-# Verify secrets in .env
-npm start -- linear projects --direct
-
-# Delete lockfile
-rm .auth.lock  # Unix
-del .auth.lock  # Windows
-```
-
-### Rate Limiting
-
-- **Linear & Perplexity Proxies**: 100 req/min (In-memory Token Bucket)
-- **Custom Router**: 100 req/min (Durable Object Token Bucket, health-aware)
-
-## 🤖 Agents & LLMs
-
-If you are an AI agent picking up this project:
-
-1.  Read `.agent/workflows/0_resume.md`.
-2.  See [Agent Ecosystem](./docs/agent-ecosystem.md) for architectural details.
-
----
-
 ---
 
 _Documentation maintained by Antigravity Agent._
-````
