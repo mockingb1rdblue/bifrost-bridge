@@ -1,25 +1,15 @@
 import crypto from 'crypto';
 
 /**
- * Authentication Helper for Sluagh Swarm Worker Bees
+ * Authentication Helper for Sluagh Sluagh Swarm Worker Bees
  */
 export class AuthManager {
-    private static readonly FALLBACK_KEY = 'ZqM8pQom487qZ@2e%qHdcCuTiGk!#XNq';
-
     static getApiKey(): string {
         const key = process.env.WORKER_API_KEY;
-        const isDev = process.env.NODE_ENV === 'development' ||
-            process.env.DEV_MODE === 'true' ||
-            process.env.npm_lifecycle_event === 'dev';
 
         if (!key) {
-            if (isDev) {
-                console.warn('⚠️  WORKER_API_KEY not found. Using hardcoded fallback for local development.');
-                return this.FALLBACK_KEY;
-            } else {
-                this.printDeathBanner('CRITICAL ERROR: WORKER_API_KEY environment variable is missing.');
-                process.exit(1);
-            }
+            this.printDeathBanner('CRITICAL ERROR: WORKER_API_KEY environment variable is missing.');
+            process.exit(1);
         }
 
         return key;

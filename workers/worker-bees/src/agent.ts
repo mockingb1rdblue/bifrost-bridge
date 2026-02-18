@@ -1,19 +1,23 @@
 
 import { randomUUID } from 'crypto';
+import { RunCommandHandler } from './handlers/RunCommandHandler';
+import { FetchUrlHandler } from './handlers/FetchUrlHandler';
+import { LinearHandler } from './handlers/LinearHandler';
+import { startLinearIngestor } from './ingestor';
 
-interface Job {
+export interface Job {
     id: string;
     type: string;
     payload: any;
 }
 
-interface JobResult {
+export interface JobResult {
     success: boolean;
     data?: any;
     error?: string;
 }
 
-interface JobHandler {
+export interface JobHandler {
     type: string;
     execute(job: Job): Promise<JobResult>;
 }
@@ -50,7 +54,7 @@ class SwarmTaskHandler implements JobHandler {
 
     async execute(job: Job): Promise<JobResult> {
         const { action, filePath, content, pattern, searchDir } = job.payload;
-        console.log(`[SwarmHandler] Action: ${action} on ${filePath || searchDir}`);
+        console.log(`[Sluagh SwarmHandler] Action: ${action} on ${filePath || searchDir}`);
 
         try {
             switch (action) {
@@ -70,7 +74,7 @@ class SwarmTaskHandler implements JobHandler {
                 case 'review_diff': {
                     // In a full implementation, this would call the Router's LLM endpoint
                     // For now, we'll return a status that it's "Reviewed for consistency"
-                    console.log(`[SwarmHandler] Reviewing change to ${filePath}`);
+                    console.log(`[Sluagh SwarmHandler] Reviewing change to ${filePath}`);
                     return {
                         success: true,
                         data: {
@@ -98,7 +102,12 @@ export function registerHandler(handler: JobHandler) {
 
 // Register default handlers
 registerHandler(new EchoJobHandler());
+// Register default handlers
+registerHandler(new EchoJobHandler());
 registerHandler(new SwarmTaskHandler());
+registerHandler(new RunCommandHandler());
+registerHandler(new FetchUrlHandler());
+registerHandler(new LinearHandler());
 
 // --- Core Loop ---
 
@@ -198,8 +207,12 @@ async function completeJob(jobId: string, result: JobResult) {
 }
 
 const startAgent = () => {
-    console.log(`[${WORKER_ID}] 🐝 Worker Bee Swarm Agent starting...`);
+    console.log(`[${WORKER_ID}] 🐝 Worker Bee Sluagh Swarm Agent starting...`);
     console.log(`[${WORKER_ID}] Connecting to Router at: ${ROUTER_URL}`);
+
+    // Start the Linear Polling Loop
+    startLinearIngestor();
+
     setInterval(pollForJob, POLL_INTERVAL);
 };
 

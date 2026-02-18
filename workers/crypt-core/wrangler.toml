@@ -6,7 +6,6 @@ compatibility_date = "2024-01-01"
 RATE_LIMIT_MAX_TOKENS = "100"
 RATE_LIMIT_REFILL_RATE = "1"
 RATE_LIMIT_DEGRADATION_THRESHOLD = "50"
-PROXY_API_KEY = "test-key-default"
 LINEAR_PROJECT_ID = "9aeceb58-dc0e-46ab-9b26-f12c8a083815"
 LINEAR_TEAM_ID = "d43e265a-cbc3-4f07-afcd-7792ce875ad3"
 
@@ -38,3 +37,10 @@ class_name = "RouterDO"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["RouterDO"]
+
+[[migrations]]
+tag = "v3"
+deleted_classes = ["DullahanDispatcher"]
+
+[triggers]
+crons = ["*/5 * * * *"] # Pulse every 5 minutes

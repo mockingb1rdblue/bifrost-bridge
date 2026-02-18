@@ -8,16 +8,16 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 async function main() {
   let apiKey = process.env.PERPLEXITY_API_KEY;
-  const baseUrl = process.env.PERPLEXITY_BASE_URL;
+  const baseUrl = process.env.PERPLEXITY_PROXY_URL;
 
   // Smart Key Selection
   if (baseUrl && baseUrl.includes('workers.dev')) {
-    console.log('[*] Detected Proxy URL. Using PROXY_API_KEY for authentication.');
-    apiKey = process.env.PROXY_API_KEY;
+    console.log('[*] Detected Proxy URL. Using ABYSSAL_ARTIFACT for authentication.');
+    apiKey = process.env.ABYSSAL_ARTIFACT;
   }
 
   if (!apiKey) {
-    console.error('[!] No API Key found. Set PERPLEXITY_API_KEY or PROXY_API_KEY.');
+    console.error('[!] No API Key found. Set PERPLEXITY_API_KEY or ABYSSAL_ARTIFACT.');
     process.exit(1);
   }
 

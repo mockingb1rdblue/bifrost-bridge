@@ -22,9 +22,9 @@ This workflow enforces a strict "one thing at a time" policy. You cannot start a
 
 2. Create a feature branch for your backlog item.
    ```powershell
-   git checkout -b feature/<descriptive-name>
+   git checkout -b feat/dark-<descriptive-name>
    ```
-   _Replace `<descriptive-name>` with a short, kebab-case name (e.g., `001-vision-statement`)._
+   _Replace `<descriptive-name>` with a short, kebab-case name (e.g., `feat/dark-vision-statement`)._
 
 ## 3. Execution (The Work)
 
@@ -42,11 +42,12 @@ This workflow enforces a strict "one thing at a time" policy. You cannot start a
 5. Squash and Merge.
 
    ```powershell
-   git merge --squash feature/<descriptive-name>
+   git merge --squash feat/dark-<descriptive-name>
    ```
 
 6. **Capture Learnings & Commit**
    - You MUST include a "Learnings" section in the commit body.
+   - **Note**: Significant failures/learnings should strictly be added to `docs/LEARNINGS.md`.
    - Format:
 
      ```text
@@ -68,7 +69,7 @@ This workflow enforces a strict "one thing at a time" policy. You cannot start a
 
 7. Cleanup.
    ```powershell
-   git branch -D feature/<descriptive-name>
+   git branch -D feat/dark-<descriptive-name>
    ```
 
 ## 5. Push (If Remote Exists)

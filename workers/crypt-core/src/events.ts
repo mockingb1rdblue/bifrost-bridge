@@ -24,6 +24,30 @@ export class EventStoreClient {
    * @param event.meta - Optional metadata.
    * @returns Promise<void>
    */
+  /**
+   * Performs a fetch with a strict timeout.
+   */
+  private async fetchWithTimeout(
+    url: string,
+    options: RequestInit,
+    timeoutMs: number = 3000,
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(id);
+      return response;
+    } catch (e) {
+      clearTimeout(id);
+      throw e;
+    }
+  }
+
   async append(event: {
     type: string;
     source: string;
@@ -33,7 +57,7 @@ export class EventStoreClient {
     meta?: any;
   }) {
     try {
-      const res = await fetch(`${this.baseUrl}/events`, {
+      const res = await this.fetchWithTimeout(`${this.baseUrl}/events`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.secret}`,
@@ -45,7 +69,7 @@ export class EventStoreClient {
         console.error(`EventStore error: ${res.status} ${await res.text()}`);
       }
     } catch (e) {
-      console.error('EventStore connection failed:', e);
+      console.error('EventStore connection failed (timeout or network):', e);
     }
   }
 
@@ -56,14 +80,18 @@ export class EventStoreClient {
    */
   async getState(topic: string) {
     try {
-      const res = await fetch(`${this.baseUrl}/state/${topic}`, {
-        headers: { Authorization: `Bearer ${this.secret}` },
-      });
+      const res = await this.fetchWithTimeout(
+        `${this.baseUrl}/state/${topic}`,
+        {
+          headers: { Authorization: `Bearer ${this.secret}` },
+        },
+        2000, // Shorter timeout for state retrieval
+      );
       if (res.ok) {
         return await res.json();
       }
     } catch (e) {
-      console.error('EventStore getState failed:', e);
+      console.error('EventStore getState failed (timeout or network):', e);
     }
     return null;
   }

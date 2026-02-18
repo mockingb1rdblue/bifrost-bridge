@@ -63,4 +63,25 @@ export default {
         newResponse.headers.set('Access-Control-Allow-Origin', '*');
         return newResponse;
     },
+
+    // CRON TRIGGER HANDLER
+    async scheduled(event: ScheduledEvent, env: any, ctx: ExecutionContext) {
+        console.log('[Cron] 💓 Pulse Check Initiated...');
+
+        // Wake up the Sluagh Swarm (Fly.io Scale-to-Zero)
+        // We just need to hit the endpoint to wake the machine.
+        // It will auto-poll on boot.
+        const flyUrl = 'https://sluagh-swarm.fly.dev/health'; // Replace with actual health check URL if different
+
+        ctx.waitUntil((async () => {
+            try {
+                console.log(`[Cron] Pinging Swarm at ${flyUrl}...`);
+                const response = await fetch(flyUrl);
+                console.log(`[Cron] Swarm Ping Result: ${response.status} ${response.statusText}`);
+            } catch (e: any) {
+                console.error(`[Cron] Failed to ping Swarm: ${e.message}`);
+                // Verify if it's reachable or just a 404 (which still wakes it up)
+            }
+        })());
+    },
 };

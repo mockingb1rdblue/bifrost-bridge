@@ -9,7 +9,7 @@ Cloudflare Worker that proxies requests to Linear's GraphQL API and handles webh
 - **Security**: Constant-time authentication, CORS support, request size limits
 - **Corporate SSL Bypass**: Works around SSL certificate interception
 
-## 🐝 Swarm Architecture & Security Lessons
+## 🐝 Sluagh Swarm Architecture & Security Lessons
 
 ### 1. Zero Local Secrets Policy
 **CRITICAL**: We do NOT use `.env` or `.dev.vars` files for any worker in this ecosystem. 

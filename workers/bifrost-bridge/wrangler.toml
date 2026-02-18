@@ -6,6 +6,6 @@ compatibility_date = "2024-01-01"
 # Environment variables
 
 [[kv_namespaces]]
-binding = "BIFROST_KV"
+binding = "AEGIS_KV"
 id = "be16781ec93e4adc8048ba1edee3d10c"
 preview_id = "be16781ec93e4adc8048ba1edee3d10c"

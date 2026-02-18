@@ -28,13 +28,13 @@ export interface Job {
 // ... keep existing definitions
 export interface RouterState {
   jobs: Record<string, Job>;
-  swarmTasks: Record<string, SwarmTask>;
+  swarmTasks: Record<string, SluaghSwarmTask>;
   rateLimits: Record<string, RateLimitState>;
   metrics: RouterMetrics;
   recentErrors: ErrorLog[];
   lastMaintenance: number;
 }
-export interface SwarmTask {
+export interface SluaghSwarmTask {
   id: string;
   issueId: string;
   type: 'feature' | 'bug' | 'chore' | 'coding' | 'verify';

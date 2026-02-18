@@ -2,7 +2,7 @@ console.log("🚀 BOOTSTRAP: Annals of Ankou starting up...");
 console.log("Environment PORT:", process.env.PORT);
 console.log("Environment DB_PATH:", process.env.DB_PATH);
 
-import Fastify from 'fastify';
+import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import { db, initDB } from './db';
 
 const fastify = Fastify({
@@ -10,7 +10,7 @@ const fastify = Fastify({
 });
 
 // Middleware for Auth
-fastify.addHook('onRequest', async (request: any, reply: any) => {
+fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
   const authHeader = request.headers.authorization;
   const secret = process.env.EVENTS_SECRET;
 
@@ -30,12 +30,12 @@ interface EventBody {
   source: string;
   topic?: string;
   correlation_id?: string;
-  payload: any;
-  meta?: any;
+  payload: Record<string, unknown>; // Safer than any
+  meta?: Record<string, unknown>;
 }
 
 // Routes
-fastify.post<{ Body: EventBody }>('/events', async (request: any, reply: any) => {
+fastify.post<{ Body: EventBody }>('/events', async (request, reply) => {
   const { type, source, topic, correlation_id, payload, meta } = request.body;
 
   if (!type || !source || !payload) {
@@ -61,14 +61,14 @@ fastify.post<{ Body: EventBody }>('/events', async (request: any, reply: any) =>
 });
 
 // Replay state for a topic
-fastify.get<{ Params: { topic: string } }>('/state/:topic', async (request: any, reply: any) => {
+fastify.get<{ Params: { topic: string } }>('/state/:topic', async (request, reply) => {
   const { topic } = request.params;
 
   const stmt = db.prepare('SELECT * FROM events WHERE topic = ? ORDER BY id ASC');
-  const events = stmt.all(topic);
+  const events = stmt.all(topic) as { payload: string }[];
 
   // Naive state reconstruction: merge payloads
-  const state = events.reduce((acc: any, e: any) => {
+  const state = events.reduce((acc: Record<string, unknown>, e) => {
     const payload = JSON.parse(e.payload);
     return { ...acc, ...payload };
   }, {});
@@ -77,13 +77,21 @@ fastify.get<{ Params: { topic: string } }>('/state/:topic', async (request: any,
 });
 
 // BIF-164/167: Advanced Filtering for History
-fastify.get<{ Querystring: { limit?: number; type?: string | string[]; topic?: string; startDate?: string; endDate?: string } }>(
+interface EventsQuery {
+  limit?: number;
+  type?: string | string[];
+  topic?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+fastify.get<{ Querystring: EventsQuery }>(
   '/events',
-  async (request: any, reply: any) => {
+  async (request, reply) => {
     const { limit = 100, type, topic, startDate, endDate } = request.query;
 
     let query = 'SELECT * FROM events WHERE 1=1';
-    const params: any[] = [];
+    const params: (string | number)[] = [];
 
     if (type) {
       if (Array.isArray(type)) {
@@ -114,9 +122,9 @@ fastify.get<{ Querystring: { limit?: number; type?: string | string[]; topic?: s
     params.push(Number(limit));
 
     const stmt = db.prepare(query);
-    const events = stmt.all(...params);
+    const events = stmt.all(...params) as any[]; // DB returns untyped rows, checking specific fields below
 
-    return events.map((e: any) => ({
+    return events.map((e) => ({
       ...e,
       payload: JSON.parse(e.payload),
       meta: e.meta ? JSON.parse(e.meta) : null,

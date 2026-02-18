@@ -1,12 +1,12 @@
-import { Job, RouterState, SwarmTask, EngineeringLog } from './types';
+import { Job, RouterState, SluaghSwarmTask, EngineeringLog } from './types';
 import { LinearClient } from './linear';
 import { GitHubClient } from './github';
 import { FlyClient } from './fly';
 import { EventStoreClient } from './events';
 import {
   JobPayloadSchema,
-  SwarmTaskSchema,
-  SwarmTaskUpdateSchema,
+  SluaghSwarmTaskSchema,
+  SluaghSwarmTaskUpdateSchema,
   GitHubActionSchema,
   LinearWebhookSchema,
   JobUpdateSchema,
@@ -134,7 +134,7 @@ export class RouterDO {
     const missing = required.filter((k) => !this.env[k as keyof Env]);
 
     if (missing.length > 0) {
-      const msg = `Configuration Error: Missing secrets [${missing.join(', ')}]`;
+      const msg = `Configuration Error: Missing secrets[${missing.join(', ')}]`;
       console.error(msg);
       return new Response(msg, { status: 503 });
     }
@@ -142,7 +142,7 @@ export class RouterDO {
   }
 
   private async logError(message: string, context: string, error?: any, provider?: string) {
-    console.error(`[${context}] ${message}`, error);
+    console.error(`[${context}] ${message} `, error);
     this.storage.metrics.errorCount++;
 
     if (provider) {
@@ -228,11 +228,11 @@ export class RouterDO {
       const meshResult = (await this.events.getState('global-optimization')) as any;
       const optimizationState = meshResult?.state;
 
-      const optKey = `optimizedPrompt_${request.taskType || 'default'}`;
+      const optKey = `optimizedPrompt_${request.taskType || 'default'} `;
       if (optimizationState && optimizationState[optKey]) {
         const optimizedPrompt = optimizationState[optKey];
         optimizedMessages = [
-          { role: 'system', content: `[OPTIMIZATION_ACTIVE] ${optimizedPrompt}` },
+          { role: 'system', content: `[OPTIMIZATION_ACTIVE] ${optimizedPrompt} ` },
           ...request.messages,
         ];
       }
@@ -289,7 +289,7 @@ export class RouterDO {
     }
   }
 
-  private async getSwarmNextTask(): Promise<Response> {
+  private async getSluaghSwarmNextTask(): Promise<Response> {
     const nextTask = Object.values(this.storage.swarmTasks)
       .filter((t) => t.status === 'pending')
       .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0];
@@ -307,10 +307,10 @@ export class RouterDO {
     });
   }
 
-  private async handleSwarmTaskUpdate(request: Request): Promise<Response> {
+  private async handleSluaghSwarmTaskUpdate(request: Request): Promise<Response> {
     try {
       const body = await request.json();
-      const result = SwarmTaskUpdateSchema.safeParse(body);
+      const result = SluaghSwarmTaskUpdateSchema.safeParse(body);
 
       if (!result.success) {
         return new Response('Invalid task update payload: ' + result.error.message, {
@@ -325,7 +325,7 @@ export class RouterDO {
         return new Response('Task not found', { status: 404 });
       }
 
-      task.status = status as SwarmTask['status'];
+      task.status = status as SluaghSwarmTask['status'];
       if (engineeringLog) {
         task.engineeringLog = engineeringLog;
       }
@@ -342,8 +342,8 @@ export class RouterDO {
           });
           const logBody = task.engineeringLog
             ? this.formatEngineeringLog(task.engineeringLog)
-            : `Task ${status}`;
-          await linear.addComment(task.issueId, `🤖 Swarm: Task ${status}\n\n${logBody}`);
+            : `Task ${status} `;
+          await linear.addComment(task.issueId, `🤖 Sluagh Swarm: Task ${status} \n\n${logBody} `);
 
           if (status === 'completed') {
             await linear.addLabel(task.issueId, 'swarm:review');
@@ -368,19 +368,19 @@ export class RouterDO {
 
       // Chaining: If coding is done, create verify task
       if (status === 'completed' && task.type === 'coding') {
-        const verifyTaskId = `task_verify_${Date.now()}`;
+        const verifyTaskId = `task_verify_${Date.now()} `;
         this.storage.swarmTasks[verifyTaskId] = {
           ...task,
           id: verifyTaskId,
           type: 'verify',
-          title: `Verify: ${task.title}`,
-          description: `Verify the changes made for task ${task.id}. Run tests and check requirements.`,
+          title: `Verify: ${task.title} `,
+          description: `Verify the changes made for task ${task.id}.Run tests and check requirements.`,
           status: 'pending',
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
         await this.saveState();
-        console.log(`[handleSwarmTaskUpdate] Chained verify task ${verifyTaskId} for ${task.id}`);
+        console.log(`[handleSluaghSwarmTaskUpdate] Chained verify task ${verifyTaskId} for ${task.id}`);
       }
 
       // Trigger next batch
@@ -388,8 +388,8 @@ export class RouterDO {
 
       return new Response('OK');
     } catch (e: any) {
-      console.error('handleSwarmTaskUpdate error:', e);
-      return new Response('Invalid JSON (handleSwarmTaskUpdate): ' + e.message, { status: 400 });
+      console.error('handleSluagh SwarmTaskUpdate error:', e);
+      return new Response('Invalid JSON (handleSluaghSwarmTaskUpdate): ' + e.message, { status: 400 });
     }
   }
 
@@ -458,7 +458,7 @@ export class RouterDO {
             this.storage.swarmTasks[taskId].prNumber = result.number;
             this.storage.swarmTasks[taskId].prUrl = result.html_url;
             await this.saveState();
-            console.log(`Linked PR #${result.number} to SwarmTask ${taskId}`);
+            console.log(`Linked PR #${result.number} to SluaghSwarmTask ${taskId} `);
           }
           break;
         case 'merge':
@@ -545,10 +545,10 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     }
   }
 
-  private async handleCreateSwarmTask(request: Request): Promise<Response> {
+  private async handleCreateSluaghSwarmTask(request: Request): Promise<Response> {
     try {
       const body = await request.json();
-      const result = SwarmTaskSchema.safeParse(body);
+      const result = SluaghSwarmTaskSchema.safeParse(body);
 
       if (!result.success) {
         return new Response('Invalid task payload: ' + result.error.message, { status: 400 });
@@ -558,10 +558,10 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       const taskId = crypto.randomUUID();
       const now = Date.now();
 
-      const newTask: SwarmTask = {
+      const newTask: SluaghSwarmTask = {
         id: taskId,
         issueId: payload.issueId,
-        type: payload.type as SwarmTask['type'],
+        type: payload.type as SluaghSwarmTask['type'],
         title: payload.title,
         description: payload.description,
         files: payload.files || [],
@@ -581,7 +581,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       });
     } catch (e: any) {
       await this.logError(e.message, 'CREATE_SWARM_TASK', e);
-      return new Response('Invalid JSON (createSwarmTask): ' + e.message, { status: 400 });
+      return new Response('Invalid JSON (createSluaghSwarmTask): ' + e.message, { status: 400 });
     }
   }
 
@@ -881,15 +881,15 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           return await this.processBatch();
         case '/v1/swarm/tasks':
           if (request.method === 'POST') {
-            return await this.handleCreateSwarmTask(request);
+            return await this.handleCreateSluaghSwarmTask(request);
           }
           return new Response(JSON.stringify(Object.values(this.storage.swarmTasks)), {
             headers: { 'Content-Type': 'application/json' },
           });
         case '/v1/swarm/next':
-          return await this.getSwarmNextTask();
+          return await this.getSluaghSwarmNextTask();
         case '/v1/swarm/update':
-          return await this.handleSwarmTaskUpdate(request);
+          return await this.handleSluaghSwarmTaskUpdate(request);
         case '/github/action':
           return await this.handleGitHubAction(request);
         case '/v2/chat':
@@ -1048,7 +1048,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
       const testTasks = [
         {
-          title: 'Simulate Runner Failure to Verify Swarm Resilience',
+          title: 'Simulate Runner Failure to Verify Sluagh Swarm Resilience',
           description: `Verify the swarm handles task failure correctly.\n\nMetadata:\nTaskType: maintenance\nRiskProfile: medium\nPriority: 10\nBudgetMax: 1000\nSuccessCriteria: Issue marked as swarm:blocked upon failure.`,
         },
         {
@@ -1096,7 +1096,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           : 100;
 
       const health = successRate > 90 ? 'onTrack' : successRate > 70 ? 'atRisk' : 'offTrack';
-      const body = `Automated Health Report from Bifrost Bridge Swarm:
+      const body = `Automated Health Report from Bifrost Bridge Sluagh Swarm:
       - Total Tasks Orchestrated: ${metrics.totalTasks}
       - Success Rate: ${successRate}%
       
@@ -1289,7 +1289,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
         await linear.addComment(issueId, comment);
 
-        // 5. Create SwarmTask for execution handoff
+        // 5. Create Sluagh SwarmTask for execution handoff
         if (job.payload.action === 'initialize_and_plan') {
           const taskId = `task_${Date.now()}`;
           const isHighRisk = job.payload.metadata?.RiskProfile === 'high';
@@ -1311,7 +1311,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
               name: repo,
             },
           };
-          console.log(`Created SwarmTask ${taskId} for issue ${issueIdentifier}`);
+          console.log(`Created Sluagh SwarmTask ${taskId} for issue ${issueIdentifier}`);
         }
 
         job.status = 'completed';
@@ -1322,7 +1322,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
         const analysisRes = await this.routeLLM({
           messages: [
-            { role: 'system', content: 'You are the Swarm Optimization Engine.' },
+            { role: 'system', content: 'You are the Sluagh Swarm Optimization Engine.' },
             { role: 'user', content: prompt + '\n\nPlease provide a section titled "OPTIMIZED_PROMPT" containing a refined system prompt.' },
           ],
           taskType: 'planning',
@@ -1463,11 +1463,11 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
           if (job.status === 'completed') {
             const resultSummary = typeof job.result === 'string' ? job.result : JSON.stringify(job.result, null, 2);
-            await linear.addComment(job.linearIssueId, `🏁 **Swarm Handoff**\n\nTask completed successfully.\n\n**Result Summary:**\n\`\`\`json\n${resultSummary.substring(0, 1000)}\n\`\`\`\n\nMoving to **Review** phase.`);
+            await linear.addComment(job.linearIssueId, `🏁 **Sluagh Swarm Handoff**\n\nTask completed successfully.\n\n**Result Summary:**\n\`\`\`json\n${resultSummary.substring(0, 1000)}\n\`\`\`\n\nMoving to **Review** phase.`);
             await linear.addLabel(job.linearIssueId, 'swarm:review');
             await linear.removeLabel(job.linearIssueId, 'swarm:active');
           } else if (job.status === 'failed') {
-            await linear.addComment(job.linearIssueId, `⚠️ **Swarm Blocked**\n\nTask execution failed.\n\n**Error:**\n> ${job.error}\n\nHuman intervention required.`);
+            await linear.addComment(job.linearIssueId, `⚠️ **Sluagh Swarm Blocked**\n\nTask execution failed.\n\n**Error:**\n> ${job.error}\n\nHuman intervention required.`);
             await linear.addLabel(job.linearIssueId, 'swarm:blocked');
             await linear.removeLabel(job.linearIssueId, 'swarm:active');
           }
@@ -1514,7 +1514,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     }
   }
 
-  private async completeAndMergeTask(task: SwarmTask) {
+  private async completeAndMergeTask(task: SluaghSwarmTask) {
     if (!task.prNumber || !task.repository) {
       console.warn(`[completeAndMergeTask] Task ${task.id} missing PR info. Cannot merge.`);
       return;
@@ -1538,7 +1538,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         task.repository.owner,
         task.repository.name,
         task.prNumber,
-        '🤖 **Autonomous Approval**: Swarm verification successful. All tests passed. Merging...',
+        '🤖 **Autonomous Approval**: Sluagh Swarm verification successful. All tests passed. Merging...',
         'APPROVE',
       );
 

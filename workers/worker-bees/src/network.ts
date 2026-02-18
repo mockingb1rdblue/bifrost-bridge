@@ -33,7 +33,7 @@ export class NetworkDriver {
 
         try {
             const headers = new Headers(options.headers || {});
-            headers.set('X-Swarm-Version', '1.1.1');
+            headers.set('X-Sluagh Swarm-Version', '1.1.1');
             headers.set('X-Bee-Id', this.workerId);
 
             // AUTO-AUTH: Inject Authorization header if missing and apiKey exists
@@ -94,7 +94,7 @@ export class NetworkDriver {
         this.totalFailures++;
 
         if (this.totalFailures >= NetworkDriver.MAX_TOTAL_FAILURES) {
-            this.halt('Maximum network failures reached. Swarm agent is being "stupid" and will stop trying.');
+            this.halt('Maximum network failures reached. Sluagh Swarm agent is being "stupid" and will stop trying.');
             return NetworkDriver.MAX_DELAY;
         }
 

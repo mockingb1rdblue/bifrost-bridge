@@ -1,5 +1,5 @@
 {
-  "name": "worker-bees",
+  "name": "sluagh-swarm",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -20,5 +20,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vitest": "^1.2.1"
+  },
+  "dependencies": {
+    "@linear/sdk": "^75.0.0"
   }
 }

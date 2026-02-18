@@ -1,5 +1,8 @@
 
 import http from 'http';
+import { startAgent } from './agent';
+
+console.log('[Original Bee] 🐝 process initializing');
 
 const PORT = process.env.PORT || 8080;
 
@@ -12,11 +15,13 @@ const server = http.createServer((req, res) => {
     }));
 });
 
-
-import './agent'; // Start the agent loop
+// Start the agent loop explicitly
+try {
+    startAgent();
+} catch (e: any) {
+    console.error('[Original Bee] Failed to start agent:', e);
+}
 
 server.listen(PORT, () => {
-
     console.log(`Worker Bee started on port ${PORT}`);
 });
-

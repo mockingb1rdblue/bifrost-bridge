@@ -1,4 +1,4 @@
-app = "bifrost-events"
+app = "eulogy-engine"
 primary_region = "ord"
 
 [build]

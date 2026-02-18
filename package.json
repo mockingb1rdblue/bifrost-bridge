@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "extract-certs": "node scripts/extract_certs.js",
+        "extract-certs": "npx tsx scripts/infra/extract_certs.js",
         "build": "tsc",
         "test": "ts-node tests/test_sdk.ts",
         "start": "npx ts-node src/cli.ts",
@@ -24,7 +24,8 @@
         "worker:types": "npm run typegen --prefix workers/crypt-core",
         "proxy:linear:deploy": "npm run deploy --prefix workers/linear-proxy",
         "proxy:perplexity:deploy": "npm run deploy --prefix workers/perplexity-proxy",
-        "seed:swarm": "./scripts/seed-swarm.sh"
+        "seed:sluagh": "bash scripts/linear/seed-sluagh.sh",
+        "secure:exec": "npx tsx scripts/infra/secure-connect.ts"
     },
     "keywords": [
         "corporate",
@@ -44,6 +45,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.21.0",
+        "@linear/sdk": "^75.0.0",
         "@types/node": "^20.19.32",
         "@types/ora": "^3.1.0",
         "@typescript-eslint/eslint-plugin": "^8.55.0",

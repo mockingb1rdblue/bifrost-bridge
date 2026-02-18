@@ -25,7 +25,7 @@ export const EngineeringLogSchema = z.object({
   lessonsLearned: z.array(z.string()),
 });
 
-export const SwarmTaskSchema = z.object({
+export const SluaghSwarmTaskSchema = z.object({
   id: z.string(),
   type: z.enum(['coding', 'verify']),
   title: z.string(),
@@ -48,7 +48,7 @@ export const SwarmTaskSchema = z.object({
     .optional(),
 });
 
-export const SwarmTaskUpdateSchema = z.object({
+export const SluaghSwarmTaskUpdateSchema = z.object({
   taskId: z.string(),
   status: z.string(),
   engineeringLog: EngineeringLogSchema.optional(),

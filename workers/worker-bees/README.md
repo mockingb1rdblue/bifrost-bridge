@@ -1,4 +1,4 @@
-# Worker Bees (The Swarm Hands) 🐝
+# Worker Bees (The Sluagh Swarm Hands) 🐝
 
 Autonomous agents that poll the `Custom Router` for jobs and execute them.
 
@@ -17,6 +17,16 @@ ROUTER_URL=https://custom-router.mock1ng.workers.dev WORKER_API_KEY=your-key npm
 ```
 
 ### Deployment (Fly.io)
+
+**CRITICAL**: We follow a "Zero Local Secrets" policy. Do **NOT** run `fly deploy` directly if you need to update secrets.
+
+Use the secure deployment wrapper:
+```bash
+# This prompts for keys (e.g. LINEAR_API_KEY) and injects them in-memory
+npx tsx ../../scripts/infra/secure-connect.ts ../../scripts/infra/deploy-swarm.ts
+```
+
+*Fallback (Only if secrets are already set and unchanged):*
 ```bash
 fly deploy
 ```

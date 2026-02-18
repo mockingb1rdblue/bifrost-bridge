@@ -75,3 +75,49 @@ If `Approach A` failed, propose `Approach B`.
 ## 4. Post-Recovery
 
 - **Document**: Add an entry to `docs/LEARNINGS.md` about the failure mode.
+
+## 5. Tech Debt Protocol (The "Zero Archive" Rule)
+
+> [!CRITICAL]
+> **GLOBAL RULE**: Archiving technical debt is strictly PROHIBITED.
+
+### The Philosophy
+Putting files in an `archive/` folder is not "cleaning"—it is hoarding. If code or documentation is not active, it is either **Valuable** (Merge it) or **Trash** (Delete it).
+
+### Directives
+1.  **No "Archive" Folders**: Do not create `archive/`, `old/`, `legacy/`, or `backup/` directories.
+2.  **Refactor or Die**:
+    - If a file contains useful info: **Extract** the value, **Merge** it into the Core Documentation (e.g., `OPERATIONAL_MANUAL.md`), and **Delete** the original.
+    - If a file is obsolete: **Delete** it immediately.
+3.  **Proactive Management**: Tech debt must be paid down *as it is created*, not "later".
+
+## 5. Autonomy Protocol
+
+> [!IMPORTANT]
+> **GLOBAL RULE**: The Agent must never request the User to perform actions that the Agent is capable of performing itself.
+
+### Purpose
+To maximize efficiency and reduce user cognitive load, the Agent must utilize its full suite of tools (Browser, Terminal, File System) to solve problems end-to-end.
+
+### Rules
+
+1.  **Do Not Ask "Can You..."**:
+    - If a task requires browser interaction (e.g., verifying a deployment, checking documentation, navigating a UI), use the `browser_subagent`.
+    - If a task requires authentication (e.g., logging into a service), use the `browser_subagent` to perform the login or check the auth state.
+    - If a task requires terminal commands, use `run_command`.
+
+2.  **Assume Permissions**:
+    - You have permission to run standard build, test, and deployment commands.
+    - You have permission to edit code and configuration files.
+
+3.  **Exception Handling**:
+    - Only ask the User for help if:
+        - A physical hardware interaction is required (e.g., YubiKey).
+        - A 2FA code is sent to their personal device/phone.
+        - You hit a tool error that you cannot resolve after multiple retries.
+
+4.  **Workflow**:
+    - **Identify Task**: "I need to verify the webhook."
+    - **Check Capabilities**: "Do I have a browser tool? Yes."
+    - **Execute**: "I will use the browser tool to navigate to the webhook settings."
+    - **Report**: "I have verified the webhook settings." (Do NOT ask the user to verify).

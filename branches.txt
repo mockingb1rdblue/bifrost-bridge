@@ -1,3 +1,0 @@
-﻿feature/060-linear-proxy
-feature/tooling-thinslice
-hee-haw

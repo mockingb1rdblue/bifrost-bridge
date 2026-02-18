@@ -3,7 +3,7 @@ name: swarm-seeding
 description: Protocol for seeding a Linear backlog with optimized issues for autonomous swarm testing.
 ---
 
-# Swarm Seeding Protocol
+# Sluagh Swarm Seeding Protocol
 
 This skill provides the necessary instructions and tools to seed a Linear project with 5 strategic test issues designed to verify the Bifrost autonomous swarm.
 
@@ -19,13 +19,13 @@ This skill provides the necessary instructions and tools to seed a Linear projec
 Run the following command to begin seeding. You will be prompted for your Linear API Key and Team ID if they are not found in your environment.
 
 ```bash
-./scripts/seed-swarm.sh
+./scripts/linear/seed-sluagh.sh
 ```
 
 ### 📋 Seeded Issues
 1.  **Orchestration Logic Review** (Priority: 90) - High-priority documentation/logic task.
 2.  **Autonomous Security Audit** (Priority: 75) - Automated dependency check (`npm audit`).
-3.  **Swarm Resilience Simulation** (Priority: 50) - Designed to fail to test `swarm:blocked` state.
+3.  **Sluagh Swarm Resilience Simulation** (Priority: 50) - Designed to fail to test `swarm:blocked` state.
 4.  **Metadata Routing Validation** (Priority: 25) - Standard metadata parsing test.
 5.  **Multi-Agent Handoff Drill** - Verifying labels and comments across multiple transitions.
 

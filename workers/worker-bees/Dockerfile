@@ -10,11 +10,11 @@ COPY tsconfig.json ./
 # Install dependencies (including devDependencies for build)
 RUN npm install
 
-# Copy source code
+# Copy source code (Force Rebuild 2026-02-18)
 COPY src ./src
 
 # Build the project
-RUN npm run build
+RUN npm run build && ls -R /app/dist || echo "Build failed or dist empty"
 
 # Production stage
 FROM node:20-alpine
