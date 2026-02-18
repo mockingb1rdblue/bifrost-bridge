@@ -30,9 +30,17 @@ PERPLEXITY_API_KEY = "test-perplexity-key"
 name = "ROUTER_DO"
 class_name = "RouterDO"
 
+[[env.test.durable_objects.bindings]]
+name = "GOVERNANCE_DO"
+class_name = "GovernanceDO"
+
 [[durable_objects.bindings]]
 name = "ROUTER_DO"
 class_name = "RouterDO"
+
+[[durable_objects.bindings]]
+name = "GOVERNANCE_DO"
+class_name = "GovernanceDO"
 
 [[migrations]]
 tag = "v1"
@@ -42,5 +50,9 @@ new_sqlite_classes = ["RouterDO"]
 tag = "v3"
 deleted_classes = ["DullahanDispatcher"]
 
+[[migrations]]
+tag = "v4"
+new_sqlite_classes = ["GovernanceDO"]
+
 [triggers]
-crons = ["*/5 * * * *"] # Pulse every 5 minutes
+crons = ["0 8,20 * * *"] # Run at 08:00 and 20:00 UTC (Twice Daily)

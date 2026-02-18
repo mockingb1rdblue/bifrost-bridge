@@ -1,8 +1,9 @@
 // Env is global
 import { RouterDO } from './router-do';
+import { GovernanceDO } from './governance-do';
 import { DASHBOARD_HTML } from './dashboard';
 
-export { RouterDO };
+export { RouterDO, GovernanceDO };
 
 export default {
     async fetch(request: Request, env: any): Promise<Response> {
@@ -75,11 +76,23 @@ export default {
 
         ctx.waitUntil((async () => {
             try {
+                // 1. Wake up the Worker Bee (Fly.io)
                 console.log(`[Cron] Pinging Swarm at ${flyUrl}...`);
                 const response = await fetch(flyUrl);
                 console.log(`[Cron] Swarm Ping Result: ${response.status} ${response.statusText}`);
+
+                // 2. Trigger Router Batch Processing
+                if (env.ROUTER_DO) {
+                    const id = env.ROUTER_DO.idFromName('global-router');
+                    const stub = env.ROUTER_DO.get(id);
+                    console.log('[Cron] Triggering Router Batch Processing...');
+                    await stub.fetch('http://internal/v1/swarm/sync', { method: 'POST' });
+                    console.log('[Cron] Router Batch Triggered.');
+                } else {
+                    console.warn('[Cron] ROUTER_DO not configured.');
+                }
             } catch (e: any) {
-                console.error(`[Cron] Failed to ping Swarm: ${e.message}`);
+                console.error(`[Cron] Failed to pulse: ${e.message}`);
                 // Verify if it's reachable or just a 404 (which still wakes it up)
             }
         })());

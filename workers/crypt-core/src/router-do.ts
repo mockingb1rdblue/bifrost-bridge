@@ -38,6 +38,7 @@ export interface Env {
   JULES_API_KEY: string;
   RUNNER_SECRET: string;
   ROUTER_DO: DurableObjectNamespace;
+  GOVERNANCE_DO: DurableObjectNamespace;
 }
 
 export class RouterDO {
@@ -1357,6 +1358,18 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   private async executeRunnerTask(job: Job) {
     try {
+      // 1. Governance Check
+      if (this.env.GOVERNANCE_DO) {
+        const id = this.env.GOVERNANCE_DO.idFromName('guard-dog');
+        const stub = this.env.GOVERNANCE_DO.get(id);
+        const govRes = await stub.fetch('http://governance/check');
+
+        if (govRes.status === 429) {
+          const body = await govRes.json() as any;
+          throw new Error(`Governance Blocked: ${body.reason}`);
+        }
+      }
+
       await this.fly.startRunner();
       const runnerUrl = 'http://bifrost-runner.flycast:8080/execute';
       const command = job.payload?.command;

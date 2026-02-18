@@ -2,8 +2,9 @@ export interface Env {
   // ... existing
   FLY_API_TOKEN: string;
   EVENTS_SECRET: string;
+  GOVERNANCE_DO: DurableObjectNamespace;
   // ... others
-  [key: string]: string | undefined;
+  [key: string]: any;
 }
 
 export interface Job {
