@@ -71,7 +71,7 @@ export default {
         // Wake up the Sluagh Swarm (Fly.io Scale-to-Zero)
         // We just need to hit the endpoint to wake the machine.
         // It will auto-poll on boot.
-        const flyUrl = 'https://sluagh-swarm.fly.dev/health'; // Replace with actual health check URL if different
+        const flyUrl = 'https://sluagh-swarm.fly.dev/'; // Root URL serves as health check
 
         ctx.waitUntil((async () => {
             try {
