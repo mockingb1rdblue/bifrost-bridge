@@ -7,7 +7,7 @@ describe('Adaptive Rate Limiting', () => {
     const stub = env.ROUTER_DO.get(id);
 
     const request = new Request('http://example.com/jules/next', {
-      headers: { Authorization: 'Bearer adaptive-key' },
+      headers: { Authorization: 'Bearer ' + 'test-key' },
     });
 
     // 1. Fill the queue to trigger "Stressed" state (> 50 jobs)

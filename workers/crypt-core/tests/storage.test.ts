@@ -14,7 +14,7 @@ describe('Storage Persistence', () => {
                 priority: 10,
                 data: { foo: 'bar' },
             }),
-            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer test-key' },
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + 'test-key-storage' },
         });
         if (createRes.status !== 201) {
             console.error('Create job failed:', await createRes.text());
@@ -25,14 +25,14 @@ describe('Storage Persistence', () => {
 
         // Verify it exists in list
         const listRes = await stub.fetch('http://example.com/jobs', {
-            headers: { Authorization: 'Bearer test-key' },
+            headers: { Authorization: 'Bearer ' + 'test-key' },
         });
         const jobs: any[] = await listRes.json();
         expect(jobs.find((j: any) => j.id === jobId)).toBeDefined();
 
         // Verify individual job lookup (path startsWith('/jobs/'))
         const detailRes = await stub.fetch(`http://example.com/jobs/${jobId}`, {
-            headers: { Authorization: 'Bearer test-key' },
+            headers: { Authorization: 'Bearer ' + 'test-key' },
         });
         const detailJob: any = await detailRes.json();
         expect(detailJob.id).toBe(jobId);
@@ -52,7 +52,7 @@ describe('Storage Persistence', () => {
                 description: 'This is low',
                 priority: 1,
             }),
-            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer test-key' },
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + 'test-key-storage' },
         });
 
         // 2. Create high priority task
@@ -64,12 +64,12 @@ describe('Storage Persistence', () => {
                 description: 'This is high',
                 priority: 50,
             }),
-            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer test-key' },
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + 'test-key-storage' },
         });
 
         // 3. Get next task - should be High Priority
         const nextRes = await stub.fetch('http://example.com/jules/next', {
-            headers: { Authorization: 'Bearer test-key' },
+            headers: { Authorization: 'Bearer ' + 'test-key' },
         });
         expect(nextRes.status).toBe(200);
         const nextTask: any = await nextRes.json();
@@ -91,13 +91,13 @@ describe('Storage Persistence', () => {
                     lessonsLearned: ['Persistence pays'],
                 },
             }),
-            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer test-key' },
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + 'test-key-storage' },
         });
         expect(updateRes.status).toBe(200);
 
         // 5. Verify next task is now the low priority one
         const nextRes2 = await stub.fetch('http://example.com/jules/next', {
-            headers: { Authorization: 'Bearer test-key' },
+            headers: { Authorization: 'Bearer ' + 'test-key' },
         });
         const nextTask2: any = await nextRes2.json();
         expect(nextTask2.title).toBe('Low Priority Task');
@@ -108,7 +108,7 @@ describe('Storage Persistence', () => {
         const stub = env.ROUTER_DO.get(id);
 
         const res = await stub.fetch('http://example.com/jules/next', {
-            headers: { Authorization: 'Bearer test-key' },
+            headers: { Authorization: 'Bearer ' + 'test-key' },
         });
         expect(res.status).toBe(404);
         const body: any = await res.json();

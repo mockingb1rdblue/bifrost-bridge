@@ -687,6 +687,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   private async handleWebhook(request: Request): Promise<Response> {
     try {
+      await this.checkGovernance('ingress-webhook');
       const signature = request.headers.get('Linear-Signature');
       if (!signature) {
         return new Response('Missing Linear-Signature header', { status: 400 });
@@ -787,6 +788,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   private async handleGitHubWebhook(request: Request): Promise<Response> {
     try {
+      await this.checkGovernance('ingress-github');
       const signature = request.headers.get('X-Hub-Signature-256');
       if (!signature) {
         return new Response('Missing X-Hub-Signature-256 header', { status: 400 });
@@ -1235,6 +1237,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   private async processOrchestrationJob(job: Job) {
     try {
+      await this.checkGovernance('orchestrator');
       const github = new GitHubClient({
         appId: this.env.GITHUB_APP_ID,
         privateKey: this.env.GITHUB_PRIVATE_KEY,
@@ -1577,6 +1580,19 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     } catch (e: any) {
       console.error(`[completeAndMergeTask] Failed to merge/close: ${e.message}`);
       // Optionally notify Linear that merge failed
+    }
+  }
+
+  private async checkGovernance(agentId: string = 'global') {
+    if (this.env.GOVERNANCE_DO) {
+      const id = this.env.GOVERNANCE_DO.idFromName('guard-dog');
+      const stub = this.env.GOVERNANCE_DO.get(id);
+      const govRes = await stub.fetch(`http://governance/check?agent=${agentId}`);
+
+      if (govRes.status === 429) {
+        const body = (await govRes.json()) as any;
+        throw new Error(`Governance Blocked: ${body.reason}`);
+      }
     }
   }
 

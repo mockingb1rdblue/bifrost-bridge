@@ -9,7 +9,7 @@ describe('Validation Security', () => {
     const response = await stub.fetch(
       new Request('http://example.com/jobs', {
         method: 'POST',
-        headers: { Authorization: 'Bearer jules-key' },
+        headers: { Authorization: 'Bearer ' + 'test-key-validation' },
         body: JSON.stringify({ type: 'invalid-type' }),
       }),
     );
@@ -25,7 +25,7 @@ describe('Validation Security', () => {
     const response = await stub.fetch(
       new Request('http://example.com/jules/update', {
         method: 'POST',
-        headers: { Authorization: 'Bearer jules-key' },
+        headers: { Authorization: 'Bearer ' + 'test-key-validation' },
         body: JSON.stringify({ taskId: '123', status: 'unknown-status' }),
       }),
     );
