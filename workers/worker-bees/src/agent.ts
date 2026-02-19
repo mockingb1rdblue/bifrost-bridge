@@ -26,7 +26,7 @@ export interface JobHandler {
 
 // Configuration
 const ROUTER_URL = process.env.ROUTER_URL || 'http://localhost:8787';
-const API_KEY = process.env.WORKER_API_KEY || 'dev-key';
+const API_KEY = process.env.PROXY_API_KEY || 'dev-key';
 const WORKER_ID = `bee-${randomUUID().slice(0, 8)}`;
 const POLL_INTERVAL = 5000;
 
