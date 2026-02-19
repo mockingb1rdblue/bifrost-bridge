@@ -450,11 +450,35 @@ export class RouterDO {
                 `[handleSluaghSwarmTaskUpdate] Verify completed but missing PR info for review chain.`,
               );
             }
+          } else {
+            console.warn(
+              `[handleSluaghSwarmTaskUpdate] Verify failed, initiating self-healing fix loop.`
+            );
+            const fixTaskId = `task_fix_${now}`;
+            const verificationErrors = verifyLog?.whatDidntWork?.join('\n') || 'Unknown verification failure.';
+
+            this.storage.swarmTasks[fixTaskId] = {
+              id: fixTaskId,
+              type: 'coding',
+              title: `Fix Verification: ${task.title.replace('Verify: ', '')}`,
+              description: `Verification failed for task ${task.id}.\n\nThe following issues were found during verification and must be fixed:\n${verificationErrors}\n\nOriginal Task Context:\n${task.description}`,
+              status: 'pending',
+              priority: task.priority + 1, // Escalate priority
+              issueId: task.issueId,
+              createdAt: now,
+              updatedAt: now,
+              files: task.files,
+              prNumber: task.prNumber,
+              prUrl: task.prUrl,
+              repository: task.repository,
+              engineeringLog: task.engineeringLog,
+              isHighRisk: task.isHighRisk,
+            };
+            await this.saveState();
+            console.log(
+              `[handleSluaghSwarmTaskUpdate] Chained fix task ${fixTaskId} for failed verify ${task.id}`,
+            );
           }
-        } else {
-          console.warn(
-            `[handleSluaghSwarmTaskUpdate] Verify failed: ${JSON.stringify(task.engineeringLog)}`,
-          );
         }
       }
 
