@@ -1,5 +1,5 @@
 import http from 'http';
-import { Job, JobResult, handlers, registerHandler } from './agent';
+import { Job, JobResult, handlers, registerHandler, startAgent } from './agent';
 import { RunCommandHandler } from './handlers/RunCommandHandler';
 import { FetchUrlHandler } from './handlers/FetchUrlHandler';
 
@@ -81,4 +81,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
     console.log(`Worker Bee (Runner Mode) listening on port ${PORT}`);
+
+    // Start the autonomous polling loop!
+    startAgent();
 });
