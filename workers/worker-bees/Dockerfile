@@ -10,7 +10,7 @@ COPY tsconfig.json ./
 # Install dependencies (including devDependencies for build)
 RUN npm install
 
-# Copy source code (Force Rebuild 2026-02-18)
+# Copy source code (Force Rebuild 2026-02-19_2209)
 COPY src ./src
 
 # Build the project
