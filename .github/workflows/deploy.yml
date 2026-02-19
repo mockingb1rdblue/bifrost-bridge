@@ -7,41 +7,44 @@ on:
       - hee-haw
   workflow_dispatch:
 
-env:
-  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
 
 jobs:
-  deploy-events:
-    name: Deploy Events Store
+  deploy-crypt-core:
+    name: Deploy Crypt Core (Router)
     runs-on: ubuntu-latest
-    env:
-      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
-        working-directory: workers/bifrost-events
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/crypt-core
+          command: deploy
 
-  deploy-runner:
-    name: Deploy Runner
-    needs: deploy-events # Optional sequencing
+  deploy-linear-proxy:
+    name: Deploy Linear Proxy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
-        working-directory: workers/bifrost-runner
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/linear-proxy
+          command: deploy
 
-  deploy-worker-bees:
-    name: Deploy Worker Bees
-    needs: deploy-events # Optional sequencing
+  deploy-perplexity-proxy:
+    name: Deploy Perplexity Proxy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
-        working-directory: workers/worker-bees
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/perplexity-proxy
+          command: deploy
