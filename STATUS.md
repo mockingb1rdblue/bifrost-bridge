@@ -9,6 +9,8 @@
 -   ✅ **Zero Scale Implemented**: Destroyed legacy app; documented deploy-on-demand protocol.
 -   ✅ **Grand Documentation Refactor**: Consolidated 50+ mixed files into 5 Core Documents.
 -   ✅ **"Dark Mythology" Implemented**: Full rename of components (Sluagh Swarm, Crypt Core, Specter Sanctums).
+-   ✅ **Swarm Control Center**: Implemented `scripts/ops/swarm-control.ts` for real-time auditing and manual overrides.
+
 
 ## 🎯 Current Focus (Capability Audit)
 -   🕵️ **Code Analysis**: Auditing `worker-bees` source to map current capabilities.

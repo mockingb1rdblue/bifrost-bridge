@@ -136,3 +136,25 @@ npx tsx scripts/infra/secure-connect.ts scripts/infra/deploy-swarm.ts
 #### "Lease currently held"
 *   **Symptom**: Deployment hangs or fails with lease errors.
 *   **Fix**: `fly machine destroy <machine-id> --force` to nuker the stuck machine.
+
+## 🛡️ Environment Hardening Protocol
+*Mandatory practices to prevent configuration drift and security leaks.*
+
+### The "Multiple Environments" Warning
+**Symptom**: `WARNING] Multiple environments are defined...`
+**Cause**: `wrangler.toml` has `[env.staging]` etc., but you ran `wrangler deploy` without `--env`.
+**Remediation**:
+1.  **Explicit Targeting**: Always use `--env`:
+    ```bash
+    wrangler deploy --env production
+    wrangler dev --env test
+    ```
+2.  **Script Enforcement**: Use `package.json` scripts that hardcode these flags.
+
+### Secret Rotation (The Dual-Key Ritual)
+*To zero-downtime rotate keys (e.g., Linear API Key):*
+1.  **Generate**: Create new key in the provider.
+2.  **Inject**: Add as `LINEAR_API_KEY_NEXT`.
+3.  **Migrate**: Update code to fallback (`env.LINEAR_API_KEY_NEXT || env.LINEAR_API_KEY`).
+4.  **Promote**: `wrangler secret put LINEAR_API_KEY` with new value.
+5.  **Clean**: Remove `LINEAR_API_KEY_NEXT`.

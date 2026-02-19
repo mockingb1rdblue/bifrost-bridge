@@ -6,7 +6,7 @@ describe('Adaptive Rate Limiting', () => {
     const id = env.ROUTER_DO.idFromName('adaptive-test');
     const stub = env.ROUTER_DO.get(id);
 
-    const request = new Request('http://example.com/jules/next', {
+    const request = new Request('http://example.com/v1/swarm/next', {
       headers: { Authorization: 'Bearer ' + 'test-key' },
     });
 

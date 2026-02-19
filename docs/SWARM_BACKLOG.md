@@ -52,6 +52,7 @@
 - [ ] [OPS-02] **Secret Resolver**: Design "Abyssal Artifact Resolution" worker (secure proxy for local dev).
 - [ ] [OPS-03] **Env Warning Fix**: Implement `wrangler` wrappers to enforce `--env` flags (Cloudflare warning).
 - [ ] [OPS-04] **Audit**: Monthly secret rotation drill (manual trigger).
+- [ ] [OPS-05] **Secret Rotation Automator**: Implement Dual-Key Rotation worker on Cron Trigger.
 
 ## 🔮 The Icebox (Future Visions)
 

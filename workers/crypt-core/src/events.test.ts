@@ -32,6 +32,7 @@ describe('EventStoreClient', () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(event),
+                signal: expect.anything(),
             });
         });
 
@@ -58,7 +59,7 @@ describe('EventStoreClient', () => {
 
             await client.append({ type: 'T', source: 'S', payload: {} });
 
-            expect(consoleSpy).toHaveBeenCalledWith('EventStore connection failed:', expect.any(Error));
+            expect(consoleSpy).toHaveBeenCalledWith('EventStore connection failed (timeout or network):', expect.any(Error));
         });
     });
 
@@ -75,6 +76,7 @@ describe('EventStoreClient', () => {
 
             expect(mockFetch).toHaveBeenCalledWith(`${baseUrl}/state/test-topic`, {
                 headers: { Authorization: `Bearer ${secret}` },
+                signal: expect.anything(),
             });
             expect(state).toEqual(mockState);
         });

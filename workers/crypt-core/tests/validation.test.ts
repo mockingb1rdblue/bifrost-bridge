@@ -23,7 +23,7 @@ describe('Validation Security', () => {
     const stub = env.ROUTER_DO.get(id);
 
     const response = await stub.fetch(
-      new Request('http://example.com/jules/update', {
+      new Request('http://example.com/v1/swarm/update', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + 'test-key-validation' },
         body: JSON.stringify({ taskId: '123', status: 'unknown-status' }),

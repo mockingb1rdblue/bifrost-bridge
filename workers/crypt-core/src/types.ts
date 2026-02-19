@@ -38,7 +38,7 @@ export interface RouterState {
 export interface SluaghSwarmTask {
   id: string;
   issueId: string;
-  type: 'feature' | 'bug' | 'chore' | 'coding' | 'verify';
+  type: 'feature' | 'bug' | 'chore' | 'coding' | 'verify' | 'review';
   title: string;
   description: string;
   files: string[];
@@ -46,14 +46,18 @@ export interface SluaghSwarmTask {
   priority: number;
   isHighRisk: boolean;
   engineeringLog?: EngineeringLog;
+  metadata?: Record<string, string>;
   createdAt: number;
   updatedAt: number;
   prNumber?: number;
-  prUrl?: string;
   repository?: {
     owner: string;
     name: string;
+    token?: string;
   };
+  prUrl?: string;
+  reviewDecision?: 'APPROVE' | 'REQUEST_CHANGES' | 'COMMENT';
+  reviewBody?: string;
 }
 export interface RateLimitState {
   tokens: number;

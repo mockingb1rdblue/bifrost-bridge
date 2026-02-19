@@ -1,6 +1,6 @@
 name = "crypt-core"
 main = "src/index.ts"
-compatibility_date = "2024-01-01"
+compatibility_date = "2026-02-18"
 
 [vars]
 RATE_LIMIT_MAX_TOKENS = "100"
@@ -8,8 +8,9 @@ RATE_LIMIT_REFILL_RATE = "1"
 RATE_LIMIT_DEGRADATION_THRESHOLD = "50"
 LINEAR_PROJECT_ID = "9aeceb58-dc0e-46ab-9b26-f12c8a083815"
 LINEAR_TEAM_ID = "d43e265a-cbc3-4f07-afcd-7792ce875ad3"
+EVENTS_URL = "http://127.0.0.1:55555"
 
-[[env.test.vars]]
+[env.test.vars]
 RATE_LIMIT_MAX_TOKENS = "100"
 RATE_LIMIT_REFILL_RATE = "1"
 RATE_LIMIT_DEGRADATION_THRESHOLD = "50"
@@ -26,6 +27,9 @@ RATE_LIMIT_DEGRADATION_THRESHOLD = "50"
 # ANTHROPIC_API_KEY
 # GEMINI_API_KEY
 # PERPLEXITY_API_KEY
+EVENTS_URL = "http://127.0.0.1:55555"
+LINEAR_PROJECT_ID = "9aeceb58-dc0e-46ab-9b26-f12c8a083815"
+LINEAR_TEAM_ID = "d43e265a-cbc3-4f07-afcd-7792ce875ad3"
 
 [[env.test.durable_objects.bindings]]
 name = "ROUTER_DO"
@@ -47,9 +51,7 @@ class_name = "GovernanceDO"
 tag = "v1"
 new_sqlite_classes = ["RouterDO"]
 
-[[migrations]]
-tag = "v3"
-deleted_classes = ["DullahanDispatcher"]
+
 
 [[migrations]]
 tag = "v4"
@@ -57,3 +59,21 @@ new_sqlite_classes = ["GovernanceDO"]
 
 [triggers]
 crons = ["0 8,20 * * *"] # Run at 08:00 and 20:00 UTC (Twice Daily)
+
+[env.production]
+# Production configuration
+[env.production.vars]
+RATE_LIMIT_MAX_TOKENS = "100"
+RATE_LIMIT_REFILL_RATE = "1"
+RATE_LIMIT_DEGRADATION_THRESHOLD = "50"
+LINEAR_PROJECT_ID = "9aeceb58-dc0e-46ab-9b26-f12c8a083815"
+LINEAR_TEAM_ID = "d43e265a-cbc3-4f07-afcd-7792ce875ad3"
+EVENTS_URL = "http://127.0.0.1:55555"
+
+[[env.production.durable_objects.bindings]]
+name = "ROUTER_DO"
+class_name = "RouterDO"
+
+[[env.production.durable_objects.bindings]]
+name = "GOVERNANCE_DO"
+class_name = "GovernanceDO"

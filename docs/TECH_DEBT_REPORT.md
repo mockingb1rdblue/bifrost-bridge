@@ -28,6 +28,11 @@ The codebase follows a modern "Zero Local Secrets" architecture but suffers from
     - Post-install scripts are not disabled in `.npmrc`.
 - **Risk**: Malicious dependency injection or build-time script execution.
 
+- [ ] [GG-06] **Script Migration**: Migrate all scripts to `relics/node_modules` pattern.
+- [x] [GG-07] **Punycode Deprecation**: Resolved via `overrides` to `ajv@^8.12.0`.
+- [x] [GG-08] **Stale Compatibility**: All workers updated to `2026-02-18`.
+- [x] [GG-09] **Outdated Dependencies**: Safe updates applied. Major versions (OpenAI v6, Chalk v5) deferred.
+
 ## 🏗️ Component Analysis
 
 ### 1. Root Configuration

@@ -27,6 +27,12 @@ COPY package*.json ./
 # Install only production dependencies
 RUN npm install --only=production
 
+# Install git (Required for CodingHandler)
+RUN apk add --no-cache git
+
+# Install git (Required for CodingHandler)
+RUN apk add --no-cache git
+
 # Copy built artifacts from builder stage
 COPY --from=builder /app/dist ./dist
 

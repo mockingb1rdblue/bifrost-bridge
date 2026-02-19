@@ -44,31 +44,33 @@ describe('Storage Persistence', () => {
         const stub = env.ROUTER_DO.get(id);
 
         // 1. Create low priority task
-        await stub.fetch('http://example.com/jules/tasks', {
+        await stub.fetch('http://example.com/v1/swarm/tasks', {
             method: 'POST',
             body: JSON.stringify({
                 issueId: 'ISS-LOW',
                 title: 'Low Priority Task',
                 description: 'This is low',
                 priority: 1,
+                type: 'coding',
             }),
             headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + 'test-key-storage' },
         });
 
         // 2. Create high priority task
-        await stub.fetch('http://example.com/jules/tasks', {
+        await stub.fetch('http://example.com/v1/swarm/tasks', {
             method: 'POST',
             body: JSON.stringify({
                 issueId: 'ISS-HIGH',
                 title: 'High Priority Task',
                 description: 'This is high',
                 priority: 50,
+                type: 'coding',
             }),
             headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + 'test-key-storage' },
         });
 
         // 3. Get next task - should be High Priority
-        const nextRes = await stub.fetch('http://example.com/jules/next', {
+        const nextRes = await stub.fetch('http://example.com/v1/swarm/next', {
             headers: { Authorization: 'Bearer ' + 'test-key' },
         });
         expect(nextRes.status).toBe(200);
@@ -77,7 +79,7 @@ describe('Storage Persistence', () => {
         expect(nextTask.status).toBe('active');
 
         // 4. Update task to completed
-        const updateRes = await stub.fetch('http://example.com/jules/update', {
+        const updateRes = await stub.fetch('http://example.com/v1/swarm/update', {
             method: 'POST',
             body: JSON.stringify({
                 taskId: nextTask.id,
@@ -96,18 +98,33 @@ describe('Storage Persistence', () => {
         expect(updateRes.status).toBe(200);
 
         // 5. Verify next task is now the low priority one
-        const nextRes2 = await stub.fetch('http://example.com/jules/next', {
+        const nextRes2 = await stub.fetch('http://example.com/v1/swarm/next', {
             headers: { Authorization: 'Bearer ' + 'test-key' },
         });
         const nextTask2: any = await nextRes2.json();
-        expect(nextTask2.title).toBe('Low Priority Task');
+        expect(nextTask2.title).toContain('Verify: High Priority Task');
+        expect(nextTask2.type).toBe('verify');
+
+        // Complete the verify task
+        await stub.fetch('http://example.com/v1/swarm/update', {
+            method: 'POST',
+            body: JSON.stringify({ taskId: nextTask2.id, status: 'completed' }),
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + 'test-key' },
+        });
+
+        // 3. Now get low priority task
+        const nextRes3 = await stub.fetch('http://example.com/v1/swarm/next', {
+            headers: { Authorization: 'Bearer ' + 'test-key' },
+        });
+        const nextTask3: any = await nextRes3.json();
+        expect(nextTask3.title).toBe('Low Priority Task');
     });
 
     it('returns 404 when no tasks are available', async () => {
         const id = env.ROUTER_DO.idFromName('empty-test');
         const stub = env.ROUTER_DO.get(id);
 
-        const res = await stub.fetch('http://example.com/jules/next', {
+        const res = await stub.fetch('http://example.com/v1/swarm/next', {
             headers: { Authorization: 'Bearer ' + 'test-key' },
         });
         expect(res.status).toBe(404);

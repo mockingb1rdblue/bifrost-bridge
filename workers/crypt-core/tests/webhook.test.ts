@@ -18,6 +18,7 @@ describe('Linear Webhook Handler', () => {
             storage: {
                 get: vi.fn(),
                 put: vi.fn(),
+                setAlarm: vi.fn(),
             },
             blockConcurrencyWhile: vi.fn((fn) => fn()),
         };

@@ -2,8 +2,9 @@
   "name": "custom-router",
   "version": "1.0.0",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --env test",
+    "deploy": "wrangler deploy --env production",
+    "deploy:test": "wrangler deploy --env test",
     "typegen": "wrangler types",
     "test": "vitest"
   },
@@ -12,7 +13,7 @@
     "@cloudflare/workers-types": "^4.20260210.0",
     "typescript": "^5.3.3",
     "vitest": "^3.2.4",
-    "wrangler": "^4.64.0"
+    "wrangler": "^4.66.0"
   },
   "dependencies": {
     "hono": "^4.11.9",

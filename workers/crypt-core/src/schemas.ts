@@ -27,7 +27,7 @@ export const EngineeringLogSchema = z.object({
 
 export const SluaghSwarmTaskSchema = z.object({
   id: z.string(),
-  type: z.enum(['coding', 'verify']),
+  type: z.enum(['coding', 'verify', 'review']),
   title: z.string(),
   description: z.string(),
   files: z.array(z.string()).optional(),
@@ -38,6 +38,7 @@ export const SluaghSwarmTaskSchema = z.object({
   createdAt: z.number(),
   updatedAt: z.number(),
   engineeringLog: EngineeringLogSchema.optional(),
+  metadata: z.record(z.string()).optional(),
   prNumber: z.number().optional(),
   prUrl: z.string().optional(),
   repository: z
@@ -46,14 +47,28 @@ export const SluaghSwarmTaskSchema = z.object({
       name: z.string(),
     })
     .optional(),
+  reviewDecision: z.enum(['APPROVE', 'REQUEST_CHANGES', 'COMMENT']).optional(),
+  reviewBody: z.string().optional(),
+});
+
+export const SluaghSwarmTaskCreateSchema = SluaghSwarmTaskSchema.omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  engineeringLog: true,
+  reviewDecision: true,
+  reviewBody: true,
 });
 
 export const SluaghSwarmTaskUpdateSchema = z.object({
   taskId: z.string(),
-  status: z.string(),
+  status: z.enum(['pending', 'active', 'completed', 'failed']).optional(),
   engineeringLog: EngineeringLogSchema.optional(),
   prNumber: z.number().optional(),
   prUrl: z.string().optional(),
+  reviewDecision: z.enum(['APPROVE', 'REQUEST_CHANGES', 'COMMENT']).optional(),
+  reviewBody: z.string().optional(),
 });
 
 export const LinearWebhookSchema = z.object({

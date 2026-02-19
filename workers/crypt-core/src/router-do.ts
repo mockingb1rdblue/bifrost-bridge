@@ -6,12 +6,14 @@ import { EventStoreClient } from './events';
 import {
   JobPayloadSchema,
   SluaghSwarmTaskSchema,
+  SluaghSwarmTaskCreateSchema,
   SluaghSwarmTaskUpdateSchema,
   GitHubActionSchema,
   LinearWebhookSchema,
   JobUpdateSchema,
 } from './schemas';
 import { LLMRouter, RoutingRequest } from './llm/router';
+import { LLMConfig } from './llm/factory';
 import { LLMResponse } from './llm/types';
 import { verifyLinearSignature, verifyGitHubSignature } from './utils/crypto';
 
@@ -60,14 +62,26 @@ export class RouterDO {
     recentErrors: [],
     lastMaintenance: Date.now(),
   };
-  private llm: LLMRouter;
+
+  private llmRouter: LLMRouter;
   private events: EventStoreClient;
   private fly: FlyClient;
   private readonly BATCH_SIZE = 10;
 
-  constructor(state: DurableObjectState, env: any) {
+  constructor(state: DurableObjectState, env: Env) {
     this.state = state;
     this.env = env;
+
+    const llmConfig: LLMConfig = {
+      anthropicKey: env.ANTHROPIC_API_KEY,
+      geminiKey: env.GEMINI_API_KEY,
+      perplexityKey: env.PERPLEXITY_API_KEY,
+      deepseekKey: env.DEEPSEEK_API_KEY,
+      anthropicBaseUrl: 'https://proxy.jules.codes/v1',
+      deepseekBaseUrl: 'https://proxy.jules.codes/v1',
+      geminiBaseUrl: 'https://proxy.jules.codes/v1',
+    };
+    this.llmRouter = new LLMRouter(llmConfig);
 
     // Clients
     this.events = new EventStoreClient({
@@ -91,16 +105,6 @@ export class RouterDO {
           recentErrors: stored.recentErrors || [],
         };
       }
-    });
-
-    this.llm = new LLMRouter({
-      deepseekKey: this.env.DEEPSEEK_API_KEY,
-      anthropicKey: this.env.ANTHROPIC_API_KEY,
-      geminiKey: this.env.GEMINI_API_KEY,
-      perplexityKey: this.env.PERPLEXITY_API_KEY,
-      anthropicBaseUrl: 'https://proxy.jules.codes/v1',
-      deepseekBaseUrl: 'https://proxy.jules.codes/v1',
-      geminiBaseUrl: 'https://proxy.jules.codes/v1',
     });
 
     // Set heartbeat alarm
@@ -238,7 +242,7 @@ export class RouterDO {
         ];
       }
 
-      const result = await this.llm.route({
+      const result = await this.llmRouter.route({
         ...request,
         messages: optimizedMessages,
       });
@@ -330,6 +334,18 @@ export class RouterDO {
       if (engineeringLog) {
         task.engineeringLog = engineeringLog;
       }
+      if (result.data.reviewDecision) {
+        task.reviewDecision = result.data.reviewDecision;
+      }
+      if (result.data.reviewBody) {
+        task.reviewBody = result.data.reviewBody;
+      }
+      if (result.data.prNumber) {
+        task.prNumber = result.data.prNumber;
+      }
+      if (result.data.prUrl) {
+        task.prUrl = result.data.prUrl;
+      }
       task.updatedAt = Date.now();
 
       await this.saveState();
@@ -341,19 +357,23 @@ export class RouterDO {
             apiKey: this.env.LINEAR_API_KEY,
             teamId: this.env.LINEAR_TEAM_ID,
           });
+          let header = `🤖 Sluagh Swarm: Task ${status}`;
+          if (status === 'completed') {
+            if (task.type === 'coding') header = `🤖 **Coding Complete**`;
+            else if (task.type === 'verify') header = `🤖 **Verification Complete**`;
+            else if (task.type === 'review') header = `🤖 **Review Decided**`;
+          } else if (status === 'failed') {
+            header = `⚠️ **Task Failed**`;
+          }
+
           const logBody = task.engineeringLog
             ? this.formatEngineeringLog(task.engineeringLog)
-            : `Task ${status} `;
-          await linear.addComment(task.issueId, `🤖 Sluagh Swarm: Task ${status} \n\n${logBody} `);
+            : `(No output provided)`;
+          await linear.addComment(task.issueId, `${header}\n\n${logBody}`);
 
           if (status === 'completed') {
             await linear.addLabel(task.issueId, 'swarm:review');
             await linear.removeLabel(task.issueId, 'swarm:active');
-
-            // Autonomy: If verify task succeeds, merge and close
-            if (task.type === 'verify') {
-              await this.completeAndMergeTask(task);
-            }
           } else if (status === 'failed') {
             await linear.addLabel(task.issueId, 'swarm:blocked');
             await linear.removeLabel(task.issueId, 'swarm:active');
@@ -363,25 +383,125 @@ export class RouterDO {
         }
       }
 
-      // If PR info is provided in update, save it
-      if (result.data.prNumber) task.prNumber = result.data.prNumber;
-      if (result.data.prUrl) task.prUrl = result.data.prUrl;
+      if (status === 'completed') {
+        const now = Date.now();
 
-      // Chaining: If coding is done, create verify task
-      if (status === 'completed' && task.type === 'coding') {
-        const verifyTaskId = `task_verify_${Date.now()} `;
-        this.storage.swarmTasks[verifyTaskId] = {
-          ...task,
-          id: verifyTaskId,
-          type: 'verify',
-          title: `Verify: ${task.title} `,
-          description: `Verify the changes made for task ${task.id}.Run tests and check requirements.`,
-          status: 'pending',
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
-        await this.saveState();
-        console.log(`[handleSluaghSwarmTaskUpdate] Chained verify task ${verifyTaskId} for ${task.id}`);
+        // 1. Coding Completed -> Trigger Verify
+        if (task.type === 'coding') {
+          const verifyTaskId = `task_verify_${now}`;
+          this.storage.swarmTasks[verifyTaskId] = {
+            id: verifyTaskId,
+            type: 'verify',
+            title: `Verify: ${task.title}`,
+            description: `Verify the changes made for task ${task.id}. Run tests and check requirements.`,
+            status: 'pending',
+            priority: task.priority,
+            isHighRisk: task.isHighRisk,
+            issueId: task.issueId,
+            createdAt: now,
+            updatedAt: now,
+            files: task.files,
+            prNumber: task.prNumber,
+            prUrl: task.prUrl,
+            repository: task.repository,
+            engineeringLog: task.engineeringLog, // Pass context
+          };
+          await this.saveState();
+          console.log(
+            `[handleSluaghSwarmTaskUpdate] Chained verify task ${verifyTaskId} for ${task.id}`,
+          );
+        }
+
+        // 2. Verify Completed -> Trigger Review (Autonomous Gate)
+        if (task.type === 'verify') {
+          const verifyLog = task.engineeringLog;
+          const passedVerify =
+            verifyLog &&
+            verifyLog.whatWorked &&
+            verifyLog.whatWorked.length > 0 &&
+            (!verifyLog.whatDidntWork || verifyLog.whatDidntWork.length === 0);
+
+          if (passedVerify) {
+            if (task.prNumber) {
+              const reviewTaskId = `task_review_${now}`;
+              this.storage.swarmTasks[reviewTaskId] = {
+                id: reviewTaskId,
+                type: 'review' as any,
+                title: `Review: ${task.title}`,
+                description: `Autonomous code review for PR #${task.prNumber}. Check for tech debt, security, and best practices.`,
+                status: 'pending',
+                priority: task.priority + 1, // Higher priority
+                isHighRisk: task.isHighRisk,
+                issueId: task.issueId,
+                createdAt: now,
+                updatedAt: now,
+                prNumber: task.prNumber,
+                prUrl: task.prUrl,
+                repository: task.repository,
+                engineeringLog: task.engineeringLog,
+                files: task.files,
+              } as any;
+              await this.saveState();
+              console.log(
+                `[handleSluaghSwarmTaskUpdate] Chained review task ${reviewTaskId} for ${task.id}`,
+              );
+            } else {
+              console.warn(
+                `[handleSluaghSwarmTaskUpdate] Verify completed but missing PR info for review chain.`,
+              );
+            }
+          }
+        } else {
+          console.warn(
+            `[handleSluaghSwarmTaskUpdate] Verify failed: ${JSON.stringify(task.engineeringLog)}`,
+          );
+        }
+      }
+
+      // 3. Review Completed -> Check Decision
+      if (task.type === 'review') {
+        if (task.reviewDecision === 'APPROVE') {
+          await this.completeAndMergeTask(task);
+        } else if (task.reviewDecision === 'REQUEST_CHANGES') {
+          try {
+            const linear = new LinearClient({
+              apiKey: this.env.LINEAR_API_KEY,
+              teamId: this.env.LINEAR_TEAM_ID,
+            });
+            await linear.addComment(
+              task.issueId,
+              `⚠️ **Autonomous Review Requested Changes**\n\nInitiating self-healing loop. Creating fix task...`,
+            );
+
+            // Create Fix Task (Loop)
+            const now = Date.now();
+            const fixTaskId = `task_fix_${now}`;
+            this.storage.swarmTasks[fixTaskId] = {
+              id: fixTaskId,
+              type: 'coding',
+              title: `Fix: ${task.title.replace('Review: ', '').replace('Verify: ', '')}`,
+              description: `Address review feedback for task ${task.id}.\n\nFeedback:\n${task.reviewBody || 'See PR comments.'}`,
+              status: 'pending',
+              priority: task.priority + 1, // Escalate priority
+              issueId: task.issueId,
+              createdAt: now,
+              updatedAt: now,
+              files: task.files,
+              prNumber: task.prNumber,
+              prUrl: task.prUrl,
+              repository: task.repository,
+              engineeringLog: task.engineeringLog,
+              isHighRisk: task.isHighRisk,
+            };
+            await this.saveState();
+            console.log(
+              `[handleSluaghSwarmTaskUpdate] Chained fix task ${fixTaskId} for ${task.id}`,
+            );
+
+          } catch (e: any) {
+            console.error('Failed to create fix task/comment:', e.message);
+          }
+        }
       }
 
       // Trigger next batch
@@ -548,15 +668,15 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   private async handleCreateSluaghSwarmTask(request: Request): Promise<Response> {
     try {
-      const body = await request.json();
-      const result = SluaghSwarmTaskSchema.safeParse(body);
+      const body = (await request.json()) as any;
+      const result = SluaghSwarmTaskCreateSchema.safeParse(body);
 
       if (!result.success) {
         return new Response('Invalid task payload: ' + result.error.message, { status: 400 });
       }
 
       const payload = result.data;
-      const taskId = crypto.randomUUID();
+      const taskId = body.id || crypto.randomUUID();
       const now = Date.now();
 
       const newTask: SluaghSwarmTask = {
@@ -571,6 +691,10 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         isHighRisk: payload.isHighRisk || false,
         createdAt: now,
         updatedAt: now,
+        metadata: payload.metadata,
+        prNumber: payload.prNumber,
+        prUrl: payload.prUrl,
+        repository: payload.repository,
       };
 
       this.storage.swarmTasks[taskId] = newTask;
@@ -633,13 +757,13 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     });
   }
 
-  private async processBatch(): Promise<Response> {
+  private async processBatch(limit: number = this.BATCH_SIZE): Promise<Response> {
     await this.syncLinearTasks();
 
     const pendingJobs = Object.values(this.storage.jobs)
       .filter((j) => j.status === 'pending')
       .sort((a, b) => b.priority - a.priority)
-      .slice(0, this.BATCH_SIZE);
+      .slice(0, limit);
 
     const linear = new LinearClient({
       apiKey: this.env.LINEAR_API_KEY,
@@ -992,6 +1116,12 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
             return new Response(JSON.stringify(newJob), { status: 201, headers: { 'Content-Type': 'application/json' } });
           }
           return new Response('Method Not Allowed', { status: 405 });
+        case '/v1/llm/chat':
+          if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+          return await this.handleLLMChat(request);
+        case '/v1/admin/batch':
+          if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+          return await this.handleBatchTrigger(request);
         default:
           return new Response('Not found', { status: 404 });
       }
@@ -1162,6 +1292,70 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     await this.saveState();
   }
 
+  private async handleLLMChat(request: Request): Promise<Response> {
+    try {
+      // 1. Authenticate (Basic check for now, can be enhanced)
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response('Unauthorized', { status: 401 });
+      }
+
+      // 2. Parse Body
+      const body = (await request.json()) as any;
+      const { messages, options, taskType, preferredProvider } = body;
+
+      if (!messages || !Array.isArray(messages)) {
+        return new Response('Invalid payload: messages array required', { status: 400 });
+      }
+
+      // 3. Route to LLM
+      const response = await this.llmRouter.route({
+        messages,
+        options,
+        taskType,
+        preferredProvider,
+      });
+
+      return new Response(JSON.stringify(response), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (e: any) {
+      await this.logError(e.message, 'LLM_CHAT', e);
+      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+  }
+
+  private async handleBatchTrigger(request: Request): Promise<Response> {
+    try {
+      // 1. Authenticate
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader || !authHeader.includes(this.env.PROXY_API_KEY)) {
+        return new Response('Unauthorized', { status: 401 });
+      }
+
+      const body = await request.json() as any;
+      const forceSync = body.forceSync || false;
+      const batchSize = body.batchSize || this.BATCH_SIZE;
+
+      if (forceSync) {
+        await this.syncLinearTasks();
+      }
+
+      // Override batch size temporarily? 
+      // For now, processBatch uses const BATCH_SIZE, so we might need to modify processBatch to accept arg
+      // Or just loop here. Let's modify processBatch signature in a separate edit if needed, 
+      // or just call it multiple times if we really wanted to. 
+      // Actually, let's just run processBatch once, unless we want to process MORE.
+      // Modifying processBatch to take an optional limit is better.
+
+      return await this.processBatch(batchSize);
+
+    } catch (e: any) {
+      await this.logError(e.message, 'BATCH_TRIGGER', e);
+      return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+  }
+
   private async saveState() {
     await this.state.storage.put('router_state', this.storage);
   }
@@ -1298,6 +1492,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           const taskId = `task_${Date.now()}`;
           const isHighRisk = job.payload.metadata?.RiskProfile === 'high';
 
+          // Get GitHub installation token for the worker
+          const token = await github.getAccessToken();
+
           this.storage.swarmTasks[taskId] = {
             id: taskId,
             type: 'coding',
@@ -1313,6 +1510,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
             repository: {
               owner: owner,
               name: repo,
+              token: token
             },
           };
           console.log(`Created Sluagh SwarmTask ${taskId} for issue ${issueIdentifier}`);
@@ -1574,6 +1772,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           task.issueId,
           `🏁 **Autonomous Merge & Close**\n\nPR #${task.prNumber} merged. Issue moved to **Done**.`,
         );
+        await linear.removeLabel(task.issueId, 'swarm:review');
       } else {
         console.warn('[completeAndMergeTask] Done state not found in Linear.');
       }

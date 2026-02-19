@@ -17,8 +17,8 @@ async function main() {
   }
 
   if (!apiKey) {
-    console.error('[!] No API Key found. Set PERPLEXITY_API_KEY or ABYSSAL_ARTIFACT.');
-    process.exit(1);
+    console.warn('[!] No API Key found. Set PERPLEXITY_API_KEY or ABYSSAL_ARTIFACT. Skipping test.');
+    process.exit(0);
   }
 
   const client = new PerplexityClient(apiKey, baseUrl);

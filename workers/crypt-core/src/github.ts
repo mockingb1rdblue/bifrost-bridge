@@ -28,7 +28,7 @@ export class GitHubClient {
   /**
    * Get an Installation Access Token
    */
-  private async getAccessToken(): Promise<string> {
+  public async getAccessToken(): Promise<string> {
     // Reuse token if valid (with 1 min buffer)
     if (this.token && Date.now() < this.tokenExpiry - 60000) {
       return this.token;
