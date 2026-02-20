@@ -10,7 +10,7 @@ This workflow is optimized for re-animating work on any machine without requirin
 
 1.  **Sync Code**:
     ```bash
-    git pull origin main
+    git pull origin hee-haw
     ```
 
 2.  **Auth Check (Cloudflare)**:
