@@ -1,0 +1,695 @@
+Deploy Crypt Core (Router)	UNKNOWN STEP	﻿2026-02-19T14:13:52.5896401Z Current runner version: '2.331.0'
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5919191Z ##[group]Runner Image Provisioner
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5919889Z Hosted Compute Agent
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5920377Z Version: 20260213.493
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5920970Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5921582Z Build Date: 2026-02-13T00:28:41Z
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5922154Z Worker ID: {a8bf3d8b-0352-4f3a-b9bc-da6af86b6f3a}
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5922816Z Azure Region: westus3
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5923318Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5924548Z ##[group]Operating System
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5925102Z Ubuntu
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5925490Z 24.04.3
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5926133Z LTS
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5926533Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5926985Z ##[group]Runner Image
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5927434Z Image: ubuntu-24.04
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5927905Z Version: 20260217.30.1
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5928945Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260217.30/images/ubuntu/Ubuntu2404-Readme.md
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5930279Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260217.30
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5931049Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5931973Z ##[group]GITHUB_TOKEN Permissions
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5933743Z Contents: read
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5934240Z Metadata: read
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5934632Z Packages: read
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5935184Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5937221Z Secret source: Actions
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.5937871Z Prepare workflow directory
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.6235156Z Prepare all required actions
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:52.6272691Z Getting action download info
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:53.0768101Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:53.1880797Z Download action repository 'cloudflare/wrangler-action@v3' (SHA:da0e0dfe58b7a431659754fdf3f186c529afbe65)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.0791216Z Complete job name: Deploy Crypt Core (Router)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1504786Z ##[group]Run actions/checkout@v4
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1506542Z with:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1507516Z   repository: mockingb1rdblue/bifrost-bridge
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1508941Z   token: ***
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1509720Z   ssh-strict: true
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1510578Z   ssh-user: git
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1511420Z   persist-credentials: true
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1512367Z   clean: true
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1513193Z   sparse-checkout-cone-mode: true
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1514274Z   fetch-depth: 1
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1515076Z   fetch-tags: false
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1516045Z   show-progress: true
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1516956Z   lfs: false
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1517717Z   submodules: false
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1518592Z   set-safe-directory: true
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.1519812Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2579981Z Syncing repository: mockingb1rdblue/bifrost-bridge
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2584698Z ##[group]Getting Git version info
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2587564Z Working directory is '/home/runner/work/bifrost-bridge/bifrost-bridge'
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2591067Z [command]/usr/bin/git version
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2592788Z git version 2.53.0
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2598311Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2607424Z Temporarily overriding HOME='/home/runner/work/_temp/f6d8bd6f-549a-401d-a562-db1a625b4cc3' before making global git config changes
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2611874Z Adding repository directory to the temporary git global config as a safe directory
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2616038Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bifrost-bridge/bifrost-bridge
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2651994Z Deleting the contents of '/home/runner/work/bifrost-bridge/bifrost-bridge'
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2656077Z ##[group]Initializing the repository
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2660771Z [command]/usr/bin/git init /home/runner/work/bifrost-bridge/bifrost-bridge
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2754330Z hint: Using 'master' as the name for the initial branch. This default branch name
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2757742Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2760231Z hint: to use in all of your new repositories, which will suppress this warning,
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2761935Z hint: call:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2762952Z hint:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2764332Z hint: 	git config --global init.defaultBranch <name>
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2765466Z hint:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2766921Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2768685Z hint: 'development'. The just-created branch can be renamed via this command:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2770318Z hint:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2771424Z hint: 	git branch -m <name>
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2772306Z hint:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2773499Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2776097Z Initialized empty Git repository in /home/runner/work/bifrost-bridge/bifrost-bridge/.git/
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2780343Z [command]/usr/bin/git remote add origin https://github.com/mockingb1rdblue/bifrost-bridge
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2806807Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2808365Z ##[group]Disabling automatic garbage collection
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2810169Z [command]/usr/bin/git config --local gc.auto 0
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2833692Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2835047Z ##[group]Setting up auth
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2839745Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.2868017Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.3137060Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.3165147Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.3330053Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.3357563Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.3537392Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.3566299Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.3568000Z ##[group]Fetching the repository
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:54.3574744Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +96ac3e0bf8a45b7fb80f2de7e256d75f60ead5c6:refs/remotes/origin/hee-haw
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:57.9940391Z From https://github.com/mockingb1rdblue/bifrost-bridge
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:57.9942334Z  * [new ref]         96ac3e0bf8a45b7fb80f2de7e256d75f60ead5c6 -> origin/hee-haw
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:57.9968988Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:57.9969837Z ##[group]Determining the checkout info
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:57.9970969Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:57.9976547Z [command]/usr/bin/git sparse-checkout disable
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:58.0012427Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:58.0032469Z ##[group]Checking out the ref
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:58.0036692Z [command]/usr/bin/git checkout --progress --force -B hee-haw refs/remotes/origin/hee-haw
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0113939Z Updating files:  41% (493/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0553643Z Updating files:  42% (494/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0597034Z Updating files:  43% (506/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0647855Z Updating files:  44% (518/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0689605Z Updating files:  45% (530/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0735806Z Updating files:  46% (541/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0770257Z Updating files:  47% (553/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0808501Z Updating files:  48% (565/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0894190Z Updating files:  49% (577/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0936612Z Updating files:  50% (588/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.0975877Z Updating files:  51% (600/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1014416Z Updating files:  52% (612/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1060221Z Updating files:  53% (624/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1080295Z Updating files:  54% (636/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1343659Z Updating files:  55% (647/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1384585Z Updating files:  56% (659/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1507759Z Updating files:  57% (671/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1508457Z Updating files:  58% (683/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1509185Z Updating files:  59% (694/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1509655Z Updating files:  60% (706/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1528437Z Updating files:  61% (718/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1555138Z Updating files:  62% (730/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1575058Z Updating files:  63% (741/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1587807Z Updating files:  64% (753/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1599914Z Updating files:  65% (765/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1626724Z Updating files:  66% (777/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1641687Z Updating files:  67% (788/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1658648Z Updating files:  68% (800/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1680431Z Updating files:  69% (812/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1692160Z Updating files:  70% (824/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1709113Z Updating files:  71% (835/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1718580Z Updating files:  72% (847/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1728842Z Updating files:  73% (859/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1742649Z Updating files:  74% (871/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1780063Z Updating files:  75% (882/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1812657Z Updating files:  76% (894/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1858933Z Updating files:  77% (906/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.1892015Z Updating files:  78% (918/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2041635Z Updating files:  79% (930/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2077873Z Updating files:  80% (941/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2114150Z Updating files:  81% (953/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2125838Z Updating files:  82% (965/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2130060Z Updating files:  83% (977/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2135926Z Updating files:  84% (988/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2140725Z Updating files:  85% (1000/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2146976Z Updating files:  86% (1012/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2150898Z Updating files:  87% (1024/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2156038Z Updating files:  88% (1035/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2161558Z Updating files:  89% (1047/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2166115Z Updating files:  90% (1059/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2171664Z Updating files:  91% (1071/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2178580Z Updating files:  92% (1082/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2183652Z Updating files:  93% (1094/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2190476Z Updating files:  94% (1106/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2195933Z Updating files:  95% (1118/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2210350Z Updating files:  96% (1129/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2215520Z Updating files:  97% (1141/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2221068Z Updating files:  98% (1153/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2225478Z Updating files:  99% (1165/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2226101Z Updating files: 100% (1176/1176)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2226573Z Updating files: 100% (1176/1176), done.
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2247171Z Switched to a new branch 'hee-haw'
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2248978Z branch 'hee-haw' set up to track 'origin/hee-haw'.
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2273247Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2305545Z [command]/usr/bin/git log -1 --format=%H
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2323972Z 96ac3e0bf8a45b7fb80f2de7e256d75f60ead5c6
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2507672Z ##[group]Run cloudflare/wrangler-action@v3
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2507942Z with:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2508140Z   workingDirectory: workers/crypt-core
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2508378Z   command: deploy
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2508564Z   quiet: false
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.2508735Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.3356600Z ##[group]🔍 Checking for existing Wrangler installation
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:13:59.3391756Z [command]/usr/local/bin/npx --no-install wrangler --version
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:06.2877368Z npm error npx canceled due to missing packages and no YES option: ["wrangler@4.67.0"]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:06.2884231Z npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-02-19T14_14_00_932Z-debug-0.log
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:06.2965943Z ⚠️ Wrangler not found or version is incompatible. Installing...
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:06.2966455Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:06.2966989Z ##[group]📥 Installing Wrangler
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:06.2989175Z [command]/usr/local/bin/npm i wrangler@3.90.0
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:10.0716715Z npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:10.2060443Z npm warn deprecated rollup-plugin-inject@3.0.2: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-inject.
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.3864711Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.3865590Z added 150 packages, and audited 151 packages in 10s
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.3866145Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.3866334Z 35 packages are looking for funding
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.3866764Z   run `npm fund` for details
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4481152Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4481876Z 4 vulnerabilities (3 moderate, 1 high)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4483238Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4483400Z To address all issues, run:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4483884Z   npm audit fix --force
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4484150Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4484309Z Run `npm audit` for details.
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4608556Z ✅ Wrangler installed
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4609388Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4612892Z ##[group]🚀 Running Wrangler Commands
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:16.4631412Z [command]/usr/local/bin/npx wrangler deploy
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.4897175Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.4897993Z  ⛅️ wrangler 3.90.0 (update available 4.67.0)
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.4898647Z ---------------------------------------------
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5248428Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5249815Z [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe version of Wrangler you are using is now out-of-date.[0m
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5250421Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5250719Z   Please update to the latest version to prevent critical errors.
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5251458Z   Run `npm install --save-dev wrangler@4` to update to the latest version.
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5252153Z   After installation, run Wrangler with `npx wrangler`.
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5252558Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5252566Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5411271Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5419544Z [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mIn a non-interactive environment, it's necessary to set a CLOUDFLARE_API_TOKEN environment variable for wrangler to work. Please go to https://developers.cloudflare.com/fundamentals/api/get-started/create-token/ for instructions on how to create an api token, and assign its value to CLOUDFLARE_API_TOKEN.[0m
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5421590Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5421600Z 
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5434615Z 🪵  Logs were written to "/home/runner/.config/.wrangler/logs/wrangler-2026-02-19_14-14-17_002.log"
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5590421Z ##[endgroup]
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5611299Z ##[error]The process '/usr/local/bin/npx' failed with exit code 1
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5620339Z ##[error]🚨 Action failed
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.5710462Z Post job cleanup.
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6571452Z [command]/usr/bin/git version
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6603967Z git version 2.53.0
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6644074Z Temporarily overriding HOME='/home/runner/work/_temp/c8db0cfe-2122-48f9-888b-123a0c8d0945' before making global git config changes
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6645316Z Adding repository directory to the temporary git global config as a safe directory
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6658260Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bifrost-bridge/bifrost-bridge
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6691710Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6720253Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6901110Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6919268Z http.https://github.com/.extraheader
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6930757Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.6956368Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.7129490Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.7154249Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy Crypt Core (Router)	UNKNOWN STEP	2026-02-19T14:14:17.7413655Z Cleaning up orphan processes
+Deploy Linear Proxy	UNKNOWN STEP	﻿2026-02-19T14:13:52.1281337Z Current runner version: '2.331.0'
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1316150Z ##[group]Runner Image Provisioner
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1317367Z Hosted Compute Agent
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1318294Z Version: 20260213.493
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1319719Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1321018Z Build Date: 2026-02-13T00:28:41Z
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1322086Z Worker ID: {830889dc-24f2-4628-b645-586cc2e28cb4}
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1323345Z Azure Region: eastus2
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1324154Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1326387Z ##[group]Operating System
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1327428Z Ubuntu
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1328382Z 24.04.3
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1329404Z LTS
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1330317Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1331279Z ##[group]Runner Image
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1332154Z Image: ubuntu-24.04
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1333162Z Version: 20260217.30.1
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1335263Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260217.30/images/ubuntu/Ubuntu2404-Readme.md
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1337819Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260217.30
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1339752Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1341746Z ##[group]GITHUB_TOKEN Permissions
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1344559Z Contents: read
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1345369Z Metadata: read
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1346319Z Packages: read
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1347067Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1350106Z Secret source: Actions
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1351837Z Prepare workflow directory
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1802075Z Prepare all required actions
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.1857875Z Getting action download info
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.5358728Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:52.6781533Z Download action repository 'cloudflare/wrangler-action@v3' (SHA:da0e0dfe58b7a431659754fdf3f186c529afbe65)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0127987Z Complete job name: Deploy Linear Proxy
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0841013Z ##[group]Run actions/checkout@v4
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0841930Z with:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0842408Z   repository: mockingb1rdblue/bifrost-bridge
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0843167Z   token: ***
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0843572Z   ssh-strict: true
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0843992Z   ssh-user: git
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0844416Z   persist-credentials: true
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0844882Z   clean: true
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0845322Z   sparse-checkout-cone-mode: true
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0845829Z   fetch-depth: 1
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0846241Z   fetch-tags: false
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0846656Z   show-progress: true
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0847084Z   lfs: false
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0847475Z   submodules: false
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0847912Z   set-safe-directory: true
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.0848600Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.1995739Z Syncing repository: mockingb1rdblue/bifrost-bridge
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.1998753Z ##[group]Getting Git version info
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2000506Z Working directory is '/home/runner/work/bifrost-bridge/bifrost-bridge'
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2002620Z [command]/usr/bin/git version
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2011399Z git version 2.53.0
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2039691Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2063857Z Temporarily overriding HOME='/home/runner/work/_temp/6e6c01a1-99dd-45b4-a026-6df5f145b657' before making global git config changes
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2066486Z Adding repository directory to the temporary git global config as a safe directory
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2070427Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bifrost-bridge/bifrost-bridge
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2112608Z Deleting the contents of '/home/runner/work/bifrost-bridge/bifrost-bridge'
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2116201Z ##[group]Initializing the repository
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2121640Z [command]/usr/bin/git init /home/runner/work/bifrost-bridge/bifrost-bridge
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2229338Z hint: Using 'master' as the name for the initial branch. This default branch name
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2230895Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2232211Z hint: to use in all of your new repositories, which will suppress this warning,
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2233625Z hint: call:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2234294Z hint:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2235258Z hint: 	git config --global init.defaultBranch <name>
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2236480Z hint:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2237622Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2239726Z hint: 'development'. The just-created branch can be renamed via this command:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2241219Z hint:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2241984Z hint: 	git branch -m <name>
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2243032Z hint:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2244256Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2246427Z Initialized empty Git repository in /home/runner/work/bifrost-bridge/bifrost-bridge/.git/
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2250114Z [command]/usr/bin/git remote add origin https://github.com/mockingb1rdblue/bifrost-bridge
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2284367Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2285736Z ##[group]Disabling automatic garbage collection
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2289683Z [command]/usr/bin/git config --local gc.auto 0
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2319985Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2321386Z ##[group]Setting up auth
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2327767Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2367871Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2729637Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2763157Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.2997268Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.3039940Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.3274268Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.3310649Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.3312073Z ##[group]Fetching the repository
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:53.3320993Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +96ac3e0bf8a45b7fb80f2de7e256d75f60ead5c6:refs/remotes/origin/hee-haw
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:56.5634556Z From https://github.com/mockingb1rdblue/bifrost-bridge
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:56.5637426Z  * [new ref]         96ac3e0bf8a45b7fb80f2de7e256d75f60ead5c6 -> origin/hee-haw
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:56.5667729Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:56.5669823Z ##[group]Determining the checkout info
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:56.5671944Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:56.5677628Z [command]/usr/bin/git sparse-checkout disable
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:56.5724764Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:56.5756836Z ##[group]Checking out the ref
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:56.5761009Z [command]/usr/bin/git checkout --progress --force -B hee-haw refs/remotes/origin/hee-haw
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.5912577Z Updating files:  40% (482/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.5967079Z Updating files:  41% (483/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6387420Z Updating files:  42% (494/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6437632Z Updating files:  43% (506/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6492371Z Updating files:  44% (518/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6539225Z Updating files:  45% (530/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6582893Z Updating files:  46% (541/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6618580Z Updating files:  47% (553/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6661113Z Updating files:  48% (565/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6752780Z Updating files:  49% (577/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6800958Z Updating files:  50% (588/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6842311Z Updating files:  51% (600/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6883364Z Updating files:  52% (612/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6932371Z Updating files:  53% (624/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.6955286Z Updating files:  54% (636/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7214852Z Updating files:  55% (647/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7260617Z Updating files:  56% (659/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7289118Z Updating files:  57% (671/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7331191Z Updating files:  58% (683/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7359623Z Updating files:  59% (694/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7397799Z Updating files:  60% (706/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7416492Z Updating files:  61% (718/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7444481Z Updating files:  62% (730/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7465599Z Updating files:  63% (741/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7480553Z Updating files:  64% (753/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7494958Z Updating files:  65% (765/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7523610Z Updating files:  66% (777/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7540779Z Updating files:  67% (788/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7560106Z Updating files:  68% (800/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7586947Z Updating files:  69% (812/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7601036Z Updating files:  70% (824/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7620048Z Updating files:  71% (835/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7632145Z Updating files:  72% (847/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7645394Z Updating files:  73% (859/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7661771Z Updating files:  74% (871/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7703933Z Updating files:  75% (882/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7741222Z Updating files:  76% (894/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7790888Z Updating files:  77% (906/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.7826576Z Updating files:  78% (918/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8022769Z Updating files:  79% (930/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8076225Z Updating files:  80% (941/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8132386Z Updating files:  81% (953/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8153915Z Updating files:  82% (965/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8162820Z Updating files:  83% (977/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8174928Z Updating files:  84% (988/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8184055Z Updating files:  85% (1000/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8197400Z Updating files:  86% (1012/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8205111Z Updating files:  87% (1024/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8215839Z Updating files:  88% (1035/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8226996Z Updating files:  89% (1047/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8237705Z Updating files:  90% (1059/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8250054Z Updating files:  91% (1071/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8262468Z Updating files:  92% (1082/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8272797Z Updating files:  93% (1094/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8286541Z Updating files:  94% (1106/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8297117Z Updating files:  95% (1118/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8321949Z Updating files:  96% (1129/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8333120Z Updating files:  97% (1141/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8345258Z Updating files:  98% (1153/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8354792Z Updating files:  99% (1165/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8355617Z Updating files: 100% (1176/1176)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8356061Z Updating files: 100% (1176/1176), done.
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8393195Z Switched to a new branch 'hee-haw'
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8396305Z branch 'hee-haw' set up to track 'origin/hee-haw'.
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8461846Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8505211Z [command]/usr/bin/git log -1 --format=%H
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8531383Z 96ac3e0bf8a45b7fb80f2de7e256d75f60ead5c6
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8749679Z ##[group]Run cloudflare/wrangler-action@v3
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8749983Z with:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8750173Z   workingDirectory: workers/linear-proxy
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8750423Z   command: deploy
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8750597Z   quiet: false
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.8750761Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.9698058Z ##[group]🔍 Checking for existing Wrangler installation
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:13:57.9738621Z [command]/usr/local/bin/npx --no-install wrangler --version
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:06.8217836Z npm error npx canceled due to missing packages and no YES option: ["wrangler@4.67.0"]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:06.8225634Z npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-02-19T14_14_00_449Z-debug-0.log
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:06.8362587Z ⚠️ Wrangler not found or version is incompatible. Installing...
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:06.8363462Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:06.8366364Z ##[group]📥 Installing Wrangler
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:06.8379202Z [command]/usr/local/bin/npm i wrangler@3.90.0
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:12.1110601Z npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:12.2066851Z npm warn deprecated rollup-plugin-inject@3.0.2: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-inject.
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.0759117Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.0759979Z added 70 packages, and audited 71 packages in 10s
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.0762475Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.0762842Z 11 packages are looking for funding
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.0766435Z   run `npm fund` for details
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1457866Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1458477Z 4 vulnerabilities (3 moderate, 1 high)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1459154Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1459341Z To address all issues, run:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1459846Z   npm audit fix --force
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1460123Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1460304Z Run `npm audit` for details.
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1663318Z ✅ Wrangler installed
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1664065Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1668128Z ##[group]🚀 Running Wrangler Commands
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:17.1687195Z [command]/usr/local/bin/npx wrangler deploy
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6251996Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6252814Z  ⛅️ wrangler 3.90.0 (update available 4.67.0)
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6253940Z ---------------------------------------------
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6254277Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6642361Z [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe version of Wrangler you are using is now out-of-date.[0m
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6642889Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6643161Z   Please update to the latest version to prevent critical errors.
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6643691Z   Run `npm install --save-dev wrangler@4` to update to the latest version.
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6644236Z   After installation, run Wrangler with `npx wrangler`.
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6644494Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6644498Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6807581Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6817605Z [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mIn a non-interactive environment, it's necessary to set a CLOUDFLARE_API_TOKEN environment variable for wrangler to work. Please go to https://developers.cloudflare.com/fundamentals/api/get-started/create-token/ for instructions on how to create an api token, and assign its value to CLOUDFLARE_API_TOKEN.[0m
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6819209Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6819213Z 
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.6836365Z 🪵  Logs were written to "/home/runner/.config/.wrangler/logs/wrangler-2026-02-19_14-14-17_864.log"
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.7074167Z ##[endgroup]
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.7096971Z ##[error]The process '/usr/local/bin/npx' failed with exit code 1
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.7106336Z ##[error]🚨 Action failed
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.7215969Z Post job cleanup.
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8163207Z [command]/usr/bin/git version
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8201736Z git version 2.53.0
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8246533Z Temporarily overriding HOME='/home/runner/work/_temp/211bd5a3-0c87-4eda-b9a4-9118d711ad58' before making global git config changes
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8247799Z Adding repository directory to the temporary git global config as a safe directory
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8253456Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bifrost-bridge/bifrost-bridge
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8295009Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8329109Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8573156Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8595700Z http.https://github.com/.extraheader
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8609467Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8642103Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8892305Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.8924845Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy Linear Proxy	UNKNOWN STEP	2026-02-19T14:14:18.9332386Z Cleaning up orphan processes
+Deploy Perplexity Proxy	UNKNOWN STEP	﻿2026-02-19T14:13:53.6860643Z Current runner version: '2.331.0'
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6886524Z ##[group]Runner Image Provisioner
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6887370Z Hosted Compute Agent
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6888014Z Version: 20260213.493
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6888627Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6889296Z Build Date: 2026-02-13T00:28:41Z
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6890017Z Worker ID: {fd05de6b-279b-4954-8634-102ef57ef362}
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6890704Z Azure Region: westcentralus
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6891292Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6893366Z ##[group]Operating System
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6893961Z Ubuntu
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6894444Z 24.04.3
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6894913Z LTS
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6895438Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6895901Z ##[group]Runner Image
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6896496Z Image: ubuntu-24.04
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6896993Z Version: 20260217.30.1
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6898179Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260217.30/images/ubuntu/Ubuntu2404-Readme.md
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6899714Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260217.30
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6900609Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6901721Z ##[group]GITHUB_TOKEN Permissions
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6903791Z Contents: read
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6904350Z Metadata: read
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6905045Z Packages: read
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6905512Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6907591Z Secret source: Actions
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.6908431Z Prepare workflow directory
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.7268071Z Prepare all required actions
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:53.7307592Z Getting action download info
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:54.1731795Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:54.3331392Z Download action repository 'cloudflare/wrangler-action@v3' (SHA:da0e0dfe58b7a431659754fdf3f186c529afbe65)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0137857Z Complete job name: Deploy Perplexity Proxy
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0875098Z ##[group]Run actions/checkout@v4
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0876026Z with:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0876498Z   repository: mockingb1rdblue/bifrost-bridge
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0877303Z   token: ***
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0877707Z   ssh-strict: true
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0878125Z   ssh-user: git
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0878549Z   persist-credentials: true
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0879018Z   clean: true
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0879444Z   sparse-checkout-cone-mode: true
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0879947Z   fetch-depth: 1
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0880349Z   fetch-tags: false
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0880766Z   show-progress: true
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0881182Z   lfs: false
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0881588Z   submodules: false
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0882017Z   set-safe-directory: true
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.0883054Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.1992732Z Syncing repository: mockingb1rdblue/bifrost-bridge
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.1994854Z ##[group]Getting Git version info
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.1995767Z Working directory is '/home/runner/work/bifrost-bridge/bifrost-bridge'
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.1996871Z [command]/usr/bin/git version
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2004457Z git version 2.53.0
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2032867Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2050262Z Temporarily overriding HOME='/home/runner/work/_temp/166fb42f-3d03-4887-8ea4-6dd8279bd4f6' before making global git config changes
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2053188Z Adding repository directory to the temporary git global config as a safe directory
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2066090Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bifrost-bridge/bifrost-bridge
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2112029Z Deleting the contents of '/home/runner/work/bifrost-bridge/bifrost-bridge'
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2116557Z ##[group]Initializing the repository
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2121829Z [command]/usr/bin/git init /home/runner/work/bifrost-bridge/bifrost-bridge
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2226505Z hint: Using 'master' as the name for the initial branch. This default branch name
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2228160Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2230301Z hint: to use in all of your new repositories, which will suppress this warning,
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2231367Z hint: call:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2232125Z hint:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2233397Z hint: 	git config --global init.defaultBranch <name>
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2234591Z hint:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2235703Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2237522Z hint: 'development'. The just-created branch can be renamed via this command:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2238955Z hint:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2239666Z hint: 	git branch -m <name>
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2240493Z hint:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2241601Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2243977Z Initialized empty Git repository in /home/runner/work/bifrost-bridge/bifrost-bridge/.git/
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2247555Z [command]/usr/bin/git remote add origin https://github.com/mockingb1rdblue/bifrost-bridge
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2285836Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2287229Z ##[group]Disabling automatic garbage collection
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2291251Z [command]/usr/bin/git config --local gc.auto 0
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2323833Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2325195Z ##[group]Setting up auth
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2332485Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2367781Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2706855Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2741713Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.2990665Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.3023808Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.3280964Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.3358243Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.3359371Z ##[group]Fetching the repository
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:55.3361746Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +96ac3e0bf8a45b7fb80f2de7e256d75f60ead5c6:refs/remotes/origin/hee-haw
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:58.8469448Z From https://github.com/mockingb1rdblue/bifrost-bridge
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:58.8470717Z  * [new ref]         96ac3e0bf8a45b7fb80f2de7e256d75f60ead5c6 -> origin/hee-haw
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:58.8505026Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:58.8505809Z ##[group]Determining the checkout info
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:58.8507894Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:58.8513929Z [command]/usr/bin/git sparse-checkout disable
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:58.8557931Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:58.8587084Z ##[group]Checking out the ref
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:58.8591994Z [command]/usr/bin/git checkout --progress --force -B hee-haw refs/remotes/origin/hee-haw
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.8700200Z Updating files:  40% (482/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.8774035Z Updating files:  41% (483/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9258667Z Updating files:  42% (494/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9309803Z Updating files:  43% (506/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9363942Z Updating files:  44% (518/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9423837Z Updating files:  45% (530/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9485500Z Updating files:  46% (541/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9534991Z Updating files:  47% (553/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9583211Z Updating files:  48% (565/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9687863Z Updating files:  49% (577/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9750671Z Updating files:  50% (588/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9805257Z Updating files:  51% (600/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9850310Z Updating files:  52% (612/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9900964Z Updating files:  53% (624/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:13:59.9924401Z Updating files:  54% (636/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0186333Z Updating files:  55% (647/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0231987Z Updating files:  56% (659/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0261130Z Updating files:  57% (671/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0304460Z Updating files:  58% (683/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0333542Z Updating files:  59% (694/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0372736Z Updating files:  60% (706/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0391627Z Updating files:  61% (718/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0419859Z Updating files:  62% (730/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0441929Z Updating files:  63% (741/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0456800Z Updating files:  64% (753/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0471502Z Updating files:  65% (765/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0500379Z Updating files:  66% (777/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0517963Z Updating files:  67% (788/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0537128Z Updating files:  68% (800/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0565018Z Updating files:  69% (812/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0579199Z Updating files:  70% (824/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0598525Z Updating files:  71% (835/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0610758Z Updating files:  72% (847/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0624206Z Updating files:  73% (859/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0640807Z Updating files:  74% (871/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0683019Z Updating files:  75% (882/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0720009Z Updating files:  76% (894/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0770026Z Updating files:  77% (906/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0806512Z Updating files:  78% (918/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0959416Z Updating files:  79% (930/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.0998415Z Updating files:  80% (941/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1039755Z Updating files:  81% (953/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1056088Z Updating files:  82% (965/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1063505Z Updating files:  83% (977/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1072864Z Updating files:  84% (988/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1079525Z Updating files:  85% (1000/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1089555Z Updating files:  86% (1012/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1095462Z Updating files:  87% (1024/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1102817Z Updating files:  88% (1035/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1110138Z Updating files:  89% (1047/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1117663Z Updating files:  90% (1059/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1126102Z Updating files:  91% (1071/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1135503Z Updating files:  92% (1082/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1143442Z Updating files:  93% (1094/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1152708Z Updating files:  94% (1106/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1160267Z Updating files:  95% (1118/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1177699Z Updating files:  96% (1129/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1185523Z Updating files:  97% (1141/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1193343Z Updating files:  98% (1153/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1199752Z Updating files:  99% (1165/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1200231Z Updating files: 100% (1176/1176)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1224130Z Updating files: 100% (1176/1176), done.
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1224628Z Switched to a new branch 'hee-haw'
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1227502Z branch 'hee-haw' set up to track 'origin/hee-haw'.
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1273169Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1316046Z [command]/usr/bin/git log -1 --format=%H
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1340739Z 96ac3e0bf8a45b7fb80f2de7e256d75f60ead5c6
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1559590Z ##[group]Run cloudflare/wrangler-action@v3
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1559893Z with:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1560099Z   workingDirectory: workers/perplexity-proxy
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1560364Z   command: deploy
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1560542Z   quiet: false
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.1560713Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.2552092Z ##[group]🔍 Checking for existing Wrangler installation
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:00.2594990Z [command]/usr/local/bin/npx --no-install wrangler --version
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:17.8126568Z npm error npx canceled due to missing packages and no YES option: ["wrangler@4.67.0"]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:17.8132844Z npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-02-19T14_14_02_061Z-debug-0.log
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:17.8269522Z ⚠️ Wrangler not found or version is incompatible. Installing...
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:17.8270411Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:17.8271074Z ##[group]📥 Installing Wrangler
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:17.8289917Z [command]/usr/local/bin/npm i wrangler@3.90.0
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:21.7498452Z npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:21.7502826Z npm warn deprecated rollup-plugin-inject@3.0.2: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-inject.
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7218554Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7220331Z added 71 packages, and audited 72 packages in 9s
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7221619Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7225074Z 11 packages are looking for funding
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7225564Z   run `npm fund` for details
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7939924Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7940704Z 4 vulnerabilities (3 moderate, 1 high)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7941325Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7941573Z To address all issues, run:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7942014Z   npm audit fix --force
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7942624Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.7942795Z Run `npm audit` for details.
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.8149376Z ✅ Wrangler installed
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.8150727Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.8155263Z ##[group]🚀 Running Wrangler Commands
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:26.8177187Z [command]/usr/local/bin/npx wrangler deploy
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0153561Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0154387Z  ⛅️ wrangler 3.90.0 (update available 4.67.0)
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0155047Z ---------------------------------------------
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0155377Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0549142Z [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe version of Wrangler you are using is now out-of-date.[0m
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0549873Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0550160Z   Please update to the latest version to prevent critical errors.
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0550947Z   Run `npm install --save-dev wrangler@4` to update to the latest version.
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0551667Z   After installation, run Wrangler with `npx wrangler`.
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0551980Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0551985Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0725015Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0736419Z [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mIn a non-interactive environment, it's necessary to set a CLOUDFLARE_API_TOKEN environment variable for wrangler to work. Please go to https://developers.cloudflare.com/fundamentals/api/get-started/create-token/ for instructions on how to create an api token, and assign its value to CLOUDFLARE_API_TOKEN.[0m
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0737997Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0738002Z 
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0751142Z 🪵  Logs were written to "/home/runner/.config/.wrangler/logs/wrangler-2026-02-19_14-14-27_452.log"
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.0997363Z ##[endgroup]
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.1019284Z ##[error]The process '/usr/local/bin/npx' failed with exit code 1
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.1028793Z ##[error]🚨 Action failed
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.1143868Z Post job cleanup.
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2115284Z [command]/usr/bin/git version
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2154156Z git version 2.53.0
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2200102Z Temporarily overriding HOME='/home/runner/work/_temp/ff4367c0-bba9-4a88-9d6f-08df7a05c846' before making global git config changes
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2201468Z Adding repository directory to the temporary git global config as a safe directory
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2207302Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bifrost-bridge/bifrost-bridge
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2247753Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2284581Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2536644Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2560362Z http.https://github.com/.extraheader
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2574762Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2607557Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2848706Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.2889169Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Deploy Perplexity Proxy	UNKNOWN STEP	2026-02-19T14:14:28.3322905Z Cleaning up orphan processes

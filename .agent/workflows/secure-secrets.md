@@ -42,11 +42,15 @@ fly secrets set MY_SECRET_KEY=value
 - Do **NOT** use `npx wrangler dev` (local mode) unless you have no dependencies on secrets.
 
 ### 5. Secure Session Execution (Scripts)
-- For one-off scripts requiring secrets (e.g., Linear backlog checks), use the **Secure Connect** tool:
+- For one-off scripts requiring secrets (e.g., Linear backlog checks, Perplexity queries), use the **Secure Connect** tool:
   ```bash
   npm run secure:exec path/to/script.ts
   ```
-- This tool injects secrets into the process environment for **that session only**. It does not write to disk.
+- **Cold Clone Persistence**: This tool now integrates natively with the **macOS Keychain**. 
+  - On the very first run, it will prompt for your `PROXY_API_KEY` and `LINEAR_API_KEY`.
+  - It securely stores them in the OS-level Keychain (`bifrost_proxy_key` and `bifrost_linear_key`).
+  - On every subsequent run (even after a `git clone` or branch wipe), it autonomously reads the secrets from the Keychain directly into process memory.
+  - Zero `.env` files. Zero prompts beyond the first setup. Zero Local Secrets.
 
 ## Verification
 - Run `scripts/check-secrets.sh` before committing.

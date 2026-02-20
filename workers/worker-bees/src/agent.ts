@@ -5,6 +5,7 @@ import { LinearHandler } from './handlers/LinearHandler';
 import { CodingHandler } from './handlers/CodingHandler';
 import { VerifyHandler } from './handlers/VerifyHandler';
 import { ReviewHandler } from './handlers/ReviewHandler';
+import { OrchestratorHandler } from './handlers/OrchestratorHandler';
 import { startLinearIngestor } from './ingestor';
 
 export interface Job {
@@ -111,6 +112,7 @@ registerHandler(new LinearHandler());
 registerHandler(new CodingHandler(ROUTER_URL, API_KEY));
 registerHandler(new VerifyHandler());
 registerHandler(new ReviewHandler(ROUTER_URL, API_KEY));
+registerHandler(new OrchestratorHandler(handlers));
 
 // --- Core Loop ---
 
@@ -120,18 +122,37 @@ registerHandler(new ReviewHandler(ROUTER_URL, API_KEY));
  * managed by the Durable Object's internal queue.
  * 
  * @lifecycle
- * 1. Poll: Request a job from `POST /v1/queue/poll` AND `v1/swarm/next`.
+ * 1. Poll: Request a job from `POST /v1/worker/poll`.
  * 2. Execute: If a job is found, locate the appropriate `JobHandler` and run it.
- * 3. Complete: Report the result (success or error) back to `POST /v1/queue/complete`.
+ * 3. Complete: Report the result (success or error) back to the Router.
  * 
  */
-async function pollForJob() {
+async function pollWorker() {
     try {
-        // 1. Poll for Legacy Queue Jobs
-        await pollQueue();
+        const response = await fetch(`${ROUTER_URL}/v1/worker/poll`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ workerId: WORKER_ID }),
+        });
 
-        // 2. Poll for Sluagh Swarm Tasks (New Autonomy)
-        await pollSwarm();
+        if (!response.ok) {
+            console.error(`[${WORKER_ID}] Worker poll ${response.status} | ${await response.text()}`);
+            return;
+        }
+
+        const { queueJob, swarmTask } = await response.json() as any;
+
+        if (queueJob) {
+            console.log(`[${WORKER_ID}] 🍯 Queue job: ${queueJob.id} (${queueJob.type})`);
+            await processJob(queueJob);
+        }
+
+        if (swarmTask) {
+            console.log(`[${WORKER_ID}] 🏴‍☠️ Swarm task: ${swarmTask.id} (${swarmTask.type})`);
+            await processJob({ id: swarmTask.id, type: swarmTask.type, payload: { ...swarmTask, isSwarm: true } });
+        }
+
+        if (!queueJob && !swarmTask) console.log(`[${WORKER_ID}] 💤 No work`);
 
     } catch (error: any) {
         if (error.cause?.code === 'ECONNREFUSED') {
@@ -140,56 +161,6 @@ async function pollForJob() {
             console.error(`[${WORKER_ID}] Poll error:`, error.message);
         }
     }
-}
-
-async function pollQueue() {
-    const response = await fetch(`${ROUTER_URL}/v1/queue/poll`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ workerId: WORKER_ID })
-    });
-
-    if (response.status === 404) return;
-    if (!response.ok) {
-        console.error(`[${WORKER_ID}] Queue Poll Error: ${response.status} - ${await response.text()}`);
-        return;
-    }
-
-    const job = await response.json() as Job;
-    console.log(`[${WORKER_ID}] 🍯 Found Queue Job: ${job.id} (${job.type})`);
-    await processJob(job);
-}
-
-async function pollSwarm() {
-    const response = await fetch(`${ROUTER_URL}/v1/swarm/next`, {
-        method: 'GET', // or POST? The router implementation for getSluaghSwarmNextTask is triggered by /v1/swarm/next
-        headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    if (response.status === 404) return;
-    if (!response.ok) {
-        console.error(`[${WORKER_ID}] Swarm Poll Error: ${response.status} - ${await response.text()}`);
-        return;
-    }
-
-    const task = await response.json() as any;
-    const job: Job = {
-        id: task.id,
-        type: task.type,
-        payload: {
-            ...task,
-            isSwarm: true // Flag to know which completion endpoint to use
-        }
-    };
-
-    console.log(`[${WORKER_ID}] 🏴‍☠️ Found Swarm Task: ${job.id} (${job.type})`);
-    await processJob(job);
 }
 
 async function processJob(job: Job) {
@@ -295,11 +266,11 @@ const startAgent = () => {
     // Start the Linear Polling Loop
     startLinearIngestor();
 
-    setInterval(pollForJob, POLL_INTERVAL);
+    setInterval(pollWorker, POLL_INTERVAL);
 };
 
 if (require.main === module) {
     startAgent();
 }
 
-export { pollForJob, processJob, completeJob, startAgent };
+export { pollWorker, processJob, completeJob, startAgent };

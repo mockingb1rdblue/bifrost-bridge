@@ -76,9 +76,9 @@ export class LLMRouter {
             case 'deepseek':
                 return 'deepseek-chat';
             case 'gemini':
-                return taskType === 'triage' ? 'gemini-1.5-flash' : 'gemini-1.5-pro';
+                return taskType === 'triage' ? 'gemini-flash-latest' : 'gemini-pro-latest';
             case 'openai':
-                return 'sonar-reasoning-pro';
+                return taskType === 'troubleshooting' ? 'sonar-pro' : 'sonar-reasoning-pro';
             default:
                 return '';
         }

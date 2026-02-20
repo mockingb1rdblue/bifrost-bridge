@@ -50,13 +50,15 @@ export interface SluaghSwarmTask {
   title: string;
   description: string;
   files: string[];
-  status: 'pending' | 'active' | 'completed' | 'failed';
+  status: 'pending' | 'active' | 'in_progress' | 'completed' | 'failed';
   priority: number;
   isHighRisk: boolean;
   engineeringLog?: EngineeringLog;
   metadata?: Record<string, string>;
   createdAt: number;
   updatedAt: number;
+  startedAt?: number;
+  assignedTo?: string;
   prNumber?: number;
   repository?: {
     owner: string;

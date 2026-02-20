@@ -35,11 +35,11 @@ describe('LLMRouter', () => {
         });
     });
 
-    it('routes to DeepSeek for coding tasks', async () => {
+    it('routes to Anthropic for coding tasks if below 100k tokens', async () => {
         const messages: LLMMessage[] = [{ role: 'user', content: 'Write a React component' }];
         const result = await router.route({ messages, taskType: 'coding' });
-        expect(result.provider).toBe('deepseek');
-        expect(result.content).toContain('Mock response from deepseek');
+        expect(result.provider).toBe('anthropic');
+        expect(result.content).toContain('Mock response from anthropic');
     });
 
     it('routes to Anthropic for planning tasks', async () => {
@@ -71,10 +71,10 @@ describe('LLMRouter', () => {
         expect(result.provider).toBe('anthropic');
     });
 
-    it('falls back to default (DeepSeek) if unknown/general', async () => {
+    it('falls back to default (Anthropic) if unknown/general', async () => {
         const messages: LLMMessage[] = [{ role: 'user', content: 'Hello' }];
         // No task type provided
         const result = await router.route({ messages });
-        expect(result.provider).toBe('deepseek');
+        expect(result.provider).toBe('anthropic');
     });
 });

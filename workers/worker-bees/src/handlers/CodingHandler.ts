@@ -208,7 +208,7 @@ Implement the changes now.`
                 title: `[Swarm] ${title}`,
                 body: `## Swarm Task Execution\n\n${body}\n\nAutomated PR created by Sluagh Swarm Worker Bee.`,
                 head: head,
-                base: 'main' // TODO: Detect default branch?
+                base: 'hee-haw' // The one true target branch
             })
         });
 

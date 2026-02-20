@@ -25,7 +25,7 @@ The **AI Router** (codenamed "Dullahan Dispatcher") is a self-optimizing, cost-a
 
 #### Tier 2: Reasoning & Planning (DeepSeek R1 / Gemini)
 - **Trigger**: "Plan a refactor", "Analyze architecture", or Prompt > 4k tokens.
-- **Provider**: `deepseek-reasoner` or `gemini-1.5-pro`.
+- **Provider**: `deepseek-reasoner` or `gemini-pro-latest`.
 - **Strategy**: Use huge context windows only when necessary.
 
 ### 3. The "Global Brain" Pipeline

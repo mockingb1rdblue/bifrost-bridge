@@ -31,7 +31,7 @@ export class LLMFactory {
                 return new AnthropicClient(this.config.anthropicKey, this.config.anthropicBaseUrl);
             case 'gemini':
                 if (!this.config.geminiKey) return null;
-                return new GeminiClient(this.config.geminiKey, this.config.geminiBaseUrl);
+                return new GeminiClient(this.config.geminiKey);
             case 'openai': // Used for Perplexity or others
                 if (!this.config.perplexityKey) return null;
                 return new PerplexityClient(this.config.perplexityKey);

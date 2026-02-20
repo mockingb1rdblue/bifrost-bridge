@@ -17,6 +17,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260212.0"
+    "@cloudflare/workers-types": "^4.20260212.0",
+    "wrangler": "^4.67.0"
   }
 }

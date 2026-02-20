@@ -80,7 +80,7 @@ export class ReviewHandler implements JobHandler {
                 content: 'Review the diff and provide your decision.'
             };
 
-            const llmResponse = await this.llmClient.chat([systemPrompt, userPrompt], 'coding', { model: 'gemini-2.0-flash-001' });
+            const llmResponse = await this.llmClient.chat([systemPrompt, userPrompt], 'coding', { model: 'gemini-flash-latest' });
 
             // 3. Parse XML Output
             const bodyMatch = llmResponse.match(/<body>([\s\S]*?)<\/body>/);

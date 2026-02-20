@@ -37,6 +37,24 @@ module.exports = tseslint.config(
         },
       ],
       'no-undef': 'error',
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@google/generative-ai',
+              message: 'Use @google/genai instead of the deprecated @google/generative-ai SDK. See Global Rule #1.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/^gemini-(1\\.5|2\\.0)/]',
+          message: 'Hardcoded legacy Gemini models are not allowed. Use the `-latest` aliases defined in src/models.ts. See Global Rule #1.',
+        },
+      ],
     },
   },
   {

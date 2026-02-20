@@ -13,6 +13,14 @@ export const PERPLEXITY_MODELS = {
   SONAR_REASONING_PRO: 'sonar-reasoning-pro',
 } as const;
 
+export const GEMINI_MODELS = {
+  // Balanced capability and speed
+  FLASH_LATEST: 'gemini-flash-latest',
+
+  // Complex reasoning
+  PRO_LATEST: 'gemini-pro-latest'
+} as const;
+
 export interface ResearchTask {
   complexity: 'simple' | 'medium' | 'complex';
   requiresDeepReasoning?: boolean;

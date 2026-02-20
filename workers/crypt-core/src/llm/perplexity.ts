@@ -2,10 +2,11 @@ import { LLMClient, LLMMessage, LLMOptions, LLMResponse } from './types';
 
 export class PerplexityClient implements LLMClient {
     private apiKey: string;
-    private baseUrl = 'https://api.perplexity.ai';
+    private baseUrl: string;
 
-    constructor(apiKey: string) {
+    constructor(apiKey: string, baseUrl?: string) {
         this.apiKey = apiKey;
+        this.baseUrl = baseUrl || process.env.PERPLEXITY_BASE_URL || 'https://api.perplexity.ai';
     }
 
     async chat(messages: LLMMessage[], options: LLMOptions = {}): Promise<LLMResponse> {

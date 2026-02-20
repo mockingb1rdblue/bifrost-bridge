@@ -214,9 +214,9 @@ export class RouterDO {
     const maxTokens = parseInt(this.env.RATE_LIMIT_MAX_TOKENS || '100');
     const baseRefillRate = parseInt(this.env.RATE_LIMIT_REFILL_RATE || '1');
 
-    // Apply Dynamic Health Score
+    // Health Score (for Observability only, do not load-shed internal load)
     const healthScore = this.calculateHealthScore();
-    const effectiveRefillRate = baseRefillRate * healthScore;
+    const effectiveRefillRate = baseRefillRate;
 
     if (!limitState) {
       limitState = {
@@ -1149,6 +1149,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         case '/v2/chat':
           if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
           return await this.handleV2Chat(request);
+        case '/v1/worker/poll':
+          if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+          return await this.handleWorkerPoll(request);
         case '/v1/queue/poll':
           if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
           return await this.handleQueuePoll(request);
@@ -1454,6 +1457,34 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     // syncLinearTasks is intentionally NOT called here — only alarm() triggers it once per cycle
     await this.processBatch();
     await this.saveState();
+  }
+
+  private async handleWorkerPoll(request: Request): Promise<Response> {
+    const { workerId } = (await request.json()) as any;
+
+    const queueJob = Object.values(this.storage.jobs)
+      .filter((j) => j.status === 'pending')
+      .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0] ?? null;
+    if (queueJob) {
+      queueJob.status = 'processing';
+      queueJob.assignedTo = workerId;
+      queueJob.startedAt = Date.now();
+    }
+
+    const swarmTask = Object.values(this.storage.swarmTasks)
+      .filter((t) => t.status === 'pending')
+      .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0] ?? null;
+    if (swarmTask) {
+      swarmTask.status = 'in_progress';
+      swarmTask.assignedTo = workerId;
+      swarmTask.startedAt = Date.now();
+    }
+
+    if (queueJob || swarmTask) await this.saveState();
+
+    return new Response(JSON.stringify({ queueJob, swarmTask }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   private async handleLLMChat(request: Request): Promise<Response> {

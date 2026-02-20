@@ -59,11 +59,11 @@ Tasks must transition through these states to drive the Swarm:
 ## 🧠 The Astral Chart (LLM Routing)
 
 ### Provider Selection
-| Provider       | Model                | Use Case                                                 |
-| :------------- | :------------------- | :------------------------------------------------------- |
-| **Google**     | `gemini-2.0-flash`   | High-throughput, Context Window (1M+), Sitemap crawling. |
-| **DeepSeek**   | `deepseek-chat`      | Complex Logic, Code Generation (Cost effective).         |
-| **Perplexity** | `sonar-small-online` | Real-time Documentation Discovery (Web Search).          |
+| Provider       | Model                                      | Use Case                                                 |
+| :------------- | :----------------------------------------- | :------------------------------------------------------- |
+| **Google**     | `gemini-flash-latest`, `gemini-pro-latest` | High-throughput, Context Window (1M+), Sitemap crawling. |
+| **DeepSeek**   | `deepseek-chat`                            | Complex Logic, Code Generation (Cost-effective).         |
+| **Perplexity** | `sonar-small-online`, `sonar-pro`          | Real-time Documentation Discovery (Web Search).          |
 
 ### Routing Logic
 The **Reaper's Registry** determines the model based on task metadata:
