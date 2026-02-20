@@ -40,11 +40,11 @@ fastify.post<{ Body: EventBody }>('/events', async (request, reply) => {
 
   const stmt = db.prepare('INSERT INTO events (type, source, topic, correlation_id, payload, meta) VALUES (?, ?, ?, ?, ?, ?)');
   const info = stmt.run(
-    type, 
-    source, 
-    topic || null, 
-    correlation_id || null, 
-    JSON.stringify(payload), 
+    type,
+    source,
+    topic || null,
+    correlation_id || null,
+    JSON.stringify(payload),
     meta ? JSON.stringify(meta) : null
   );
 
@@ -54,7 +54,7 @@ fastify.post<{ Body: EventBody }>('/events', async (request, reply) => {
 // Replay state for a topic
 fastify.get<{ Params: { topic: string } }>('/state/:topic', async (request, reply) => {
   const { topic } = request.params;
-  
+
   const stmt = db.prepare('SELECT * FROM events WHERE topic = ? ORDER BY id ASC');
   const events = stmt.all(topic);
 
@@ -93,6 +93,13 @@ fastify.get<{ Querystring: { limit?: number; type?: string } }>(
     }));
   },
 );
+
+// Count total events
+fastify.get('/events/count', async () => {
+  const stmt = db.prepare('SELECT COUNT(*) as count FROM events');
+  const result = stmt.get() as { count: number };
+  return { count: result.count };
+});
 
 // Health Check
 fastify.get('/health', async () => {

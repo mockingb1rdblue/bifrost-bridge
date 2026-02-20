@@ -1,4 +1,4 @@
-app = "bifrost-runner"
+app = "sluagh-scout"
 primary_region = "ord"
 
 [build]

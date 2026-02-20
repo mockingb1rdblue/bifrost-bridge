@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "extract-certs": "node scripts/extract_certs.js",
+        "extract-certs": "npx tsx scripts/infra/extract_certs.js",
         "build": "tsc",
         "test": "ts-node tests/test_sdk.ts",
         "start": "npx ts-node src/cli.ts",
@@ -18,13 +18,18 @@
         "lint:fix": "eslint . --fix",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "worker:dev": "npm run dev --prefix workers/custom-router",
-        "worker:deploy": "npm run deploy --prefix workers/custom-router",
-        "worker:test": "npm run test --prefix workers/custom-router",
-        "worker:types": "npm run typegen --prefix workers/custom-router",
+        "worker:dev": "npm run dev --prefix workers/crypt-core",
+        "worker:deploy": "npm run deploy --prefix workers/crypt-core",
+        "worker:test": "npm run test --prefix workers/crypt-core",
+        "worker:types": "npm run typegen --prefix workers/crypt-core",
         "proxy:linear:deploy": "npm run deploy --prefix workers/linear-proxy",
         "proxy:perplexity:deploy": "npm run deploy --prefix workers/perplexity-proxy",
-        "seed:swarm": "./scripts/seed-swarm.sh"
+        "seed:sluagh": "bash scripts/linear/seed-sluagh.sh",
+        "secure:exec": "npx tsx scripts/infra/secure-connect.ts",
+        "audit:stack": "npx tsx scripts/infra/audit_deprecations.ts"
+    },
+    "overrides": {
+        "ajv": "^8.12.0"
     },
     "keywords": [
         "corporate",
@@ -36,16 +41,16 @@
     "author": "Antigravity",
     "license": "ISC",
     "dependencies": {
-        "chalk": "^4.1.2",
+        "chalk": "^5.6.2",
         "commander": "^14.0.3",
         "dotenv": "^16.4.5",
-        "openai": "^4.28.0",
-        "ora": "^5.4.1"
+        "openai": "^6.22.0",
+        "ora": "^9.3.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.21.0",
+        "@linear/sdk": "^75.0.0",
         "@types/node": "^20.19.32",
-        "@types/ora": "^3.1.0",
         "@typescript-eslint/eslint-plugin": "^8.55.0",
         "@typescript-eslint/parser": "^8.55.0",
         "eslint": "^9.21.0",

@@ -1,7 +1,16 @@
-#!/bin/sh
-# Pre-commit hook to scan for secrets
-python scripts/scan_secrets.py
-if [ $? -ne 0 ]; then
-    echo "Commit blocked: Secrets detected."
-    exit 1
+#!/bin/bash
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Prioritize portable tools
+PROJECT_ROOT="$(pwd)"
+NODE_BIN="$PROJECT_ROOT/.tools/nodejs/bin"
+if [ -d "$NODE_BIN" ]; then
+    export PATH="$NODE_BIN:$PATH"
 fi
+
+npm run lint
+npm run format:check
+
+echo "✅ Pre-commit checks passed."

@@ -28,7 +28,7 @@ export class Detective {
           method: 'HEAD',
           timeout: this.timeout,
           headers: {
-            'User-Agent': 'Bifrost-Bridge-Detective/1.0',
+            'User-Agent': 'Ankous-Aegis-Detective/1.0',
           },
         },
         (res) => {
@@ -76,7 +76,6 @@ export class Detective {
           resolve({ intercepted: false });
           return;
         }
-
         const org = cert.issuer.O;
         const cn = cert.issuer.CN;
         const isIntercepted =
@@ -107,7 +106,6 @@ export class Detective {
     console.log(chalk.bold.magenta('\n=== Network Detective Report (TS) ==='));
 
     console.log(chalk.bold('\n[1] Proxy Configuration:'));
-    console.log(`  HTTP_PROXY:  ${process.env.HTTP_PROXY || 'None'}`);
     console.log(`  HTTPS_PROXY: ${process.env.HTTPS_PROXY || 'None'}`);
 
     const services = [

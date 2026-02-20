@@ -14,7 +14,7 @@ export class LinearClient {
   private baseURL: string;
 
   constructor(apiKey: string, baseURL?: string) {
-    let url = baseURL || process.env.LINEAR_WEBHOOK_URL || 'https://api.linear.app/graphql';
+    let url = baseURL || process.env.LINEAR_LICH_URL || 'https://api.linear.app/graphql';
 
     // If the URL ends in /webhook, strip it to get the base proxy URL for GraphQL
     if (url.endsWith('/webhook')) {

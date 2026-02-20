@@ -1,5 +1,5 @@
 {
-  "name": "bifrost-runner",
+  "name": "sluagh-scout",
   "version": "1.0.0",
   "description": "Agent Runner for Bifrost",
   "main": "dist/index.js",

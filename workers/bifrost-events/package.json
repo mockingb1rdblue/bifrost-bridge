@@ -1,5 +1,5 @@
 {
-  "name": "bifrost-events",
+  "name": "eulogy-engine",
   "version": "1.0.0",
   "description": "Event Sourcing Store for Bifrost Bridge",
   "main": "dist/index.js",

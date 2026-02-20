@@ -1,6 +1,9 @@
 
-app = "bifrost-worker-bees"
+app = "sluagh-swarm"
 primary_region = "dfw"
+
+[env]
+  ROUTER_URL = "https://crypt-core.mock1ng.workers.dev"
 
 [build]
   dockerfile = "Dockerfile"

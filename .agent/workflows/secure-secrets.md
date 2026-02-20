@@ -41,6 +41,13 @@ fly secrets set MY_SECRET_KEY=value
 - Use `npx wrangler dev --remote` to use the actual encrypted secrets from Cloudflare during development.
 - Do **NOT** use `npx wrangler dev` (local mode) unless you have no dependencies on secrets.
 
+### 5. Secure Session Execution (Scripts)
+- For one-off scripts requiring secrets (e.g., Linear backlog checks), use the **Secure Connect** tool:
+  ```bash
+  npm run secure:exec path/to/script.ts
+  ```
+- This tool injects secrets into the process environment for **that session only**. It does not write to disk.
+
 ## Verification
 - Run `scripts/check-secrets.sh` before committing.
 - Audit `wrangler.toml` to ensure no sensitive keys are present in `[vars]`.

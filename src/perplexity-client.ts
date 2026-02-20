@@ -32,7 +32,7 @@ export class PerplexityClient {
       throw new ValidationError('API key is required');
     }
 
-    const url = baseURL || process.env.PERPLEXITY_BASE_URL || 'https://api.perplexity.ai';
+    const url = baseURL || process.env.PERPLEXITY_PROXY_URL || 'https://api.perplexity.ai';
     this.defaultTimeout = defaultTimeout;
 
     logger.info('Initializing PerplexityClient', { baseURL: url });
