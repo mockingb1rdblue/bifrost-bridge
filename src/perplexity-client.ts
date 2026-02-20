@@ -23,10 +23,16 @@ export interface ResearchOptions extends ChatOptions {
   includeImages?: boolean;
 }
 
+/**
+ *
+ */
 export class PerplexityClient {
   private client: OpenAI;
   private defaultTimeout: number;
 
+  /**
+   *
+   */
   constructor(apiKey: string, baseURL?: string, defaultTimeout: number = 60000) {
     if (!apiKey || apiKey.trim() === '') {
       throw new ValidationError('API key is required');

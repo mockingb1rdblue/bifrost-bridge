@@ -17,7 +17,9 @@ async function main() {
   }
 
   if (!apiKey) {
-    console.warn('[!] No API Key found. Set PERPLEXITY_API_KEY or ABYSSAL_ARTIFACT. Skipping test.');
+    console.warn(
+      '[!] No API Key found. Set PERPLEXITY_API_KEY or ABYSSAL_ARTIFACT. Skipping test.',
+    );
     process.exit(0);
   }
 

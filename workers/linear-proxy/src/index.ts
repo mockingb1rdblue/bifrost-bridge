@@ -3,7 +3,7 @@
  *
  * Proxies requests to Linear API to bypass corporate SSL interception.
  * Supports both GraphQL API calls and webhook handling.
- * 
+ *
  * BIF-18: Structured entrypoint with typed Env
  * BIF-22: Zod-based validation and improved security
  */
@@ -90,7 +90,10 @@ function checkRateLimit(key: string): boolean {
   }
 
   const timePassed = (now - limitState.lastRefill) / 1000;
-  limitState.tokens = Math.min(CONFIG.RATE_LIMIT.MAX_TOKENS, limitState.tokens + timePassed * CONFIG.RATE_LIMIT.REFILL_RATE);
+  limitState.tokens = Math.min(
+    CONFIG.RATE_LIMIT.MAX_TOKENS,
+    limitState.tokens + timePassed * CONFIG.RATE_LIMIT.REFILL_RATE,
+  );
   limitState.lastRefill = now;
 
   if (limitState.tokens >= 1) {
@@ -132,7 +135,10 @@ async function handleGraphQL(request: Request, env: Env): Promise<Response> {
   }
 
   if (!checkRateLimit(token)) {
-    return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), { status: 429, headers: { 'Retry-After': '60' } });
+    return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+      status: 429,
+      headers: { 'Retry-After': '60' },
+    });
   }
 
   const contentLength = request.headers.get('Content-Length');
@@ -157,7 +163,10 @@ async function handleGraphQL(request: Request, env: Env): Promise<Response> {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Proxy error', message: (error as Error).message }), { status: 502 });
+    return new Response(
+      JSON.stringify({ error: 'Proxy error', message: (error as Error).message }),
+      { status: 502 },
+    );
   }
 }
 
@@ -169,10 +178,13 @@ export default {
     const parsedEnv = EnvSchema.safeParse(env);
     if (!parsedEnv.success) {
       console.error('Environment validation failed:', parsedEnv.error.format());
-      return new Response(JSON.stringify({
-        error: 'Worker configuration error',
-        details: 'Missing or invalid environment secrets'
-      }), { status: 500 });
+      return new Response(
+        JSON.stringify({
+          error: 'Worker configuration error',
+          details: 'Missing or invalid environment secrets',
+        }),
+        { status: 500 },
+      );
     }
 
     const typedEnv = parsedEnv.data;
@@ -199,7 +211,9 @@ export default {
         return await handleGraphQL(request, typedEnv);
       }
 
-      return new Response(JSON.stringify({ error: 'Not found', path: url.pathname }), { status: 404 });
+      return new Response(JSON.stringify({ error: 'Not found', path: url.pathname }), {
+        status: 404,
+      });
     } catch (err) {
       console.error('Unhandled worker error:', err);
       return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });

@@ -69,7 +69,7 @@ None - standalone security hardening
     teamId,
     title,
     description,
-    projectId
+    projectId,
   });
 
   console.log(`✅ Created security hardening issue: ${result.identifier}`);

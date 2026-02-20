@@ -38,14 +38,16 @@ fastify.post<{ Body: EventBody }>('/events', async (request, reply) => {
     return reply.code(400).send({ error: 'Missing required fields' });
   }
 
-  const stmt = db.prepare('INSERT INTO events (type, source, topic, correlation_id, payload, meta) VALUES (?, ?, ?, ?, ?, ?)');
+  const stmt = db.prepare(
+    'INSERT INTO events (type, source, topic, correlation_id, payload, meta) VALUES (?, ?, ?, ?, ?, ?)',
+  );
   const info = stmt.run(
     type,
     source,
     topic || null,
     correlation_id || null,
     JSON.stringify(payload),
-    meta ? JSON.stringify(meta) : null
+    meta ? JSON.stringify(meta) : null,
   );
 
   return { id: info.lastInsertRowid, status: 'ok' };

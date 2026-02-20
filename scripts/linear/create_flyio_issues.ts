@@ -1,6 +1,6 @@
 /**
  * Create Thin-Sliced Fly.io Migration Issues in Linear
- * 
+ *
  * This script creates 27 atomic tasks optimized for low-reasoning LLM execution.
  * Each task is <90 min, single-objective, with clear acceptance criteria.
  */
@@ -40,7 +40,7 @@ const issues: IssueSpec[] = [
 **Files**: None
 **Estimated**: 15 min`,
     priority: 1,
-    estimate: 15
+    estimate: 15,
   },
   {
     identifier: 'FLY-002',
@@ -60,7 +60,7 @@ const issues: IssueSpec[] = [
 **Estimated**: 10 min`,
     priority: 1,
     estimate: 10,
-    dependencies: ['FLY-001']
+    dependencies: ['FLY-001'],
   },
   {
     identifier: 'FLY-003',
@@ -80,7 +80,7 @@ const issues: IssueSpec[] = [
 **Estimated**: 10 min`,
     priority: 1,
     estimate: 10,
-    dependencies: ['FLY-001']
+    dependencies: ['FLY-001'],
   },
   {
     identifier: 'FLY-004',
@@ -101,7 +101,7 @@ const issues: IssueSpec[] = [
 **Estimated**: 20 min`,
     priority: 1,
     estimate: 20,
-    dependencies: ['FLY-001']
+    dependencies: ['FLY-001'],
   },
 
   // Agent Runner Implementation
@@ -123,7 +123,7 @@ const issues: IssueSpec[] = [
 **Files**: \`workers/bifrost-runner/Dockerfile\`
 **Estimated**: 30 min`,
     priority: 1,
-    estimate: 30
+    estimate: 30,
   },
   {
     identifier: 'FLY-006',
@@ -144,7 +144,7 @@ const issues: IssueSpec[] = [
 **Estimated**: 20 min`,
     priority: 1,
     estimate: 20,
-    dependencies: ['FLY-005']
+    dependencies: ['FLY-005'],
   },
   {
     identifier: 'FLY-007',
@@ -166,7 +166,7 @@ const issues: IssueSpec[] = [
 **Estimated**: 15 min`,
     priority: 1,
     estimate: 15,
-    dependencies: ['FLY-002']
+    dependencies: ['FLY-002'],
   },
   {
     identifier: 'FLY-008',
@@ -188,7 +188,7 @@ const issues: IssueSpec[] = [
 **Estimated**: 45 min`,
     priority: 2,
     estimate: 45,
-    dependencies: ['FLY-005']
+    dependencies: ['FLY-005'],
   },
   {
     identifier: 'FLY-009',
@@ -209,7 +209,7 @@ const issues: IssueSpec[] = [
 **Estimated**: 20 min`,
     priority: 1,
     estimate: 20,
-    dependencies: ['FLY-005', 'FLY-007']
+    dependencies: ['FLY-005', 'FLY-007'],
   },
 
   // Event Store Setup
@@ -231,7 +231,7 @@ const issues: IssueSpec[] = [
 **Estimated**: 10 min`,
     priority: 1,
     estimate: 10,
-    dependencies: ['FLY-003']
+    dependencies: ['FLY-003'],
   },
   {
     identifier: 'FLY-011',
@@ -257,7 +257,7 @@ CREATE INDEX idx_timestamp ON events(timestamp);
 **Files**: \`workers/bifrost-events/schema.sql\`
 **Estimated**: 30 min`,
     priority: 1,
-    estimate: 30
+    estimate: 30,
   },
   {
     identifier: 'FLY-012',
@@ -277,7 +277,7 @@ CREATE INDEX idx_timestamp ON events(timestamp);
 **Estimated**: 60 min`,
     priority: 1,
     estimate: 60,
-    dependencies: ['FLY-011']
+    dependencies: ['FLY-011'],
   },
   {
     identifier: 'FLY-013',
@@ -298,7 +298,7 @@ CREATE INDEX idx_timestamp ON events(timestamp);
 **Estimated**: 20 min`,
     priority: 1,
     estimate: 20,
-    dependencies: ['FLY-003']
+    dependencies: ['FLY-003'],
   },
   {
     identifier: 'FLY-014',
@@ -319,7 +319,7 @@ CREATE INDEX idx_timestamp ON events(timestamp);
 **Estimated**: 20 min`,
     priority: 1,
     estimate: 20,
-    dependencies: ['FLY-010', 'FLY-012', 'FLY-013']
+    dependencies: ['FLY-010', 'FLY-012', 'FLY-013'],
   },
 
   // Control Plane Integration
@@ -339,7 +339,7 @@ CREATE INDEX idx_timestamp ON events(timestamp);
 **Files**: \`workers/custom-router/package.json\`, \`router-do.ts\`
 **Estimated**: 15 min`,
     priority: 2,
-    estimate: 15
+    estimate: 15,
   },
   {
     identifier: 'FLY-016',
@@ -360,7 +360,7 @@ async function spawnRunner(taskId: string): Promise<string>
 **Estimated**: 60 min`,
     priority: 2,
     estimate: 60,
-    dependencies: ['FLY-015']
+    dependencies: ['FLY-015'],
   },
   {
     identifier: 'FLY-017',
@@ -383,7 +383,7 @@ class EventStoreClient {
 **Estimated**: 45 min`,
     priority: 2,
     estimate: 45,
-    dependencies: ['FLY-014']
+    dependencies: ['FLY-014'],
   },
   {
     identifier: 'FLY-018',
@@ -403,7 +403,7 @@ class EventStoreClient {
 **Estimated**: 30 min`,
     priority: 2,
     estimate: 30,
-    dependencies: ['FLY-017']
+    dependencies: ['FLY-017'],
   },
 
   // Security Hardening
@@ -425,7 +425,7 @@ class EventStoreClient {
 **Estimated**: 10 min`,
     priority: 1,
     estimate: 10,
-    dependencies: ['FLY-007']
+    dependencies: ['FLY-007'],
   },
   {
     identifier: 'FLY-020',
@@ -445,7 +445,7 @@ class EventStoreClient {
 **Estimated**: 30 min`,
     priority: 1,
     estimate: 30,
-    dependencies: ['FLY-012']
+    dependencies: ['FLY-012'],
   },
   {
     identifier: 'FLY-021',
@@ -463,7 +463,7 @@ class EventStoreClient {
 **Files**: None
 **Estimated**: 10 min`,
     priority: 1,
-    estimate: 10
+    estimate: 10,
   },
   {
     identifier: 'FLY-022',
@@ -483,7 +483,7 @@ class EventStoreClient {
 **Estimated**: 20 min`,
     priority: 1,
     estimate: 20,
-    dependencies: ['FLY-013', 'FLY-004']
+    dependencies: ['FLY-013', 'FLY-004'],
   },
 
   // Cost Optimization
@@ -506,7 +506,7 @@ class EventStoreClient {
 **Estimated**: 15 min`,
     priority: 3,
     estimate: 15,
-    dependencies: ['FLY-014']
+    dependencies: ['FLY-014'],
   },
   {
     identifier: 'FLY-024',
@@ -529,7 +529,7 @@ class EventStoreClient {
 **Estimated**: 20 min`,
     priority: 2,
     estimate: 20,
-    dependencies: ['FLY-007']
+    dependencies: ['FLY-007'],
   },
 
   // Testing
@@ -549,7 +549,7 @@ class EventStoreClient {
 **Estimated**: 90 min`,
     priority: 2,
     estimate: 90,
-    dependencies: ['FLY-016', 'FLY-018']
+    dependencies: ['FLY-016', 'FLY-018'],
   },
   {
     identifier: 'FLY-026',
@@ -566,7 +566,7 @@ class EventStoreClient {
 **Estimated**: 60 min`,
     priority: 3,
     estimate: 60,
-    dependencies: ['FLY-014']
+    dependencies: ['FLY-014'],
   },
   {
     identifier: 'FLY-027',
@@ -583,8 +583,8 @@ class EventStoreClient {
 **Estimated**: 30 min`,
     priority: 3,
     estimate: 30,
-    dependencies: ['FLY-023', 'FLY-024']
-  }
+    dependencies: ['FLY-023', 'FLY-024'],
+  },
 ];
 
 async function main() {
@@ -613,12 +613,11 @@ async function main() {
         title,
         description: fullDescription,
         projectId: PROJECT_ID,
-        teamId: process.env.LINEAR_TEAM_ID!
+        teamId: process.env.LINEAR_TEAM_ID!,
       });
 
       createdIssues.push(result.identifier);
       console.log(`✓ Created ${result.identifier}\n`);
-
     } catch (error) {
       console.error(`✗ Failed to create ${spec.identifier}:`, error);
     }

@@ -4,7 +4,7 @@ import { verifyLinearSignature } from '../src/utils/crypto';
 describe('verifyLinearSignature', () => {
   const secret = 'test-secret';
   const payload = '{"action":"update","type":"Issue"}';
-  
+
   // Helper to generate signature
   async function generateSignature(payload: string, secret: string) {
     const encoder = new TextEncoder();
@@ -13,15 +13,11 @@ describe('verifyLinearSignature', () => {
       encoder.encode(secret),
       { name: 'HMAC', hash: 'SHA-256' },
       false,
-      ['sign']
+      ['sign'],
     );
-    const signature = await crypto.subtle.sign(
-      'HMAC',
-      key,
-      encoder.encode(payload)
-    );
+    const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
     return Array.from(new Uint8Array(signature))
-      .map(b => b.toString(16).padStart(2, '0'))
+      .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
   }
 

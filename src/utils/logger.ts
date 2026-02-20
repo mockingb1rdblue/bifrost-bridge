@@ -23,12 +23,18 @@ export interface LogEntry {
   };
 }
 
+/**
+ *
+ */
 export class Logger {
   private level: LogLevel;
   private enableConsole: boolean;
   private enableFile: boolean;
   private logFilePath?: string;
 
+  /**
+   *
+   */
   constructor(
     options: {
       level?: LogLevel;
@@ -106,24 +112,36 @@ export class Logger {
     }
   }
 
+  /**
+   *
+   */
   debug(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog(LogLevel.DEBUG)) {
       this.write(this.formatEntry(LogLevel.DEBUG, message, context));
     }
   }
 
+  /**
+   *
+   */
   info(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog(LogLevel.INFO)) {
       this.write(this.formatEntry(LogLevel.INFO, message, context));
     }
   }
 
+  /**
+   *
+   */
   warn(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog(LogLevel.WARN)) {
       this.write(this.formatEntry(LogLevel.WARN, message, context));
     }
   }
 
+  /**
+   *
+   */
   error(message: string, error?: Error, context?: Record<string, unknown>): void {
     if (this.shouldLog(LogLevel.ERROR)) {
       this.write(this.formatEntry(LogLevel.ERROR, message, context, error));

@@ -15,8 +15,9 @@ Ankou's Aegis is not just a toolkit; it is a philosophy. It is designed for the 
 The knowledge base is organized into **Five Core Pillars**. All technical implementation details live in the **Detailed Specifications**.
 
 ### Core Documents
-| Pillar                                                       | Description                                     |
-| :----------------------------------------------------------- | :---------------------------------------------- |
+
+| Pillar                                                        | Description                                     |
+| :------------------------------------------------------------ | :---------------------------------------------- |
 | 🏰 **[Project Manifesto](docs/PROJECT_MANIFESTO.md)**         | Vision, Strategy, and Identity.                 |
 | 🏗️ **[System Architecture](docs/SYSTEM_ARCHITECTURE.md)**     | Technical topology (Cloudflare, Fly.io, Swarm). |
 | 📖 **[Operational Manual](docs/OPERATIONAL_MANUAL.md)**       | Runbooks, Deployment, and Troubleshooting.      |
@@ -24,6 +25,7 @@ The knowledge base is organized into **Five Core Pillars**. All technical implem
 | 🐝 **[Swarm Backlog](docs/SWARM_BACKLOG.md)**                 | **Single Source of Truth** for all tasks.       |
 
 ### Technical Specifications
+
 Detailed "living" specs for the Sluagh Swarm components:
 
 - **[LIMINAL_LIBRARY.md](docs/specs/LIMINAL_LIBRARY.md)**: Context Engine & Vector Search.
@@ -38,6 +40,7 @@ Detailed "living" specs for the Sluagh Swarm components:
 ## ⚡ Awakening (Quick Start)
 
 ### 1. The Wake Writ
+
 Initialize the environment and check health.
 
 ```bash
@@ -46,6 +49,7 @@ curl https://bifrost-gateway.fly.dev/health
 ```
 
 ### 2. Summon the Swarm
+
 The Sluagh Swarm operates autonomously.
 
 - **Monitor**: `fly logs -a bifrost-swarm`

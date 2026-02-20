@@ -81,13 +81,13 @@ Update main `tsconfig.json` to exclude scripts:
 
 ## Refactoring Plan
 
-| Priority | Item | Action | Compliance Goal |
-|----------|------|--------|-----------------|
-| P0 | ESLint severity | Change `any`/`require-imports` to `'error'` | Strict TS compliance |
-| P0 | Lockfile validation | Integrate `lockfile-lint` into CI/CD pipeline | Zero supply-chain injection risk |
-| P1 | skipLibCheck | Set to `false` and add type guards for problematic dependencies | Type safety enforcement |
-| P1 | Post-install scripts | Create `.npmrc` with `ignore-scripts=true`; explicitly run needed scripts via npm hooks | Supply-chain hardening |
-| P2 | Script isolation | Separate scripts into own tsconfig with relaxed rules | Build clarity |
-| P2 | Error handling audit | Implement generic error responses per best practice[1] to prevent certificate/secret leakage in error messages | Zero Secrets guarantee |
+| Priority | Item                 | Action                                                                                                         | Compliance Goal                  |
+| -------- | -------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| P0       | ESLint severity      | Change `any`/`require-imports` to `'error'`                                                                    | Strict TS compliance             |
+| P0       | Lockfile validation  | Integrate `lockfile-lint` into CI/CD pipeline                                                                  | Zero supply-chain injection risk |
+| P1       | skipLibCheck         | Set to `false` and add type guards for problematic dependencies                                                | Type safety enforcement          |
+| P1       | Post-install scripts | Create `.npmrc` with `ignore-scripts=true`; explicitly run needed scripts via npm hooks                        | Supply-chain hardening           |
+| P2       | Script isolation     | Separate scripts into own tsconfig with relaxed rules                                                          | Build clarity                    |
+| P2       | Error handling audit | Implement generic error responses per best practice[1] to prevent certificate/secret leakage in error messages | Zero Secrets guarantee           |
 
 **Implementation Timeline**: Address P0 items before next release. Scripts isolation (P2) can follow in next sprint. Lockfile validation should be operational within current sprint to prevent transitive dependency risks in distributed packages.

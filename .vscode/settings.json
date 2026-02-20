@@ -1,30 +1,27 @@
 {
-    "terminal.integrated.profiles.osx": {
-        "Unholy Shell": {
-            "path": "/bin/zsh",
-            "args": [
-                "-c",
-                "source ${workspaceFolder}/.tools/.unholy_zshrc && zsh"
-            ],
-            "icon": "vibrate",
-            "color": "terminal.ansiCyan"
-        }
-    },
-    "terminal.integrated.profiles.windows": {
-        "Unholy Shell": {
-            "path": "${workspaceFolder}/.tools/pwsh/pwsh.exe",
-            "args": [
-                "-NoExit",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-NoProfile",
-                "-Command",
-                ". '${workspaceFolder}/.tools/pwsh/profile.ps1'"
-            ],
-            "icon": "vibrate",
-            "color": "terminal.ansiCyan"
-        }
-    },
-    "terminal.integrated.defaultProfile.osx": "Unholy Shell",
-    "terminal.integrated.defaultProfile.windows": "Unholy Shell"
+  "terminal.integrated.profiles.osx": {
+    "Unholy Shell": {
+      "path": "/bin/zsh",
+      "args": ["-c", "source ${workspaceFolder}/.tools/.unholy_zshrc && zsh"],
+      "icon": "vibrate",
+      "color": "terminal.ansiCyan"
+    }
+  },
+  "terminal.integrated.profiles.windows": {
+    "Unholy Shell": {
+      "path": "${workspaceFolder}/.tools/pwsh/pwsh.exe",
+      "args": [
+        "-NoExit",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-NoProfile",
+        "-Command",
+        ". '${workspaceFolder}/.tools/pwsh/profile.ps1'"
+      ],
+      "icon": "vibrate",
+      "color": "terminal.ansiCyan"
+    }
+  },
+  "terminal.integrated.defaultProfile.osx": "Unholy Shell",
+  "terminal.integrated.defaultProfile.windows": "Unholy Shell"
 }

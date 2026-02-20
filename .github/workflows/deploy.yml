@@ -7,8 +7,6 @@ on:
       - hee-haw
   workflow_dispatch:
 
-
-
 jobs:
   deploy-crypt-core:
     name: Deploy Crypt Core (Router)

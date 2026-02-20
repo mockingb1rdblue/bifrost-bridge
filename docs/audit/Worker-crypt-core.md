@@ -54,6 +54,7 @@ return result.data;
 ### 4. **Zero Secrets Policy Violations**
 
 The README documents required secrets but the code doesn't validate their presence at startup:
+
 - No runtime checks that `env.LINEAR_API_KEY`, `env.GITHUB_PRIVATE_KEY`, etc. exist
 - `FlyClient` accepts optional `organizationId` but doesn't document fallback behavior
 - No encryption or secret rotation mechanism visible
@@ -65,6 +66,7 @@ The README documents required secrets but the code doesn't validate their presen
 1. **Enable all strict mode flags immediately**. This prevents the expensive refactoring cost of adding strict types to an existing codebase[5].
 
 2. **Define explicit environment interfaces**:
+
 ```typescript
 export interface WorkerEnv {
   LINEAR_API_KEY: string;
@@ -76,17 +78,17 @@ export interface WorkerEnv {
 ```
 
 3. **Replace generic response typing**. Instead of `any` casts, define discriminated union types[1]:
+
 ```typescript
-type ApiResponse<T> = 
-  | { ok: true; data: T }
-  | { ok: false; errors: Array<{ message: string }> };
+type ApiResponse<T> = { ok: true; data: T } | { ok: false; errors: Array<{ message: string }> };
 ```
 
 4. **Add runtime secret validation** at worker initialization:
+
 ```typescript
 function validateSecrets(env: WorkerEnv): void {
   const required = ['LINEAR_API_KEY', 'GITHUB_PRIVATE_KEY'];
-  const missing = required.filter(key => !env[key as keyof WorkerEnv]);
+  const missing = required.filter((key) => !env[key as keyof WorkerEnv]);
   if (missing.length) throw new Error(`Missing secrets: ${missing.join(', ')}`);
 }
 ```
@@ -103,14 +105,14 @@ function validateSecrets(env: WorkerEnv): void {
 
 ## Refactoring Plan
 
-| Priority | Item | Effort | Impact |
-|----------|------|--------|--------|
-| **P0** | Enable `strict: true` in tsconfig.json | 2h | Blocks future bugs at compile time |
-| **P0** | Type the `env` parameter across all handlers | 4h | Prevents runtime secret failures |
-| **P1** | Add response type guards to all API calls | 6h | Eliminates null/undefined crashes |
-| **P1** | Implement startup secret validation | 1h | Fails fast on misconfiguration |
-| **P2** | Replace `any` types with concrete interfaces | 8h | Improves maintainability |
-| **P2** | Add timeout handling to fetch calls | 3h | Prevents hanging requests |
-| **P3** | Document env variable injection security model | 2h | Clarifies Zero Secrets policy compliance |
+| Priority | Item                                           | Effort | Impact                                   |
+| -------- | ---------------------------------------------- | ------ | ---------------------------------------- |
+| **P0**   | Enable `strict: true` in tsconfig.json         | 2h     | Blocks future bugs at compile time       |
+| **P0**   | Type the `env` parameter across all handlers   | 4h     | Prevents runtime secret failures         |
+| **P1**   | Add response type guards to all API calls      | 6h     | Eliminates null/undefined crashes        |
+| **P1**   | Implement startup secret validation            | 1h     | Fails fast on misconfiguration           |
+| **P2**   | Replace `any` types with concrete interfaces   | 8h     | Improves maintainability                 |
+| **P2**   | Add timeout handling to fetch calls            | 3h     | Prevents hanging requests                |
+| **P3**   | Document env variable injection security model | 2h     | Clarifies Zero Secrets policy compliance |
 
 **Key insight**: Enabling strict mode now[5] costs minimal effort compared to retrofitting type safety into thousands of lines of code later. Every file should pass `strictNullChecks` and explicit type checking before merge[3].

@@ -16,6 +16,9 @@ export const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 
 // Simple migration runner
+/**
+ *
+ */
 export function initDB() {
   console.log('--- Database Initialization Starting ---');
   try {
@@ -33,24 +36,24 @@ export function initDB() {
     console.log('Base table verified.');
 
     // 2. Safely add columns if they are missing
-    const columns = db.prepare("PRAGMA table_info(events)").all() as any[];
-    const columnNames = columns.map(c => c.name.toLowerCase());
+    const columns = db.prepare('PRAGMA table_info(events)').all() as any[];
+    const columnNames = columns.map((c) => c.name.toLowerCase());
 
     if (!columnNames.includes('topic')) {
       try {
-        db.exec("ALTER TABLE events ADD COLUMN topic TEXT");
+        db.exec('ALTER TABLE events ADD COLUMN topic TEXT');
         console.log("Migration: Added 'topic' column.");
       } catch (e: any) {
-        console.warn("Migration warning (topic):", e.message);
+        console.warn('Migration warning (topic):', e.message);
       }
     }
 
     if (!columnNames.includes('correlation_id')) {
       try {
-        db.exec("ALTER TABLE events ADD COLUMN correlation_id TEXT");
+        db.exec('ALTER TABLE events ADD COLUMN correlation_id TEXT');
         console.log("Migration: Added 'correlation_id' column.");
       } catch (e: any) {
-        console.warn("Migration warning (correlation_id):", e.message);
+        console.warn('Migration warning (correlation_id):', e.message);
       }
     }
 
@@ -58,7 +61,11 @@ export function initDB() {
     // to prevent crashing on duplicate indices or missing columns in indices
     const schemaPath = path.join(__dirname, '..', 'schema.sql');
     const localSchema = path.join(process.cwd(), 'schema.sql');
-    const finalSchemaPath = fs.existsSync(schemaPath) ? schemaPath : (fs.existsSync(localSchema) ? localSchema : null);
+    const finalSchemaPath = fs.existsSync(schemaPath)
+      ? schemaPath
+      : fs.existsSync(localSchema)
+        ? localSchema
+        : null;
 
     if (finalSchemaPath) {
       console.log('Reading full schema from:', finalSchemaPath);
@@ -67,8 +74,8 @@ export function initDB() {
       // Split schema into individual statements to handle errors gracefully
       const statements = schema
         .split(';')
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
 
       for (const statement of statements) {
         try {

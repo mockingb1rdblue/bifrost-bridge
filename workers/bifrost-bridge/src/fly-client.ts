@@ -17,10 +17,16 @@ export interface FlyMachineConfig {
   metadata?: Record<string, string>;
 }
 
+/**
+ *
+ */
 export class FlyClient {
   private apiToken: string;
   private baseUrl = 'https://api.machines.dev/v1/apps';
 
+  /**
+   *
+   */
   constructor(apiToken: string) {
     this.apiToken = apiToken;
   }
@@ -41,14 +47,23 @@ export class FlyClient {
     return response.json();
   }
 
+  /**
+   *
+   */
   async listMachines(appName: string) {
     return this.request(`/${appName}/machines`);
   }
 
+  /**
+   *
+   */
   async getMachine(appName: string, machineId: string) {
     return this.request(`/${appName}/machines/${machineId}`);
   }
 
+  /**
+   *
+   */
   async createMachine(appName: string, config: FlyMachineConfig) {
     return this.request(`/${appName}/machines`, {
       method: 'POST',
@@ -56,24 +71,36 @@ export class FlyClient {
     });
   }
 
+  /**
+   *
+   */
   async startMachine(appName: string, machineId: string) {
     return this.request(`/${appName}/machines/${machineId}/start`, {
       method: 'POST',
     });
   }
 
+  /**
+   *
+   */
   async stopMachine(appName: string, machineId: string) {
     return this.request(`/${appName}/machines/${machineId}/stop`, {
       method: 'POST',
     });
   }
 
+  /**
+   *
+   */
   async destroyMachine(appName: string, machineId: string, force = false) {
     return this.request(`/${appName}/machines/${machineId}?force=${force}`, {
       method: 'DELETE',
     });
   }
 
+  /**
+   *
+   */
   async waitForMachineState(
     appName: string,
     machineId: string,
@@ -92,10 +119,16 @@ export class FlyClient {
   }
 
   // Volume Management
+  /**
+   *
+   */
   async listVolumes(appName: string) {
     return this.request(`/${appName}/volumes`);
   }
 
+  /**
+   *
+   */
   async createVolume(appName: string, name: string, region: string, sizeGb: number) {
     return this.request(`/${appName}/volumes`, {
       method: 'POST',

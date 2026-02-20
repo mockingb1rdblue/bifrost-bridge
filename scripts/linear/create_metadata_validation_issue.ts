@@ -132,7 +132,7 @@ This ensures ALL future agent-created issues meet metadata quality standards aut
     teamId,
     title,
     description,
-    projectId
+    projectId,
   });
 
   console.log(`✅ Created metadata validation system issue: ${result.identifier}`);

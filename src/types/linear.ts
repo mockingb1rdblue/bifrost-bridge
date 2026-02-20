@@ -51,6 +51,9 @@ export interface LinearGraphQLResponse<T> {
  * Error types for Linear integration
  */
 export class LinearError extends Error {
+  /**
+   *
+   */
   constructor(
     message: string,
     public readonly upstream?: any,
@@ -60,14 +63,26 @@ export class LinearError extends Error {
   }
 }
 
+/**
+ *
+ */
 export class LinearAuthenticationError extends LinearError {
+  /**
+   *
+   */
   constructor(message: string = 'Invalid Linear API Key') {
     super(message);
     this.name = 'LinearAuthenticationError';
   }
 }
 
+/**
+ *
+ */
 export class LinearNetworkError extends LinearError {
+  /**
+   *
+   */
   constructor(message: string, upstream?: any) {
     super(message, upstream);
     this.name = 'LinearNetworkError';

@@ -31,6 +31,9 @@ export class RelicRepository {
   private platform: string;
   private arch: string;
 
+  /**
+   *
+   */
   constructor(projectRoot: string) {
     this.toolsDir = path.join(projectRoot, '.tools');
     this.platform = process.platform;
@@ -73,7 +76,9 @@ export class RelicRepository {
 
   private async extractArtifact(file: string, dest: string) {
     if (this.platform === 'win32') {
-      await execAsync(`powershell -Command "Expand-Archive -Path '${file}' -DestinationPath '${dest}' -Force"`);
+      await execAsync(
+        `powershell -Command "Expand-Archive -Path '${file}' -DestinationPath '${dest}' -Force"`,
+      );
     } else {
       await execAsync(`tar -xzf "${file}" -C "${dest}"`);
     }
@@ -87,7 +92,7 @@ export class RelicRepository {
     // gh CLI (GitHub)
     const ghVersion = '2.67.0';
     const ghPlat = isWin ? 'windows_amd64' : `macOS_${this.arch}`;
-    
+
     // flyctl (Fly.io)
     const flyVersion = '0.3.74';
     const flyPlat = isWin ? 'windows_x86_64' : `mac_${this.arch}`;
@@ -100,7 +105,9 @@ export class RelicRepository {
         url: `https://nodejs.org/dist/v${this.versions.node}/node-v${this.versions.node}-${nodePlat}.${nodeExt}`,
         destFile: path.join(this.toolsDir, `node.${nodeExt}`),
         extractPath: path.join(this.toolsDir, 'nodejs'),
-        binPath: isWin ? path.join(this.toolsDir, 'nodejs', 'node.exe') : path.join(this.toolsDir, 'nodejs', 'bin', 'node'),
+        binPath: isWin
+          ? path.join(this.toolsDir, 'nodejs', 'node.exe')
+          : path.join(this.toolsDir, 'nodejs', 'bin', 'node'),
       },
       {
         name: 'PowerShell Core',
@@ -117,7 +124,9 @@ export class RelicRepository {
         url: `https://github.com/cli/cli/releases/download/v${ghVersion}/gh_${ghVersion}_${ghPlat}.zip`,
         destFile: path.join(this.toolsDir, 'gh.zip'),
         extractPath: path.join(this.toolsDir, 'gh'),
-        binPath: isWin ? path.join(this.toolsDir, 'gh', 'bin', 'gh.exe') : path.join(this.toolsDir, 'gh', 'bin', 'gh'),
+        binPath: isWin
+          ? path.join(this.toolsDir, 'gh', 'bin', 'gh.exe')
+          : path.join(this.toolsDir, 'gh', 'bin', 'gh'),
       },
       {
         name: 'Flyctl',
@@ -125,11 +134,16 @@ export class RelicRepository {
         url: `https://github.com/superfly/flyctl/releases/download/v${flyVersion}/flyctl_${flyVersion}_${flyPlat}.${flyExt}`,
         destFile: path.join(this.toolsDir, `flyctl.${flyExt}`),
         extractPath: path.join(this.toolsDir, 'flyctl'),
-        binPath: isWin ? path.join(this.toolsDir, 'flyctl', 'flyctl.exe') : path.join(this.toolsDir, 'flyctl', 'flyctl'),
-      }
+        binPath: isWin
+          ? path.join(this.toolsDir, 'flyctl', 'flyctl.exe')
+          : path.join(this.toolsDir, 'flyctl', 'flyctl'),
+      },
     ];
   }
 
+  /**
+   *
+   */
   async setupTool(tool: ToolMetadata) {
     if (tool.skipPlatform?.includes(this.platform)) {
       console.log(chalk.dim(`[*] Skipping ${tool.name} on ${this.platform}.`));
@@ -145,7 +159,9 @@ export class RelicRepository {
           return;
         }
       } catch (e) {
-        console.log(chalk.yellow(`[!] ${tool.name} binary corrupted or version mismatch, reinstalling...`));
+        console.log(
+          chalk.yellow(`[!] ${tool.name} binary corrupted or version mismatch, reinstalling...`),
+        );
       }
     }
 
@@ -153,7 +169,7 @@ export class RelicRepository {
     if (!fs.existsSync(this.toolsDir)) fs.mkdirSync(this.toolsDir, { recursive: true });
 
     await this.downloadWithRetry(tool.url, tool.destFile);
-    
+
     const tempExtract = path.join(this.toolsDir, `_temp_${tool.name.replace(/\s+/g, '_')}`);
     if (fs.existsSync(tempExtract)) fs.rmSync(tempExtract, { recursive: true, force: true });
     fs.mkdirSync(tempExtract, { recursive: true });
@@ -167,7 +183,8 @@ export class RelicRepository {
       extractedDir = path.join(tempExtract, children[0]);
     }
 
-    if (fs.existsSync(tool.extractPath)) fs.rmSync(tool.extractPath, { recursive: true, force: true });
+    if (fs.existsSync(tool.extractPath))
+      fs.rmSync(tool.extractPath, { recursive: true, force: true });
     fs.renameSync(extractedDir, tool.extractPath);
 
     fs.rmSync(tempExtract, { recursive: true, force: true });
@@ -175,6 +192,9 @@ export class RelicRepository {
     console.log(chalk.green(`[+] ${tool.name} setup complete.`));
   }
 
+  /**
+   *
+   */
   async setupTsx() {
     const isWin = this.platform === 'win32';
     const nodeDir = path.join(this.toolsDir, 'nodejs');
@@ -188,10 +208,10 @@ export class RelicRepository {
 
     console.log(chalk.blue(`[*] Installing tsx v${this.versions.tsx}...`));
     const npmPath = isWin ? path.join(nodeDir, 'npm.cmd') : path.join(binDir, 'npm');
-    
+
     try {
       await execAsync(`"${npmPath}" install -g tsx@${this.versions.tsx}`, {
-        env: { ...process.env, PATH: `${binDir}${isWin ? ';' : ':'}${process.env.PATH}` }
+        env: { ...process.env, PATH: `${binDir}${isWin ? ';' : ':'}${process.env.PATH}` },
       });
       console.log(chalk.green('[+] tsx setup complete.'));
     } catch (e) {
@@ -203,8 +223,12 @@ export class RelicRepository {
     const projectRoot = path.dirname(this.toolsDir);
     const certBundle = path.join(projectRoot, 'corporate_bundle.pem');
     const isWin = this.platform === 'win32';
-    const binDir = isWin ? path.join(this.toolsDir, 'nodejs') : path.join(this.toolsDir, 'nodejs', 'bin');
-    const ghBin = isWin ? path.join(this.toolsDir, 'gh', 'bin') : path.join(this.toolsDir, 'gh', 'bin');
+    const binDir = isWin
+      ? path.join(this.toolsDir, 'nodejs')
+      : path.join(this.toolsDir, 'nodejs', 'bin');
+    const ghBin = isWin
+      ? path.join(this.toolsDir, 'gh', 'bin')
+      : path.join(this.toolsDir, 'gh', 'bin');
     const flyBin = isWin ? path.join(this.toolsDir, 'flyctl') : path.join(this.toolsDir, 'flyctl');
 
     if (isWin) {
@@ -220,7 +244,8 @@ function prompt {
 }
 Write-Host "Bifrost Portable Shell Environment Ready" -ForegroundColor Green
 `;
-      if (fs.existsSync(path.dirname(profilePath))) fs.writeFileSync(profilePath, profileContent, 'utf8');
+      if (fs.existsSync(path.dirname(profilePath)))
+        fs.writeFileSync(profilePath, profileContent, 'utf8');
     } else {
       const profilePath = path.join(this.toolsDir, '.unholy_zshrc');
       const profileContent = `# Bifrost Unholy ZSH Profile
@@ -259,10 +284,15 @@ ZDOTDIR=$HOME zsh --rcs "${profile}"
     }
   }
 
+  /**
+   *
+   */
   async heal() {
     console.log(chalk.blue('🔍 Running self-healing diagnostics...'));
     const registry = this.getToolRegistry();
-    const broken = registry.filter(t => !t.skipPlatform?.includes(this.platform) && !fs.existsSync(t.binPath));
+    const broken = registry.filter(
+      (t) => !t.skipPlatform?.includes(this.platform) && !fs.existsSync(t.binPath),
+    );
     if (broken.length === 0) {
       console.log(chalk.green('[✔] Environment is healthy.'));
     } else {
@@ -271,18 +301,23 @@ ZDOTDIR=$HOME zsh --rcs "${profile}"
     }
   }
 
+  /**
+   *
+   */
   async setupAll() {
-    console.log(chalk.bold.magenta(`\n🚀 Building Unholy Environment (${this.platform}-${this.arch})...`));
+    console.log(
+      chalk.bold.magenta(`\n🚀 Building Unholy Environment (${this.platform}-${this.arch})...`),
+    );
     const registry = this.getToolRegistry();
-    
+
     // Parallelize core tool setup (Node, Pwsh)
-    await Promise.all(registry.map(t => this.setupTool(t)));
-    
+    await Promise.all(registry.map((t) => this.setupTool(t)));
+
     // Serial setup for dependent tools (tsx needs node)
     await this.setupTsx();
     await this.createProfile();
     await this.createLauncher();
-    
+
     console.log(chalk.bold.magenta(`\n[✔] Unholy Environment is ready in .tools/\n`));
   }
 }

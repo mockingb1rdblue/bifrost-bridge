@@ -32,6 +32,7 @@ The `Job` interface uses `payload: any`, allowing arbitrary data to flow through
 **Network Resilience**
 
 The `network.ts` implements exponential backoff but lacks:
+
 - Jitter to prevent thundering herd problems when multiple workers retry simultaneously.
 - Circuit breaker pattern to fast-fail when the router is consistently unavailable.
 - Request/response logging for debugging without exposing secrets.
@@ -39,6 +40,7 @@ The `network.ts` implements exponential backoff but lacks:
 **Handler Registry Risks**
 
 The global `handlers` object allows runtime registration, which could lead to:
+
 - Handlers silently overwriting others (confirmed in test).
 - No validation that handlers implement the full `JobHandler` interface.
 - Missing handler error handling: what happens if a registered handler is called but not defined?
@@ -49,28 +51,32 @@ The global `handlers` object allows runtime registration, which could lead to:
 
 1. Remove the `FALLBACK_KEY` entirely; fail startup if `WORKER_API_KEY` is missing.
 2. Create an `env.ts` file that validates all environment variables at startup:
+
 ```typescript
 export const config = {
-    routerUrl: z.string().url().parse(process.env.ROUTER_URL),
-    apiKey: z.string().min(32).parse(process.env.WORKER_API_KEY),
-    nodeEnv: z.enum(['development', 'production']).parse(process.env.NODE_ENV || 'production')
+  routerUrl: z.string().url().parse(process.env.ROUTER_URL),
+  apiKey: z.string().min(32).parse(process.env.WORKER_API_KEY),
+  nodeEnv: z.enum(['development', 'production']).parse(process.env.NODE_ENV || 'production'),
 };
 ```
+
 3. Remove `npm_lifecycle_event` and `DEV_MODE` checks; rely only on `NODE_ENV`.
 
 **Phase 2: Type Safety (High Priority)**
 
 1. Define discriminated union for all job types:
+
 ```typescript
-type JobPayload = 
-    | { type: 'echo'; data: { message: string } }
-    | { type: 'runner_task'; data: RunnerTaskData };
+type JobPayload =
+  | { type: 'echo'; data: { message: string } }
+  | { type: 'runner_task'; data: RunnerTaskData };
 
 interface Job {
-    id: string;
-    payload: JobPayload;
+  id: string;
+  payload: JobPayload;
 }
 ```
+
 2. Update handlers to accept typed payloads; remove `any` types.
 3. Add handler validation: ensure all registered handlers match the `JobHandler` interface and reject duplicates explicitly.
 

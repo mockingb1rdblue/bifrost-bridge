@@ -9,34 +9,41 @@ The search results provided focus on general technical debt identification frame
 ## Critical Issues
 
 ### 1. **Hardcoded Credentials & Secrets Exposure**
+
 The operational manual contains executable commands with implicit credential handling:
+
 - `wrangler login` and `fly auth login` suggest credentials stored in local environment files
 - No evidence of secret management systems (e.g., HashiCorp Vault, AWS Secrets Manager)
 - **Risk**: Credentials in shell history, process environment, or repository artifacts
 - **Compliance**: Violates "Zero Secrets" requirement
 
 ### 2. **Insecure Activation Pattern**
+
 ```bash
-source scripts/activate-env.sh 
+source scripts/activate-env.sh
 # OR manual: export PATH=$PWD/.tools/bin:$PATH
 ```
+
 - Manual PATH modification is a **privilege escalation vector** (malicious binaries in `.tools/bin` could shadow system commands)
 - No integrity verification of activation scripts
 - **Risk**: Supply chain compromise, code execution as operator
 
 ### 3. **Missing Network Security Context**
+
 - `curl https://bifrost-gateway.fly.dev/health` lacks certificate pinning, timeout, or retry logic
 - No TLS version enforcement specified
 - WSS (WebSocket Secure) connections shown in architecture but no authentication flow documented
 - **Risk**: Man-in-the-middle attacks, resource exhaustion via hanging connections
 
 ### 4. **Insufficient Error Handling & Observability**
+
 - Health checks return no error codes or logged diagnostics
 - Manual task synchronization via `cat docs/SWARM_BACKLOG.md` has no validation
 - No documented failure modes or rollback procedures
 - **Risk**: Silent failures, difficult incident diagnosis
 
 ### 5. **Architecture Tightly Couples Multiple Cloud Providers**
+
 - Cloudflare, Fly.io, and Durable Objects create vendor lock-in and unclear responsibility boundaries
 - No documented failover mechanisms between "The Crypt Core" and "Specter Sanctums"
 - **Risk**: Cascading failures, operational complexity
@@ -83,27 +90,27 @@ source scripts/activate-env.sh
 
 ### Phase 1: Security Baseline (Weeks 1–2)
 
-| Task | Effort | Risk | Owner |
-|------|--------|------|-------|
-| Audit all credentials in `.tools/` and move to vault | 4h | High | Security Team |
-| Implement OIDC workload identity for Wrangler/Fly | 8h | Medium | DevOps |
-| Add TLS cert pinning to health check curl | 2h | Low | Backend Lead |
+| Task                                                 | Effort | Risk   | Owner         |
+| ---------------------------------------------------- | ------ | ------ | ------------- |
+| Audit all credentials in `.tools/` and move to vault | 4h     | High   | Security Team |
+| Implement OIDC workload identity for Wrangler/Fly    | 8h     | Medium | DevOps        |
+| Add TLS cert pinning to health check curl            | 2h     | Low    | Backend Lead  |
 
 ### Phase 2: Architectural Decoupling (Weeks 3–4)
 
-| Task | Effort | Risk | Owner |
-|------|--------|------|-------|
-| Define clear contracts between Crypt Core and Specter Sanctums (gRPC or REST) | 12h | High | Architect |
-| Implement circuit breaker between components | 8h | Medium | Backend Lead |
-| Document failure modes and recovery procedures | 6h | Low | Tech Writer |
+| Task                                                                          | Effort | Risk   | Owner        |
+| ----------------------------------------------------------------------------- | ------ | ------ | ------------ |
+| Define clear contracts between Crypt Core and Specter Sanctums (gRPC or REST) | 12h    | High   | Architect    |
+| Implement circuit breaker between components                                  | 8h     | Medium | Backend Lead |
+| Document failure modes and recovery procedures                                | 6h     | Low    | Tech Writer  |
 
 ### Phase 3: Operational Hardening (Weeks 5–6)
 
-| Task | Effort | Risk | Owner |
-|------|--------|------|-------|
-| Replace manual `source activate-env.sh` with signed, declarative setup | 10h | Medium | DevOps |
-| Implement automated health checks with alerting | 6h | Low | Observability Team |
-| Add pre-deployment validation (checksums, schema drift) | 8h | Medium | Backend Lead |
+| Task                                                                   | Effort | Risk   | Owner              |
+| ---------------------------------------------------------------------- | ------ | ------ | ------------------ |
+| Replace manual `source activate-env.sh` with signed, declarative setup | 10h    | Medium | DevOps             |
+| Implement automated health checks with alerting                        | 6h     | Low    | Observability Team |
+| Add pre-deployment validation (checksums, schema drift)                | 8h     | Medium | Backend Lead       |
 
 ### Phase 4: Compliance Verification (Ongoing)
 

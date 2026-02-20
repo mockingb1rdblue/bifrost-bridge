@@ -43,6 +43,9 @@ export interface Env {
   GOVERNANCE_DO: DurableObjectNamespace;
 }
 
+/**
+ *
+ */
 export class RouterDO {
   private state: DurableObjectState;
   private env: Env;
@@ -69,6 +72,9 @@ export class RouterDO {
   private fly: FlyClient;
   private readonly BATCH_SIZE = 10;
 
+  /**
+   *
+   */
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
     this.env = env;
@@ -98,10 +104,10 @@ export class RouterDO {
     this.state.blockConcurrencyWhile(async () => {
       // CRITICAL: Delete the legacy oversized blob before any reads.
       // Cloudflare allows deleting any-size key — just not reading them.
-      await this.state.storage.delete('router_state').catch(() => { });
+      await this.state.storage.delete('router_state').catch(() => {});
 
       // Load metadata (metrics, rateLimits, errors, circuit breakers)
-      const meta = await this.state.storage.get<any>('router_meta') || {};
+      const meta = (await this.state.storage.get<any>('router_meta')) || {};
 
       // Load jobs
       const jobsMap = await this.state.storage.list<Job>({ prefix: 'job_' });
@@ -128,6 +134,9 @@ export class RouterDO {
     this.state.storage.setAlarm(Date.now() + 10000);
   }
 
+  /**
+   *
+   */
   async alarm() {
     console.log('[RouterDO] Manual Trigger: Running maintenance and sync...');
     try {
@@ -469,10 +478,11 @@ export class RouterDO {
             }
           } else {
             console.warn(
-              `[handleSluaghSwarmTaskUpdate] Verify failed, initiating self-healing fix loop.`
+              `[handleSluaghSwarmTaskUpdate] Verify failed, initiating self-healing fix loop.`,
             );
             const fixTaskId = `task_fix_${now}`;
-            const verificationErrors = verifyLog?.whatDidntWork?.join('\n') || 'Unknown verification failure.';
+            const verificationErrors =
+              verifyLog?.whatDidntWork?.join('\n') || 'Unknown verification failure.';
 
             this.storage.swarmTasks[fixTaskId] = {
               id: fixTaskId,
@@ -538,7 +548,6 @@ export class RouterDO {
             console.log(
               `[handleSluaghSwarmTaskUpdate] Chained fix task ${fixTaskId} for ${task.id}`,
             );
-
           } catch (e: any) {
             console.error('Failed to create fix task/comment:', e.message);
           }
@@ -551,7 +560,9 @@ export class RouterDO {
       return new Response('OK');
     } catch (e: any) {
       console.error('handleSluagh SwarmTaskUpdate error:', e);
-      return new Response('Invalid JSON (handleSluaghSwarmTaskUpdate): ' + e.message, { status: 400 });
+      return new Response('Invalid JSON (handleSluaghSwarmTaskUpdate): ' + e.message, {
+        status: 400,
+      });
     }
   }
 
@@ -807,7 +818,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     const cb = this.storage.circuitBreakers[service];
     if (!cb) return false;
     if (cb.state === 'open') {
-      console.warn(`[CircuitBreaker] ${service} circuit is OPEN — skipping call. Tripped: ${cb.reason}`);
+      console.warn(
+        `[CircuitBreaker] ${service} circuit is OPEN — skipping call. Tripped: ${cb.reason}`,
+      );
       return true;
     }
     return false;
@@ -825,7 +838,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       cb.state = 'open';
       cb.trippedAt = Date.now();
       cb.reason = reason;
-      console.error(`[CircuitBreaker] ⛔ ${service} circuit TRIPPED after ${cb.failureCount} failures. All calls stopped.`);
+      console.error(
+        `[CircuitBreaker] ⛔ ${service} circuit TRIPPED after ${cb.failureCount} failures. All calls stopped.`,
+      );
       await this.dispatchSelfHealingTask(service, reason);
     }
     await this.saveState();
@@ -897,7 +912,10 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         } else {
           job.status = 'awaiting_hitl';
           try {
-            const linear = new LinearClient({ apiKey: this.env.LINEAR_API_KEY, teamId: this.env.LINEAR_TEAM_ID });
+            const linear = new LinearClient({
+              apiKey: this.env.LINEAR_API_KEY,
+              teamId: this.env.LINEAR_TEAM_ID,
+            });
             const issue = await linear.createIssue({
               title: `[HITL] Ingestion Approval Required: ${job.id}`,
               description: `Job ID: ${job.id}\nPayload: ${JSON.stringify(job.payload, null, 2)}\n\nPlease approve this ingestion by adding a comment 'APPROVE' or updating the status.`,
@@ -1049,7 +1067,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       const isValid = await verifyGitHubSignature(
         rawBody,
         signature,
-        this.env.GITHUB_WEBHOOK_SECRET
+        this.env.GITHUB_WEBHOOK_SECRET,
       );
 
       if (!isValid) {
@@ -1073,8 +1091,8 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
             number: pr.number,
             title: pr.title,
             url: pr.html_url,
-            sender: payload.sender.login
-          }
+            sender: payload.sender.login,
+          },
         });
       }
 
@@ -1085,6 +1103,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     }
   }
 
+  /**
+   *
+   */
   async fetch(request: Request): Promise<Response> {
     this.storage.metrics.totalRequests++;
     const url = new URL(request.url);
@@ -1243,7 +1264,10 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
               correlation_id: correlationId,
               payload: { issueIdentifier, jobId },
             });
-            return new Response(JSON.stringify(newJob), { status: 201, headers: { 'Content-Type': 'application/json' } });
+            return new Response(JSON.stringify(newJob), {
+              status: 201,
+              headers: { 'Content-Type': 'application/json' },
+            });
           }
           return new Response('Method Not Allowed', { status: 405 });
         case '/v1/llm/chat':
@@ -1260,9 +1284,12 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
             this.storage.circuitBreakers[svcParam] = { state: 'closed', failureCount: 0 };
             await this.saveState();
           }
-          return new Response(JSON.stringify({ message: `Circuit reset: ${svcParam}`, status: 'closed' }), {
-            headers: { 'Content-Type': 'application/json' },
-          });
+          return new Response(
+            JSON.stringify({ message: `Circuit reset: ${svcParam}`, status: 'closed' }),
+            {
+              headers: { 'Content-Type': 'application/json' },
+            },
+          );
         case '/admin/circuits':
           return new Response(JSON.stringify(this.storage.circuitBreakers), {
             headers: { 'Content-Type': 'application/json' },
@@ -1288,7 +1315,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
               circuitBreakers: {},
             };
             await this.saveState();
-            return new Response(JSON.stringify({ message: 'State completely wiped' }), { status: 200 });
+            return new Response(JSON.stringify({ message: 'State completely wiped' }), {
+              status: 200,
+            });
           }
           return new Response('Not found', { status: 404 });
       }
@@ -1462,18 +1491,20 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
   private async handleWorkerPoll(request: Request): Promise<Response> {
     const { workerId } = (await request.json()) as any;
 
-    const queueJob = Object.values(this.storage.jobs)
-      .filter((j) => j.status === 'pending')
-      .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0] ?? null;
+    const queueJob =
+      Object.values(this.storage.jobs)
+        .filter((j) => j.status === 'pending')
+        .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0] ?? null;
     if (queueJob) {
       queueJob.status = 'processing';
       queueJob.assignedTo = workerId;
       queueJob.startedAt = Date.now();
     }
 
-    const swarmTask = Object.values(this.storage.swarmTasks)
-      .filter((t) => t.status === 'pending')
-      .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0] ?? null;
+    const swarmTask =
+      Object.values(this.storage.swarmTasks)
+        .filter((t) => t.status === 'pending')
+        .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0] ?? null;
     if (swarmTask) {
       swarmTask.status = 'in_progress';
       swarmTask.assignedTo = workerId;
@@ -1528,7 +1559,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         return new Response('Unauthorized', { status: 401 });
       }
 
-      const body = await request.json() as any;
+      const body = (await request.json()) as any;
       const forceSync = body.forceSync || false;
       const batchSize = body.batchSize || this.BATCH_SIZE;
 
@@ -1536,15 +1567,14 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         await this.syncLinearTasks();
       }
 
-      // Override batch size temporarily? 
+      // Override batch size temporarily?
       // For now, processBatch uses const BATCH_SIZE, so we might need to modify processBatch to accept arg
-      // Or just loop here. Let's modify processBatch signature in a separate edit if needed, 
-      // or just call it multiple times if we really wanted to. 
+      // Or just loop here. Let's modify processBatch signature in a separate edit if needed,
+      // or just call it multiple times if we really wanted to.
       // Actually, let's just run processBatch once, unless we want to process MORE.
       // Modifying processBatch to take an optional limit is better.
 
       return await this.processBatch(batchSize);
-
     } catch (e: any) {
       await this.logError(e.message, 'BATCH_TRIGGER', e);
       return new Response(JSON.stringify({ error: e.message }), { status: 500 });
@@ -1576,7 +1606,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       }
 
       // Clean up monolithic legacy state if it exists
-      await this.state.storage.delete('router_state').catch(() => { });
+      await this.state.storage.delete('router_state').catch(() => {});
     } catch (e: any) {
       console.error('[RouterDO.saveState] CRITICAL FAILURE:', e.message, e.stack);
       // DO NOT throw, or we will cause a cascade of 1101 errors.
@@ -1589,7 +1619,8 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
     // Jobs
     const allJobs = Object.values(this.storage.jobs);
-    const completedJobs = allJobs.filter(j => j.status === 'completed' || j.status === 'failed')
+    const completedJobs = allJobs
+      .filter((j) => j.status === 'completed' || j.status === 'failed')
       .sort((a, b) => b.updatedAt - a.updatedAt);
     if (completedJobs.length > MAX_COMPLETED) {
       const toDelete = completedJobs.slice(MAX_COMPLETED);
@@ -1601,7 +1632,8 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
     // Swarm tasks
     const allSwarmTasks = Object.values(this.storage.swarmTasks);
-    const completedSwarm = allSwarmTasks.filter(t => t.status === 'completed' || t.status === 'failed')
+    const completedSwarm = allSwarmTasks
+      .filter((t) => t.status === 'completed' || t.status === 'failed')
       .sort((a, b) => (b.updatedAt || now) - (a.updatedAt || now));
 
     if (completedSwarm.length > MAX_COMPLETED) {
@@ -1702,9 +1734,15 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         teamId: this.env.LINEAR_TEAM_ID,
       });
 
-      if (job.payload.action === 'initialize_and_plan' || job.payload.action === 'initialize_workspace') {
+      if (
+        job.payload.action === 'initialize_and_plan' ||
+        job.payload.action === 'initialize_workspace'
+      ) {
         const { issueIdentifier, issueTitle, issueId, description } = job.payload;
-        const slug = issueTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const slug = issueTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
         const branchName = `feat/${issueIdentifier}-${slug}`;
         const repo = 'bifrost-bridge';
         const owner = 'mockingb1rdblue';
@@ -1734,10 +1772,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           taskId: job.id,
           whatWasDone: `Initialized workspace (\`${branchResult}\`) and generated initial implementation plan.`,
           diff: `+ Refs: refs/heads/${branchName}\n+ Base: refs/heads/master`,
-          whatWorked: [
-            `Created/Verified GitHub branch ${branchName}`,
-            `Generated technical plan`,
-          ],
+          whatWorked: [`Created/Verified GitHub branch ${branchName}`, `Generated technical plan`],
           whatDidntWork: [],
           lessonsLearned: ['Parallelized workspace and planning speeds up agent onboarding.'],
         };
@@ -1770,7 +1805,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
             repository: {
               owner: owner,
               name: repo,
-              token: token
+              token: token,
             },
           };
           console.log(`Created Sluagh SwarmTask ${taskId} for issue ${issueIdentifier}`);
@@ -1785,14 +1820,26 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         const analysisRes = await this.routeLLM({
           messages: [
             { role: 'system', content: 'You are the Sluagh Swarm Optimization Engine.' },
-            { role: 'user', content: prompt + '\n\nPlease provide a section titled "OPTIMIZED_PROMPT" containing a refined system prompt.' },
+            {
+              role: 'user',
+              content:
+                prompt +
+                '\n\nPlease provide a section titled "OPTIMIZED_PROMPT" containing a refined system prompt.',
+            },
           ],
           taskType: 'planning',
         });
 
-        const optimizedPromptMatch = analysisRes.content.match(/OPTIMIZED_PROMPT\n+([\s\S]+)$|^OPTIMIZED_PROMPT[:\s]+([\s\S]+)$|OPTIMIZED_PROMPT[:]\s*([\s\S]+)/i);
+        const optimizedPromptMatch = analysisRes.content.match(
+          /OPTIMIZED_PROMPT\n+([\s\S]+)$|^OPTIMIZED_PROMPT[:\s]+([\s\S]+)$|OPTIMIZED_PROMPT[:]\s*([\s\S]+)/i,
+        );
         const optimizedPrompt = optimizedPromptMatch
-          ? (optimizedPromptMatch[1] || optimizedPromptMatch[2] || optimizedPromptMatch[3] || '').trim()
+          ? (
+              optimizedPromptMatch[1] ||
+              optimizedPromptMatch[2] ||
+              optimizedPromptMatch[3] ||
+              ''
+            ).trim()
           : null;
 
         if (optimizedPrompt) {
@@ -1826,7 +1873,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         const govRes = await stub.fetch('http://governance/check');
 
         if (govRes.status === 429) {
-          const body = await govRes.json() as any;
+          const body = (await govRes.json()) as any;
           throw new Error(`Governance Blocked: ${body.reason}`);
         }
       }
@@ -1872,6 +1919,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     }
   }
 
+  /**
+   *
+   */
   async handleQueuePoll(request: Request): Promise<Response> {
     try {
       const body = (await request.json()) as any;
@@ -1880,7 +1930,8 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         .filter((j) => j.status === 'pending')
         .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0];
 
-      if (!job) return new Response(JSON.stringify({ message: 'No jobs available' }), { status: 404 });
+      if (!job)
+        return new Response(JSON.stringify({ message: 'No jobs available' }), { status: 404 });
 
       job.status = 'processing';
       job.assignedTo = workerId;
@@ -1896,6 +1947,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     }
   }
 
+  /**
+   *
+   */
   async handleQueueComplete(request: Request): Promise<Response> {
     try {
       const body = (await request.json()) as any;
@@ -1916,7 +1970,12 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         if (result && result.usage && result.provider) {
           const p = result.provider;
           if (!this.storage.metrics.providerStats[p]) {
-            this.storage.metrics.providerStats[p] = { requests: 0, successes: 0, failures: 0, tokens: 0 };
+            this.storage.metrics.providerStats[p] = {
+              requests: 0,
+              successes: 0,
+              failures: 0,
+              tokens: 0,
+            };
           }
           this.storage.metrics.providerStats[p].requests++;
           this.storage.metrics.providerStats[p].successes++;
@@ -1936,12 +1995,19 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           });
 
           if (job.status === 'completed') {
-            const resultSummary = typeof job.result === 'string' ? job.result : JSON.stringify(job.result, null, 2);
-            await linear.addComment(job.linearIssueId, `🏁 **Sluagh Swarm Handoff**\n\nTask completed successfully.\n\n**Result Summary:**\n\`\`\`json\n${resultSummary.substring(0, 1000)}\n\`\`\`\n\nMoving to **Review** phase.`);
+            const resultSummary =
+              typeof job.result === 'string' ? job.result : JSON.stringify(job.result, null, 2);
+            await linear.addComment(
+              job.linearIssueId,
+              `🏁 **Sluagh Swarm Handoff**\n\nTask completed successfully.\n\n**Result Summary:**\n\`\`\`json\n${resultSummary.substring(0, 1000)}\n\`\`\`\n\nMoving to **Review** phase.`,
+            );
             await linear.addLabel(job.linearIssueId, 'swarm:review');
             await linear.removeLabel(job.linearIssueId, 'swarm:active');
           } else if (job.status === 'failed') {
-            await linear.addComment(job.linearIssueId, `⚠️ **Sluagh Swarm Blocked**\n\nTask execution failed.\n\n**Error:**\n> ${job.error}\n\nHuman intervention required.`);
+            await linear.addComment(
+              job.linearIssueId,
+              `⚠️ **Sluagh Swarm Blocked**\n\nTask execution failed.\n\n**Error:**\n> ${job.error}\n\nHuman intervention required.`,
+            );
             await linear.addLabel(job.linearIssueId, 'swarm:blocked');
             await linear.removeLabel(job.linearIssueId, 'swarm:active');
           }
@@ -1957,7 +2023,11 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       // Trigger next batch
       await this.processBatch();
 
-      if (job.type === 'runner_task' && job.status === 'completed' && job.payload.action === 'write_file') {
+      if (
+        job.type === 'runner_task' &&
+        job.status === 'completed' &&
+        job.payload.action === 'write_file'
+      ) {
         const reviewJobId = crypto.randomUUID();
         const reviewJob: Job = {
           id: reviewJobId,
@@ -2005,7 +2075,9 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         teamId: this.env.LINEAR_TEAM_ID,
       });
 
-      console.log(`[completeAndMergeTask] Approving and merging PR #${task.prNumber} for task ${task.id}`);
+      console.log(
+        `[completeAndMergeTask] Approving and merging PR #${task.prNumber} for task ${task.id}`,
+      );
 
       // 1. Approve PR
       await github.createReviewComment(

@@ -5,6 +5,7 @@
 > **Format**: `[ID] Task Description` (Status: pending `[ ]` | active `[/]` | done `[x]`)
 
 ### Mission 1: The Cairn Codex (Project Management)
+
 - [/] **[CC-01] Schema Design**: Define `ProjectSpec` and schemas. (See [CAIRN_CODEX.md](specs/CAIRN_CODEX.md))
 - [/] **[CC-02] Linear SDK Wrapper**: Create `LinearOrchestrator` class. (See [CAIRN_CODEX.md](specs/CAIRN_CODEX.md))
 - [/] **[CC-03] Natural Language Parser**: Implement `ProjectSpecParser` with Perplexity.
@@ -16,6 +17,7 @@
 - [ ] [CC-07] **Migration**: Script to export existing Linear backlog and import to Codex.
 
 ### Mission 2: Liminal Library (Context Engine)
+
 - [ ] **[LL-01] Indexer Sprite**: Deploy Fly.io Sprite for `bifrost-indexer`. (See [LIMINAL_LIBRARY.md](specs/LIMINAL_LIBRARY.md))
 - [ ] **[LL-02] Vector Storage**: Configure SQLite `vec0` on persistent volume.
 - [ ] **[LL-03] MCP Query Interface**: Build `semantic_code_search` tool.
@@ -27,6 +29,7 @@
 - [ ] [LL-06] **Git Awareness**: Implement diff-based incremental re-indexing.
 
 ### Mission 3: Documentation Discovery
+
 - [ ] **[DD-01] Crawler Logic**: Implement Gemini-based sitemap extractor. (See [CRYPT_CRAWLER.md](specs/CRYPT_CRAWLER.md))
 - [ ] **[DD-02] Pattern Miner**: Build DeepSeek analysis pipeline for code examples.
 - [ ] **[DD-03] Auto-Updater**: Cron job for "Revenant Rhythm" (weekly re-crawl).
@@ -38,7 +41,8 @@
 - [ ] [DD-06] **Auto-Update**: Scheduled "What changed?" queries via Perplexity.
 
 ## 🐝 Mission: Sluagh Swarm Resilience
-*Hardening the worker fleet against entropy.*
+
+_Hardening the worker fleet against entropy._
 
 - [ ] [SSR-01] **Idempotent DB**: Refactor `db.ts` to use proper `schema_migrations` table.
 - [ ] [SSR-02] **Event Health**: Add `Eulogy Engine` health check before batch delivery.
@@ -46,7 +50,8 @@
 - [ ] [SSR-04] **Telemetry**: Enhance Sluagh Task logging with "Retry Count" and "Error Signature".
 
 ## 🔐 Mission: Operational Hygiene & Security
-*Zero Local Secrets and Environment Integrity.*
+
+_Zero Local Secrets and Environment Integrity._
 
 - [ ] [OPS-01] **Env Validation**: Update `maintenance-loop.sh` to pre-validate Cloudflare environments.
 - [ ] [OPS-02] **Secret Resolver**: Design "Abyssal Artifact Resolution" worker (secure proxy for local dev).
@@ -64,7 +69,8 @@
 - [ ] **Self-Hosting**: Move generic LLM calls to local models (DeepSeek R1 distilled).
 
 ## 💀 Grave Grievances (High-Severity Tech Debt)
-*Transferred from legacy Grave_Grievances.md*
+
+_Transferred from legacy Grave_Grievances.md_
 
 - [ ] [GG-01] **Durable Object Deadlock**: ReaperDO deadlocks during high telemetry bursts. Needs non-blocking logging.
 - [ ] [GG-02] **Ghost Workers**: `recover-artifacts.ps1` drift creates ghost workers on Cloudflare.
@@ -74,6 +80,7 @@
 - [ ] [GG-06] **Script Migration**: Migrate all scripts to `relics/node_modules` pattern.
 
 ## 🏺 Historical Relics (Restored Knowledge)
-*Restored from strict vacuum audit. Contains valuable implementation details not fully captured in summaries.*
+
+_Restored from strict vacuum audit. Contains valuable implementation details not fully captured in summaries._
 
 - [Backlog Archive](file:///Users/mock1ng/Documents/Projects/Antigravity-Github/bifrost-bridge/docs/relics/archive/backlog) (50+ files including Router Architecture, Corporate Proxy Code, and Vision Statements)

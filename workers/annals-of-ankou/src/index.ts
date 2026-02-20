@@ -1,6 +1,6 @@
-console.log("🚀 BOOTSTRAP: Annals of Ankou starting up...");
-console.log("Environment PORT:", process.env.PORT);
-console.log("Environment DB_PATH:", process.env.DB_PATH);
+console.log('🚀 BOOTSTRAP: Annals of Ankou starting up...');
+console.log('Environment PORT:', process.env.PORT);
+console.log('Environment DB_PATH:', process.env.DB_PATH);
 
 import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import { db, initDB } from './db';
@@ -39,22 +39,29 @@ fastify.post<{ Body: EventBody }>('/events', async (request, reply) => {
   const { type, source, topic, correlation_id, payload, meta } = request.body;
 
   if (!type || !source || !payload) {
-    return reply.code(400).send({ error: 'Missing required fields: type, source, and payload are required' });
+    return reply
+      .code(400)
+      .send({ error: 'Missing required fields: type, source, and payload are required' });
   }
 
   // BIF-165: Correlation ID Validation
-  if (correlation_id && (typeof correlation_id !== 'string' || correlation_id.trim().length === 0)) {
+  if (
+    correlation_id &&
+    (typeof correlation_id !== 'string' || correlation_id.trim().length === 0)
+  ) {
     return reply.code(400).send({ error: 'correlation_id must be a non-empty string' });
   }
 
-  const stmt = db.prepare('INSERT INTO events (type, source, topic, correlation_id, payload, meta) VALUES (?, ?, ?, ?, ?, ?)');
+  const stmt = db.prepare(
+    'INSERT INTO events (type, source, topic, correlation_id, payload, meta) VALUES (?, ?, ?, ?, ?, ?)',
+  );
   const info = stmt.run(
     type,
     source,
     topic || null,
     correlation_id || null,
     JSON.stringify(payload),
-    meta ? JSON.stringify(meta) : null
+    meta ? JSON.stringify(meta) : null,
   );
 
   return { id: info.lastInsertRowid, status: 'ok' };
@@ -85,58 +92,55 @@ interface EventsQuery {
   endDate?: string;
 }
 
-fastify.get<{ Querystring: EventsQuery }>(
-  '/events',
-  async (request, reply) => {
-    const { limit = 100, type, topic, startDate, endDate } = request.query;
+fastify.get<{ Querystring: EventsQuery }>('/events', async (request, reply) => {
+  const { limit = 100, type, topic, startDate, endDate } = request.query;
 
-    let query = 'SELECT * FROM events WHERE 1=1';
-    const params: (string | number)[] = [];
+  let query = 'SELECT * FROM events WHERE 1=1';
+  const params: (string | number)[] = [];
 
-    if (type) {
-      if (Array.isArray(type)) {
-        query += ` AND type IN (${type.map(() => '?').join(',')})`;
-        params.push(...type);
-      } else {
-        query += ' AND type = ?';
-        params.push(type);
-      }
+  if (type) {
+    if (Array.isArray(type)) {
+      query += ` AND type IN (${type.map(() => '?').join(',')})`;
+      params.push(...type);
+    } else {
+      query += ' AND type = ?';
+      params.push(type);
     }
+  }
 
-    if (topic) {
-      query += ' AND topic = ?';
-      params.push(topic);
-    }
+  if (topic) {
+    query += ' AND topic = ?';
+    params.push(topic);
+  }
 
-    if (startDate) {
-      query += ' AND timestamp >= ?';
-      params.push(startDate);
-    }
+  if (startDate) {
+    query += ' AND timestamp >= ?';
+    params.push(startDate);
+  }
 
-    if (endDate) {
-      query += ' AND timestamp <= ?';
-      params.push(endDate);
-    }
+  if (endDate) {
+    query += ' AND timestamp <= ?';
+    params.push(endDate);
+  }
 
-    query += ' ORDER BY id DESC LIMIT ?';
-    params.push(Number(limit));
+  query += ' ORDER BY id DESC LIMIT ?';
+  params.push(Number(limit));
 
-    const stmt = db.prepare(query);
-    const events = stmt.all(...params) as any[]; // DB returns untyped rows, checking specific fields below
+  const stmt = db.prepare(query);
+  const events = stmt.all(...params) as any[]; // DB returns untyped rows, checking specific fields below
 
-    return events.map((e) => ({
-      ...e,
-      payload: JSON.parse(e.payload),
-      meta: e.meta ? JSON.parse(e.meta) : null,
-    }));
-  },
-);
+  return events.map((e) => ({
+    ...e,
+    payload: JSON.parse(e.payload),
+    meta: e.meta ? JSON.parse(e.meta) : null,
+  }));
+});
 
 // BIF-166: List Unique Topics
 fastify.get('/events/topics', async () => {
   const stmt = db.prepare('SELECT DISTINCT topic FROM events WHERE topic IS NOT NULL');
   const result = stmt.all() as { topic: string }[];
-  return { topics: result.map(r => r.topic) };
+  return { topics: result.map((r) => r.topic) };
 });
 
 // Count total events
@@ -167,8 +171,7 @@ export const start = async () => {
 export const app = fastify;
 
 // Auto-start for Fly.io/Production
-start().catch(err => {
-  console.error("🔥 FATAL STARTUP ERROR:", err);
+start().catch((err) => {
+  console.error('🔥 FATAL STARTUP ERROR:', err);
   process.exit(1);
 });
-

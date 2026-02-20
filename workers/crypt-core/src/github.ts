@@ -6,12 +6,18 @@ interface GitHubAppConfig {
   installationId: string;
 }
 
+/**
+ *
+ */
 export class GitHubClient {
   private baseUrl = 'https://api.github.com';
   private token: string | null = null;
   private tokenExpiry: number = 0;
 
-  constructor(private config: GitHubAppConfig) { }
+  /**
+   *
+   */
+  constructor(private config: GitHubAppConfig) {}
 
   /**
    * Generate a JWT for GitHub App authentication
@@ -86,10 +92,16 @@ export class GitHubClient {
     return await response.json();
   }
 
+  /**
+   *
+   */
   async getRef(owner: string, repo: string, ref: string): Promise<any> {
     return await this.request(`/repos/${owner}/${repo}/git/ref/${ref}`);
   }
 
+  /**
+   *
+   */
   async createBranch(owner: string, repo: string, base: string, name: string): Promise<any> {
     // 1. Get sha of base branch
     const baseRef = await this.getRef(owner, repo, `heads/${base}`);
@@ -105,10 +117,16 @@ export class GitHubClient {
     });
   }
 
+  /**
+   *
+   */
   async getPullRequest(owner: string, repo: string, number: number) {
     return await this.request(`/repos/${owner}/${repo}/pulls/${number}`);
   }
 
+  /**
+   *
+   */
   async createReviewComment(
     owner: string,
     repo: string,
@@ -122,6 +140,9 @@ export class GitHubClient {
     });
   }
 
+  /**
+   *
+   */
   async addIssueComment(owner: string, repo: string, issueNumber: number, body: string) {
     return await this.request(`/repos/${owner}/${repo}/issues/${issueNumber}/comments`, {
       method: 'POST',
@@ -129,6 +150,9 @@ export class GitHubClient {
     });
   }
 
+  /**
+   *
+   */
   async createPullRequest(
     owner: string,
     repo: string,
@@ -143,6 +167,9 @@ export class GitHubClient {
     });
   }
 
+  /**
+   *
+   */
   async mergePullRequest(
     owner: string,
     repo: string,

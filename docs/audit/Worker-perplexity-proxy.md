@@ -27,12 +27,14 @@ The `constantTimeCompare` function exists but may not be applied consistently. E
 
 **Error Handling Strictness**
 The truncated code likely lacks comprehensive error handling. Add explicit error boundaries for:
+
 - Invalid JSON payloads from upstream requests
 - Upstream API timeouts (set aggressive timeouts to prevent Worker timeout)
 - Malformed rate limit keys (ensure key derivation is deterministic and safe)
 
 **TypeScript Configuration**
 Ensure `tsconfig.json` includes strict mode settings:
+
 - `"strict": true`
 - `"noImplicitAny": true`
 - `"strictNullChecks": true`
@@ -45,10 +47,11 @@ Ensure `tsconfig.json` includes strict mode settings:
 2. **Update compatibility date** to `2026-02-15` or later to align with the current best practices release[5].
 
 3. **Add environment variable validation** at Worker startup:
+
 ```typescript
 function validateEnv(env: Env): void {
   if (!env.PERPLEXITY_API_KEY || !env.PROXY_API_KEY) {
-    throw new Error("Missing required secrets: PERPLEXITY_API_KEY, PROXY_API_KEY");
+    throw new Error('Missing required secrets: PERPLEXITY_API_KEY, PROXY_API_KEY');
   }
 }
 ```

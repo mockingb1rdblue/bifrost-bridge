@@ -1,48 +1,64 @@
 import { Job, JobHandler, JobResult } from '../agent';
 import { LLMClient, LLMMessage } from '../llm-client';
 
+/**
+ *
+ */
 export class ReviewHandler implements JobHandler {
-    type = 'review';
-    private llmClient: LLMClient;
+  type = 'review';
+  private llmClient: LLMClient;
 
-    constructor(routerUrl: string, apiKey: string) {
-        this.llmClient = new LLMClient(routerUrl, apiKey);
+  /**
+   *
+   */
+  constructor(routerUrl: string, apiKey: string) {
+    this.llmClient = new LLMClient(routerUrl, apiKey);
+  }
+
+  /**
+   *
+   */
+  async execute(job: Job): Promise<JobResult> {
+    const { prNumber, repository } = job.payload;
+
+    if (!repository || !repository.token) {
+      return { success: false, error: 'Repository information and token required for review' };
     }
 
-    async execute(job: Job): Promise<JobResult> {
-        const { prNumber, repository, issueId } = job.payload;
+    const { owner, name, token } = repository;
 
-        if (!repository || !repository.token) {
-            return { success: false, error: 'Repository information and token required for review' };
-        }
+    try {
+      console.log(`[ReviewHandler] Starting smart review for PR #${prNumber} in ${owner}/${name}`);
 
-        const { owner, name, token } = repository;
+      // 1. Fetch PR Diff
+      const diffUrl = `https://api.github.com/repos/${owner}/${name}/pulls/${prNumber}`;
+      const diffResponse = await fetch(diffUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github.v3.diff',
+          'User-Agent': 'Sluagh-Swarm-Worker',
+        },
+      });
 
-        try {
-            console.log(`[ReviewHandler] Starting smart review for PR #${prNumber} in ${owner}/${name}`);
+      if (!diffResponse.ok) {
+        throw new Error(`Failed to fetch PR diff: ${diffResponse.statusText}`);
+      }
 
-            // 1. Fetch PR Diff
-            const diffUrl = `https://api.github.com/repos/${owner}/${name}/pulls/${prNumber}`;
-            const diffResponse = await fetch(diffUrl, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/vnd.github.v3.diff',
-                    'User-Agent': 'Sluagh-Swarm-Worker'
-                }
-            });
+      const diffText = await diffResponse.text();
 
-            if (!diffResponse.ok) {
-                throw new Error(`Failed to fetch PR diff: ${diffResponse.statusText}`);
-            }
+      if (!diffText || diffText.length < 10) {
+        return {
+          success: true,
+          data: {
+            status: 'Skipped',
+            message: 'Empty diff, nothing to review.',
+            reviewDecision: 'APPROVE',
+          },
+        };
+      }
 
-            const diffText = await diffResponse.text();
-
-            if (!diffText || diffText.length < 10) {
-                return { success: true, data: { status: 'Skipped', message: 'Empty diff, nothing to review.', reviewDecision: 'APPROVE' } };
-            }
-
-            // 2. Analyze with LLM (Enhanced Prompt)
-            const prompt = `
+      // 2. Analyze with LLM (Enhanced Prompt)
+      const prompt = `
             You are an expert Senior Software Engineer and Tech Lead.
             Review the following Git Diff for a Pull Request.
 
@@ -71,68 +87,82 @@ export class ReviewHandler implements JobHandler {
             \`\`\`
             `;
 
-            const systemPrompt: LLMMessage = {
-                role: 'system',
-                content: prompt
-            };
-            const userPrompt: LLMMessage = {
-                role: 'user',
-                content: 'Review the diff and provide your decision.'
-            };
+      const systemPrompt: LLMMessage = {
+        role: 'system',
+        content: prompt,
+      };
+      const userPrompt: LLMMessage = {
+        role: 'user',
+        content: 'Review the diff and provide your decision.',
+      };
 
-            const llmResponse = await this.llmClient.chat([systemPrompt, userPrompt], 'coding', { model: 'gemini-flash-latest' });
+      const llmResponse = await this.llmClient.chat([systemPrompt, userPrompt], 'coding', {
+        model: 'gemini-flash-latest',
+      });
 
-            // 3. Parse XML Output
-            const bodyMatch = llmResponse.match(/<body>([\s\S]*?)<\/body>/);
-            const decisionMatch = llmResponse.match(/<decision>(.*?)<\/decision>/);
+      // 3. Parse XML Output
+      const bodyMatch = llmResponse.match(/<body>([\s\S]*?)<\/body>/);
+      const decisionMatch = llmResponse.match(/<decision>(.*?)<\/decision>/);
 
-            const body = bodyMatch ? bodyMatch[1].trim() : llmResponse; // Fallback to raw response if parsing fails
-            const decision = decisionMatch ? decisionMatch[1].trim().toUpperCase() : 'COMMENT';
+      const body = bodyMatch ? bodyMatch[1].trim() : llmResponse; // Fallback to raw response if parsing fails
+      const decision = decisionMatch ? decisionMatch[1].trim().toUpperCase() : 'COMMENT';
 
-            const finalDecision = (decision === 'APPROVE' || decision === 'REQUEST_CHANGES') ? decision : 'COMMENT';
+      const finalDecision =
+        decision === 'APPROVE' || decision === 'REQUEST_CHANGES' ? decision : 'COMMENT';
 
-            // 4. Post Review to GitHub
-            const reviewUrl = `https://api.github.com/repos/${owner}/${name}/pulls/${prNumber}/reviews`;
-            const reviewResponse = await fetch(reviewUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'User-Agent': 'Sluagh-Swarm-Worker',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    body: body,
-                    event: finalDecision === 'APPROVE' ? 'APPROVE' : (finalDecision === 'REQUEST_CHANGES' ? 'REQUEST_CHANGES' : 'COMMENT')
-                })
-            });
+      // 4. Post Review to GitHub
+      const reviewUrl = `https://api.github.com/repos/${owner}/${name}/pulls/${prNumber}/reviews`;
+      const reviewResponse = await fetch(reviewUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'Sluagh-Swarm-Worker',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          body: body,
+          event:
+            finalDecision === 'APPROVE'
+              ? 'APPROVE'
+              : finalDecision === 'REQUEST_CHANGES'
+                ? 'REQUEST_CHANGES'
+                : 'COMMENT',
+        }),
+      });
 
-            if (!reviewResponse.ok) {
-                throw new Error(`Failed to post review: ${reviewResponse.statusText}`);
-            }
+      if (!reviewResponse.ok) {
+        throw new Error(`Failed to post review: ${reviewResponse.statusText}`);
+      }
 
-            const reviewData = await reviewResponse.json() as any;
+      const reviewData = (await reviewResponse.json()) as any;
 
-            return {
-                success: true,
-                data: {
-                    status: 'Review Posted',
-                    url: reviewData.html_url,
-                    reviewDecision: finalDecision,
-                    engineeringLog: `Posted review for PR #${prNumber}. Decision: ${finalDecision}. URL: ${reviewData.html_url}`
-                }
-            };
+      const isHumanInputRequired = finalDecision === 'REQUEST_CHANGES';
 
-        } catch (e: any) {
-            console.error('[ReviewHandler] Error:', e);
-            return {
-                success: false,
-                data: {
-                    status: 'Failed',
-                    engineeringLog: `Review failed: ${e.message}`
-                },
-                error: e.message
-            };
-        }
+      return {
+        success: true,
+        data: {
+          status: isHumanInputRequired ? 'waiting_on_human' : 'Review Posted',
+          url: reviewData.html_url,
+          reviewDecision: finalDecision,
+          engineeringLog: `Posted review for PR #${prNumber}. Decision: ${finalDecision}. URL: ${reviewData.html_url}${isHumanInputRequired ? ' | Paused for HITL Resume flow.' : ''}`,
+          // Resumption Metadata for Vellum/Fly.io patterns
+          resumeWebhookUrl: isHumanInputRequired
+            ? `${job.payload.routerUrl}/v1/worker/resume`
+            : undefined,
+          requiresResume: isHumanInputRequired,
+        },
+      };
+    } catch (e: any) {
+      console.error('[ReviewHandler] Error:', e);
+      return {
+        success: false,
+        data: {
+          status: 'Failed',
+          engineeringLog: `Review failed: ${e.message}`,
+        },
+        error: e.message,
+      };
     }
+  }
 }

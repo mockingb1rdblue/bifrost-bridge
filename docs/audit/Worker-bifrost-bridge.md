@@ -24,7 +24,7 @@ class FlyAPIError extends Error {
   constructor(
     public status: number,
     public readonly retryable: boolean,
-    message: string
+    message: string,
   ) {
     super(message);
     this.name = 'FlyAPIError';
@@ -32,7 +32,10 @@ class FlyAPIError extends Error {
 }
 
 class ValidationError extends Error {
-  constructor(public field: string, message: string) {
+  constructor(
+    public field: string,
+    message: string,
+  ) {
     super(message);
     this.name = 'ValidationError';
   }
@@ -57,6 +60,7 @@ try {
 
 **Enforce Strict TypeScript Configuration**
 Current `tsconfig.json` is not shown, but should include:
+
 - `"strict": true`
 - `"noImplicitAny": true`
 - `"noUncheckedIndexedAccess": true`
@@ -73,13 +77,13 @@ async spawnSprite(repoUrl: string): Promise<Machine> {
   if (!repoUrl || typeof repoUrl !== 'string') {
     throw new ValidationError('repoUrl', 'Repository URL must be a non-empty string');
   }
-  
+
   try {
     new URL(repoUrl); // Throws if malformed
   } catch {
     throw new ValidationError('repoUrl', 'Invalid repository URL format');
   }
-  
+
   // Safe to proceed with validated repoUrl
 }
 ```
@@ -105,14 +109,14 @@ app.onError((err, c) => {
 
 ## Refactoring Plan
 
-| Phase | Action | Priority |
-|-------|--------|----------|
-| **1: Security** | Move `apiToken` to Cloudflare Secrets binding; remove from constructor parameters | Critical |
-| **2: Error Handling** | Implement custom error classes and update all `throw new Error()` statements | High |
-| **3: Type Safety** | Enable strict TypeScript config; add type guards with `instanceof` for all catch blocks | High |
-| **4: Validation** | Add input validation with guard clauses for public methods (`spawnSprite`, API endpoints) | High |
-| **5: Configuration** | Externalize hardcoded values (`runnerApp`, `region`) to dependency injection or environment | Medium |
-| **6: Testing** | Write unit tests for error scenarios using mocking libraries (Jest/Sinon)[3] to verify error recovery logic | Medium |
-| **7: Documentation** | Add JSDoc comments documenting thrown error types for each method | Low |
+| Phase                 | Action                                                                                                      | Priority |
+| --------------------- | ----------------------------------------------------------------------------------------------------------- | -------- |
+| **1: Security**       | Move `apiToken` to Cloudflare Secrets binding; remove from constructor parameters                           | Critical |
+| **2: Error Handling** | Implement custom error classes and update all `throw new Error()` statements                                | High     |
+| **3: Type Safety**    | Enable strict TypeScript config; add type guards with `instanceof` for all catch blocks                     | High     |
+| **4: Validation**     | Add input validation with guard clauses for public methods (`spawnSprite`, API endpoints)                   | High     |
+| **5: Configuration**  | Externalize hardcoded values (`runnerApp`, `region`) to dependency injection or environment                 | Medium   |
+| **6: Testing**        | Write unit tests for error scenarios using mocking libraries (Jest/Sinon)[3] to verify error recovery logic | Medium   |
+| **7: Documentation**  | Add JSDoc comments documenting thrown error types for each method                                           | Low      |
 
 **Implementation order:** Prioritize security and error hardening before efficiency optimizations. Custom error types unlock better error recovery strategies[1][3], which improve both reliability and observability.

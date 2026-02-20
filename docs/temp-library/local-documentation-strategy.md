@@ -1,6 +1,6 @@
 # Local Documentation Strategy: The Swarm Library
 
-> **Goal**: Create our own local source of truth by scraping APIs and official documentation. We will build, run, and perfect this pipeline entirely *locally* before even considering cloud deployment (Fly.io/Cloudflare).
+> **Goal**: Create our own local source of truth by scraping APIs and official documentation. We will build, run, and perfect this pipeline entirely _locally_ before even considering cloud deployment (Fly.io/Cloudflare).
 
 ---
 
@@ -16,6 +16,7 @@
 This pipeline adapts "Mission 3: Documentation Discovery" from the `SWARM_BACKLOG.md` into a purely local toolkit.
 
 ### Phase 1: URL Discovery & Sitemap Crawling (Local Script)
+
 - **Objective**: Find the official documentation and map it out.
 - **Linear Hooks (Bifrost v3)**: Maps to `BIF-282 (Perplexity Initial Search)`, `BIF-280 (DeepSeek URL Prioritization)`, `BIF-279 (Gemini Sitemap Extractor)`, and `BIF-283 (Documentation Crawler)`.
 - **Action**: Create a local script `scripts/library/1-discover-urls.ts`.
@@ -25,6 +26,7 @@ This pipeline adapts "Mission 3: Documentation Discovery" from the `SWARM_BACKLO
   - Output results to `docs/temp-library/raw/sitemaps/`.
 
 ### Phase 2: Content Extraction (Local Script)
+
 - **Objective**: Scrape the identified URLs respectfully and convert them to clean Markdown.
 - **Linear Hooks (Bifrost v3)**: Maps to `BIF-284 (Gemini Content Extraction Pipeline)`.
 - **Action**: Create `scripts/library/2-extract-content.ts`.
@@ -35,6 +37,7 @@ This pipeline adapts "Mission 3: Documentation Discovery" from the `SWARM_BACKLO
   - Save the resulting `.md` files into `docs/temp-library/raw/markdown/`.
 
 ### Phase 3: Code Isolation & Pattern Mining (Local Script)
+
 - **Objective**: Separate the prose from the code, and understand the code.
 - **Linear Hooks (Bifrost v3)**: Maps to `BIF-278 (Documentation SQLite Schema)`, `BIF-285 (Code Example Isolation Logic)`, `BIF-286 (Pattern & Anti-Pattern Extraction)`, and `BIF-287 (API Dependency Mapper)`.
 - **Action**: Create `scripts/library/3-mine-patterns.ts`.
@@ -45,6 +48,7 @@ This pipeline adapts "Mission 3: Documentation Discovery" from the `SWARM_BACKLO
   - Use **DeepSeek V3** (local API call) to analyze the blocks: `"What is the primary pattern being demonstrated here?"`
 
 ### Phase 4: Integration & Synthesis (Local Script)
+
 - **Objective**: Blend the new knowledge into our existing `/docs` structure and Backlog.
 - **Action**: Create `scripts/library/4-synthesize-knowledge.ts`.
 - **Implementation**:

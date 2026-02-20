@@ -21,6 +21,7 @@ The `wrangler.toml` specifies `compatibility_date = "2024-01-01"`. Best practice
 
 **Rate Limiting Architecture**
 Replace the global Map-based rate limiter with a per-request, request-scoped approach. Consider:
+
 - Using Durable Objects for distributed rate limiting across worker instances
 - Storing state in request context via `env` bindings instead of module-level variables[3]
 - Implementing ephemeral rate limit windows that don't leak across requests
@@ -39,18 +40,19 @@ Ensure all error responses distinguish between client errors (400), authenticati
 
 ## Refactoring Plan
 
-| Priority | Task | Implementation |
-|----------|------|-----------------|
-| **P0** | Resolve merge conflict | Remove Git markers and align DEPLOY.md with README's Zero Secrets mandate |
-| **P0** | Eliminate global state | Migrate rate limiting to Durable Objects or per-request context storage |
-| **P1** | Align TypeScript config | Update `worker-configuration.d.ts` generation or unify Env types in single source |
-| **P1** | Update compatibility_date | Bump to current date (2026-02-15 or later) to access latest runtime features[5] |
-| **P2** | Add observability instrumentation | Implement Workers Logs, structured logging, and monitoring before production[5] |
-| **P2** | Add request validation | Strengthen Zod schemas with format validation for API keys and secrets |
-| **P3** | Document rate limit behavior | Add inline comments explaining token bucket algorithm and per-request isolation |
+| Priority | Task                              | Implementation                                                                    |
+| -------- | --------------------------------- | --------------------------------------------------------------------------------- |
+| **P0**   | Resolve merge conflict            | Remove Git markers and align DEPLOY.md with README's Zero Secrets mandate         |
+| **P0**   | Eliminate global state            | Migrate rate limiting to Durable Objects or per-request context storage           |
+| **P1**   | Align TypeScript config           | Update `worker-configuration.d.ts` generation or unify Env types in single source |
+| **P1**   | Update compatibility_date         | Bump to current date (2026-02-15 or later) to access latest runtime features[5]   |
+| **P2**   | Add observability instrumentation | Implement Workers Logs, structured logging, and monitoring before production[5]   |
+| **P2**   | Add request validation            | Strengthen Zod schemas with format validation for API keys and secrets            |
+| **P3**   | Document rate limit behavior      | Add inline comments explaining token bucket algorithm and per-request isolation   |
 
 **Recommended Strict TypeScript Configuration Addition**
 Ensure `tsconfig.json` includes:
+
 ```json
 {
   "strict": true,

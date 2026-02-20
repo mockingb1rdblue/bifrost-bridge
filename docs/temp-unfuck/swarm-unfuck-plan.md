@@ -11,6 +11,7 @@
 **File to create**: `workers/worker-bees/src/handlers/OrchestratorHandler.ts`
 
 **What it must do**:
+
 1. Accept a job with type `orchestration`
 2. Read `job.payload.steps` — an array of sub-job descriptors, each with `{ type, payload }`
 3. Execute each step **sequentially** by calling the existing handler registry
@@ -20,6 +21,7 @@
 7. If `job.payload.linearIssueId` is present: post a comment to Linear with the final result (success or failure) via `LinearHandler`'s `create_comment` action
 
 **Register it in `agent.ts`** after the other handlers:
+
 ```ts
 import { OrchestratorHandler } from './handlers/OrchestratorHandler';
 registerHandler(new OrchestratorHandler(handlers));
@@ -28,6 +30,7 @@ registerHandler(new OrchestratorHandler(handlers));
 Pass `handlers` registry as a constructor arg so it can dispatch to existing handlers without circular deps.
 
 **Verification**: Seed a test orchestration job via `/jobs` endpoint with:
+
 ```json
 {
   "type": "orchestration",
@@ -40,6 +43,7 @@ Pass `handlers` registry as a constructor arg so it can dispatch to existing han
   }
 }
 ```
+
 Expect `fly logs` to show `[Orchestrator][step 1/2] ✅` then `[Orchestrator][step 2/2] ✅`.
 
 ---
@@ -110,21 +114,25 @@ private async handleWorkerPoll(request: Request): Promise<Response> {
 async function pollWorker() {
   const response = await fetch(`${ROUTER_URL}/v1/worker/poll`, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ workerId: WORKER_ID }),
   });
   if (!response.ok) {
     console.error(`[${WORKER_ID}] Worker poll ${response.status} | ${await response.text()}`);
     return;
   }
-  const { queueJob, swarmTask } = await response.json() as any;
+  const { queueJob, swarmTask } = (await response.json()) as any;
   if (queueJob) {
     console.log(`[${WORKER_ID}] 🍯 Queue job: ${queueJob.id} (${queueJob.type})`);
     await processJob(queueJob);
   }
   if (swarmTask) {
     console.log(`[${WORKER_ID}] 🏴‍☠️ Swarm task: ${swarmTask.id} (${swarmTask.type})`);
-    await processJob({ id: swarmTask.id, type: swarmTask.type, payload: { ...swarmTask, isSwarm: true } });
+    await processJob({
+      id: swarmTask.id,
+      type: swarmTask.type,
+      payload: { ...swarmTask, isSwarm: true },
+    });
   }
   if (!queueJob && !swarmTask) console.log(`[${WORKER_ID}] 💤 No work`);
 }
@@ -145,31 +153,44 @@ Replace `setInterval(pollForJob, POLL_INTERVAL)` → `setInterval(pollWorker, PO
 **Three-layer fix — all in `ingestor.ts`**:
 
 ### Layer 1: Local processed-ID cache
+
 ```ts
 const processedIssueIds = new Set<string>();
 ```
+
 Add the issue ID to this set **before** posting the comment. Skip it immediately on next poll if it's in the set. This is the fastest guard and works even if Linear is down.
 
 ### Layer 2: Verify comment POST succeeded before dispatching
+
 ```ts
-const commentRes = await linear.createComment({ issueId: issue.id, body: '🐝 **Swarm Processing**...' });
+const commentRes = await linear.createComment({
+  issueId: issue.id,
+  body: '🐝 **Swarm Processing**...',
+});
 if (!commentRes.success) {
-  console.error(`[LinearIngestor] Could not lock issue ${issue.id} — skipping dispatch to avoid duplicate`);
+  console.error(
+    `[LinearIngestor] Could not lock issue ${issue.id} — skipping dispatch to avoid duplicate`,
+  );
   continue; // Do NOT dispatch if we can't write the lock
 }
 ```
 
 ### Layer 3: Cap retries per issue
+
 Track attempt counts per issue ID. If an issue has been attempted 3 times without dispatch succeeding, move it to `processedIssueIds` permanently and log:
+
 ```
 [LinearIngestor] ❌ Issue <id> failed 3 dispatch attempts — permanently skipping
 ```
 
 ### Layer 4: Mark Linear issue `Done` on successful job completion
+
 In `completeSwarmTask()` in `agent.ts`, if `job.payload.linearIssueId` is set, call:
+
 ```ts
 await updateLinearIssueDone(job.payload.linearIssueId);
 ```
+
 This changes the Linear state to `Done`, which filters it out of the `In Progress` query automatically. Implement `updateLinearIssueDone()` using the `LINEAR_API_KEY` env var and Linear GraphQL mutation `issueUpdate`.
 
 **Verification**: After a job completes, `fly logs` must NOT show `[LinearIngestor] Picked up issue: <same title>` again. The Linear issue must show `Done` state.
@@ -181,12 +202,13 @@ This changes the Linear state to `Done`, which filters it out of the `In Progres
 **File**: `workers/worker-bees/src/handlers/CodingHandler.ts`, line ~211
 
 **Change**:
+
 ```ts
 // Before
-base: 'main'
+base: 'main';
 
 // After
-base: 'hee-haw'
+base: 'hee-haw';
 ```
 
 `hee-haw` is the default branch for all repos. Any PR targeting `main` will be silently ignored or cause merge conflicts.
@@ -204,6 +226,7 @@ Every handler and every async operation must emit structured logs in this format
 ```
 
 Specifically:
+
 - `OrchestratorHandler`: log before and after every sub-step with elapsed time
 - `pollQueue` / `pollSwarm`: log the HTTP status received for every poll (not just errors)
 - `LinearIngestor`: log issue ID + title + dispatch attempt count on every pick-up

@@ -1,10 +1,16 @@
 import { FlyClient, FlyMachineConfig } from './fly-client';
 
+/**
+ *
+ */
 export class SpriteManager {
   private fly: FlyClient;
   private runnerApp = 'bifrost-runner'; // The app where Sprites run
   private region = 'ord'; // Default region
 
+  /**
+   *
+   */
   constructor(apiToken: string) {
     this.fly = new FlyClient(apiToken);
   }

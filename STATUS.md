@@ -1,32 +1,35 @@
 # STATUS.md - Ankou's Aegis
 
-> **Last Updated**: 2026-02-18
+> **Last Updated**: 2026-02-20
 > **Status**: 🟢 Active
-> **Phase**: Phase 16: Swarm Capability Analysis (Gap Analysis)
+> **Phase**: Phase 17: Swarm Self-Healing & Rate-Limit Resolution
 
 ## 🏆 Recent Accomplishments
--   ✅ **Swarm Activation**: Deployed `sluagh-swarm` to Fly.io and verified connectivity.
--   ✅ **Zero Scale Implemented**: Destroyed legacy app; documented deploy-on-demand protocol.
--   ✅ **Grand Documentation Refactor**: Consolidated 50+ mixed files into 5 Core Documents.
--   ✅ **"Dark Mythology" Implemented**: Full rename of components (Sluagh Swarm, Crypt Core, Specter Sanctums).
--   ✅ **Swarm Control Center**: Implemented `scripts/ops/swarm-control.ts` for real-time auditing and manual overrides.
 
+- ✅ **DO Rate-Limit Death Spiral Fixed**: Removed detrimental health-score multipliers and halved network usage by merging `pollQueue` and `pollSwarm` endpoints.
+- ✅ **Sluagh Ingestor Loop Prevention**: Implemented a 3-layer caching and Linear verifier lock to prevent infinite dispatch retries.
+- ✅ **Orchestration Execution**: Built `OrchestratorHandler` to process array-based multi-step jobs sequentially.
+- ✅ **Zero Local Secrets Extracted**: Migrated all local `.env` values entirely to Cloudflare KV.
+- ✅ **Swarm PR Targeting**: Corrected automated PR bases to specifically target `hee-haw`.
 
-## 🎯 Current Focus (Capability Audit)
--   🕵️ **Code Analysis**: Auditing `worker-bees` source to map current capabilities.
--   🗺️ **Gap Analysis**: Comparing current features vs. `SWARM_BACKLOG.md` requirements.
+## 🎯 Current Focus
+
+- 🕵️ **Observation**: Monitor Fly.io production logs for sustained 0% error rate on DO rate limits.
+- 🗺️ **Swarm Utilization**: Preparing to verify Sluagh task tracking functionality using the newly stabilized orchestrator.
 
 ## 🔮 Next Steps
-1.  **Capability Audit**: Analyze `worker-bees` code for existing tool/permission sets.
-2.  **Gap Report**: Document what is missing for "Task Completion" (vs just polling).
-3.  **Implementation Plan**: Design the "Sluagh Toolset" upgrade.
+
+1.  **Monitor DO Load**: Verify Cloudflare dashboard shows dramatic drop in DO request volume.
+2.  **Swarm Testing**: Seed test issues directly into Linear to watch the OrchestratorHandler execute multi-step routines.
 
 ## 📚 Technical Index
--   **Vision**: `docs/PROJECT_MANIFESTO.md`
--   **Architecture**: `docs/SYSTEM_ARCHITECTURE.md`
--   **Operations**: `docs/OPERATIONAL_MANUAL.md`
--   **API Specs**: `docs/INTEGRATION_PROTOCOLS.md`
--   **Tasks**: `docs/SWARM_BACKLOG.md`
+
+- **Vision**: `docs/PROJECT_MANIFESTO.md`
+- **Architecture**: `docs/SYSTEM_ARCHITECTURE.md`
+- **Operations**: `docs/OPERATIONAL_MANUAL.md`
+- **API Specs**: `docs/INTEGRATION_PROTOCOLS.md`
+- **Tasks**: `docs/SWARM_BACKLOG.md`
 
 ## ⚠️ Known Issues / Blockers
--   **Terminal Sandboxing**: Direct file deletion via script failed. Manual cleanup is required to remove legacy documentation artifacts.
+
+- **Terminal Sandboxing**: Direct file deletion via script failed. Manual cleanup is required to remove legacy documentation artifacts.

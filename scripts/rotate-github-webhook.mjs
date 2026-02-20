@@ -42,83 +42,97 @@ kAyiK0QXVoh4M5xeAcaMOkVl/MpKUhADfDhFw/LxSVb/NAu4Z/jf+w==
 
 // --- Generate GitHub App JWT ---
 function makeJWT() {
-    const now = Math.floor(Date.now() / 1000);
-    const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
-    const payload = Buffer.from(JSON.stringify({ iat: now - 60, exp: now + 600, iss: APP_ID })).toString('base64url');
-    const unsigned = `${header}.${payload}`;
-    const sign = createSign('RSA-SHA256');
-    sign.update(unsigned);
-    const sig = sign.sign(createPrivateKey(PRIVATE_KEY), 'base64url');
-    return `${unsigned}.${sig}`;
+  const now = Math.floor(Date.now() / 1000);
+  const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
+  const payload = Buffer.from(
+    JSON.stringify({ iat: now - 60, exp: now + 600, iss: APP_ID }),
+  ).toString('base64url');
+  const unsigned = `${header}.${payload}`;
+  const sign = createSign('RSA-SHA256');
+  sign.update(unsigned);
+  const sig = sign.sign(createPrivateKey(PRIVATE_KEY), 'base64url');
+  return `${unsigned}.${sig}`;
 }
 
 async function getInstallationToken(jwt) {
-    const res = await fetch(`https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${jwt}`,
-            Accept: 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-        },
-    });
-    if (!res.ok) throw new Error(`Failed to get token: ${res.status} ${await res.text()}`);
-    const data = await res.json();
-    return data.token;
+  const res = await fetch(
+    `https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    },
+  );
+  if (!res.ok) throw new Error(`Failed to get token: ${res.status} ${await res.text()}`);
+  const data = await res.json();
+  return data.token;
 }
 
 async function getWebhookId(token) {
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/hooks`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-        },
-    });
-    if (!res.ok) throw new Error(`Failed to list hooks: ${res.status} ${await res.text()}`);
-    const hooks = await res.json();
-    // Find the hook pointing at our worker
-    const hook = hooks.find(h => h.config?.url?.includes('crypt-core') || h.config?.url?.includes('workers.dev'));
-    if (!hook) {
-        console.log('All hooks:', JSON.stringify(hooks.map(h => ({ id: h.id, url: h.config?.url })), null, 2));
-        throw new Error('Could not find bifrost-bridge webhook. Check the hook URL above.');
-    }
-    return hook.id;
+  const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/hooks`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  });
+  if (!res.ok) throw new Error(`Failed to list hooks: ${res.status} ${await res.text()}`);
+  const hooks = await res.json();
+  // Find the hook pointing at our worker
+  const hook = hooks.find(
+    (h) => h.config?.url?.includes('crypt-core') || h.config?.url?.includes('workers.dev'),
+  );
+  if (!hook) {
+    console.log(
+      'All hooks:',
+      JSON.stringify(
+        hooks.map((h) => ({ id: h.id, url: h.config?.url })),
+        null,
+        2,
+      ),
+    );
+    throw new Error('Could not find bifrost-bridge webhook. Check the hook URL above.');
+  }
+  return hook.id;
 }
 
 async function rotateWebhookSecret(token, hookId, newSecret) {
-    // Get existing hook config first
-    const getRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/hooks/${hookId}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-        },
-    });
-    const hook = await getRes.json();
+  // Get existing hook config first
+  const getRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/hooks/${hookId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  });
+  const hook = await getRes.json();
 
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/hooks/${hookId}`, {
-        method: 'PATCH',
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            config: {
-                ...hook.config,
-                secret: newSecret,
-            },
-        }),
-    });
-    if (!res.ok) throw new Error(`Failed to update hook: ${res.status} ${await res.text()}`);
-    return res.json();
+  const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/hooks/${hookId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      config: {
+        ...hook.config,
+        secret: newSecret,
+      },
+    }),
+  });
+  if (!res.ok) throw new Error(`Failed to update hook: ${res.status} ${await res.text()}`);
+  return res.json();
 }
 
 // --- Main ---
 const newSecret = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+  .map((b) => b.toString(16).padStart(2, '0'))
+  .join('');
 
 console.log('Generating GitHub App JWT...');
 const jwt = makeJWT();
@@ -135,8 +149,8 @@ await rotateWebhookSecret(token, hookId, newSecret);
 console.log('✅ GitHub webhook secret rotated.');
 
 console.log('Pushing new secret to Cloudflare...');
-execSync(
-    `echo "${newSecret}" | npx wrangler secret put GITHUB_WEBHOOK_SECRET --env production`,
-    { cwd: new URL('../../workers/crypt-core', import.meta.url).pathname, stdio: 'inherit' }
-);
+execSync(`echo "${newSecret}" | npx wrangler secret put GITHUB_WEBHOOK_SECRET --env production`, {
+  cwd: new URL('../../workers/crypt-core', import.meta.url).pathname,
+  stdio: 'inherit',
+});
 console.log('✅ GITHUB_WEBHOOK_SECRET updated in Cloudflare. Done.');

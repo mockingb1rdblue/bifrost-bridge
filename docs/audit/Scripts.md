@@ -37,7 +37,7 @@ const ConfigSchema = z.object({
   ROUTER_URL: z.string().url(),
   LINEAR_API_KEY: z.string().min(1, 'LINEAR_API_KEY required'),
   PROXY_API_KEY: z.string().optional(),
-  LINEAR_TEAM_ID: z.string().min(1)
+  LINEAR_TEAM_ID: z.string().min(1),
 });
 
 const config = ConfigSchema.parse(process.env);
@@ -69,6 +69,7 @@ Remove the duplicated certificate loading block in `debug_linear_issues.ts` and 
 **Phase 1: Risk-Based Module Prioritization** (Weeks 1–2)
 
 Score modules by incident history, churn, coupling, and complexity[1]. Prioritize:
+
 - `scripts/infra/recover-secrets.sh` and related secret-handling scripts (critical security surface)
 - `debug/` directory (exposed credentials, unsafe execution)
 - `legacy/` JavaScript files (untyped, error-prone)
@@ -76,6 +77,7 @@ Score modules by incident history, churn, coupling, and complexity[1]. Prioritiz
 **Phase 2: Strangler Pattern with Typed Seams** (Weeks 3–6)
 
 Introduce typed adapters at boundaries using the **Strangler Fig Pattern**[2]. For each legacy script:
+
 1. Create a new TypeScript equivalent with strict types and DTO validation.
 2. Route execution to the new implementation via a compatibility layer.
 3. Log mismatches and validate behavior equivalence in parallel.
@@ -86,9 +88,10 @@ Example: Replace `cleanup-duplicates.js` with `cleanup-duplicates.ts`, validatin
 **Phase 3: Type-First Refactors via Inference** (Weeks 7–10)
 
 Capture inferred types from existing code to reveal real contracts[1]. For `LinearClient` initialization patterns:
+
 - Replace implicit "Smart Key Logic" with explicit discriminated unions:
   ```typescript
-  type AuthConfig = 
+  type AuthConfig =
     | { mode: 'direct'; apiKey: string }
     | { mode: 'proxy'; proxyUrl: string; apiKey: string };
   ```
@@ -98,6 +101,7 @@ Capture inferred types from existing code to reveal real contracts[1]. For `Line
 **Phase 4: Debt Register & SLO-Driven Cadence** (Ongoing)
 
 Establish a **debt register linked to type-safety gaps**[1], cataloging:
+
 - Untyped modules (`audit-swarm.js`, legacy scripts)
 - Unsafe `any` or non-null assertions
 - Hardcoded credentials and secret vectors
@@ -108,6 +112,7 @@ Reserve **10–15% of sprint capacity** for debt work aligned with error budgets
 **Phase 5: Institutionalize with ADRs** (Weeks 11+)
 
 Document **Architecture Decision Records** capturing decisions on:
+
 - Credential management patterns (environment variables + validation schemas)
 - Error handling in async code (exhaustive handlers, typed Result unions)
 - Module execution safety (no shell interpolation, typed CLI builders)

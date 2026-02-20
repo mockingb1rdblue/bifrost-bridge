@@ -1,14 +1,23 @@
+/**
+ *
+ */
 export class FlyClient {
   private token: string;
   private organizationId: string; // Optional if we just use app name
   private appName: string;
 
+  /**
+   *
+   */
   constructor(config: { token: string; appName: string; organizationId?: string }) {
     this.token = config.token;
     this.appName = config.appName;
     this.organizationId = config.organizationId || '';
   }
 
+  /**
+   *
+   */
   async spawnMachine(region = 'sea', metadata: Record<string, string> = {}) {
     // 1. Get Image (Optional, or assume latest)
     // 2. Create Machine
@@ -66,6 +75,9 @@ export class FlyClient {
   // 3. If none, create one (harder).
 
   // Let's try "Start Stopped Machine" first.
+  /**
+   *
+   */
   async startRunner(): Promise<string | null> {
     const listUrl = `https://api.machines.dev/v1/apps/${this.appName}/machines?state=stopped`;
     try {

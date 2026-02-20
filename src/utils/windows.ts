@@ -4,6 +4,9 @@ import chalk from 'chalk';
 
 const execAsync = promisify(exec);
 
+/**
+ *
+ */
 export class WindowsUtility {
   /**
    * Updates HKCU:\Environment Path to prioritize local .tools.

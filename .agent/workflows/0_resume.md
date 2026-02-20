@@ -9,17 +9,20 @@ This workflow is optimized for re-animating work on any machine without requirin
 ## 1. Local Setup
 
 1.  **Sync Code**:
+
     ```bash
     git pull origin hee-haw
     ```
 
 2.  **Auth Check (Cloudflare)**:
+
     ```bash
     npx wrangler whoami
     # If not logged in: npx wrangler login
     ```
 
 3.  **Auth Check (Fly.io)**:
+
     ```bash
     fly auth whoami
     ```
@@ -42,13 +45,14 @@ npx wrangler deploy --prefix workers/ankous-aegis
 
 Use the **Reaper's Registry** bridge to pull current **Linear Lich** tasks:
 
-```bash
+````bash
 ```bash
 # Trigger remote seeding of the Swarm Backlog (via Linear)
 npm run seed:sluagh
-```
+````
 
 ### Zero Scale Logic (The Sluagh Swarm)
+
 We assume **Zero Scale** (no running workers) at the start of a session.
 
 1.  **Check Swarm Status**:
@@ -78,11 +82,14 @@ node -e "fetch('https://ankous-aegis.mock1ng.workers.dev/admin/post-update', { m
 ```
 
 ### Capability Pulse
+
 Before starting work, check the current capability matrix:
+
 ```bash
 # Review current swarm capabilities
 cat docs/audit/SWARM_CAPABILITIES.md
 ```
+
 ```
 
 ## 6. Session Continuity Protocol
@@ -95,3 +102,4 @@ cat docs/audit/SWARM_CAPABILITIES.md
 1. **Summary**: What was accomplished today.
 2. **Current State**: Code, Environment, and active Blockers.
 3. **Next Steps**: What needs to happen in the next session.
+```

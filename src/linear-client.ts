@@ -9,10 +9,16 @@ import {
 import { logger } from './utils/logger';
 import { withRetry } from './utils/retry';
 
+/**
+ *
+ */
 export class LinearClient {
   private apiKey: string;
   private baseURL: string;
 
+  /**
+   *
+   */
   constructor(apiKey: string, baseURL?: string) {
     let url = baseURL || process.env.LINEAR_LICH_URL || 'https://api.linear.app/graphql';
 
@@ -37,22 +43,22 @@ export class LinearClient {
   async query<T>(query: string, variables?: Record<string, any>): Promise<T> {
     // CIRCUIT BREAKER: Check for lockfile
     if (require('fs').existsSync('.auth.lock')) {
-       // Read the lockfile to give context
-       const lockContent = require('fs').readFileSync('.auth.lock', 'utf8');
-       throw new Error(
-         `\n⛔ CIRCUIT BREAKER ACTIVATED ⛔\n` +
-         `--------------------------------\n` +
-         `Execution blocked to protect your Linear API Key.\n` +
-         `Reason: A previous 401 Unauthorized error was detected.\n` +
-         `Context: ${lockContent}\n\n` +
-         `WHY THIS HAPPENED:\n` +
-         `Linear will automatically deactivate API keys if they generate consistent 401 errors.\n` +
-         `We stopped to prevent this.\n\n` +
-         `TO FIX:\n` +
-         `1. Check your .env secrets (LINEAR_API_KEY, LINEAR_WEBHOOK_SECRET, PROXY_API_KEY).\n` +
-         `2. Run 'npm start -- linear projects --direct' to verify the key works without the proxy.\n` +
-         `3. Delete the lockfile to reset: 'rm .auth.lock' (or 'del .auth.lock' on Windows).\n`
-       );
+      // Read the lockfile to give context
+      const lockContent = require('fs').readFileSync('.auth.lock', 'utf8');
+      throw new Error(
+        `\n⛔ CIRCUIT BREAKER ACTIVATED ⛔\n` +
+          `--------------------------------\n` +
+          `Execution blocked to protect your Linear API Key.\n` +
+          `Reason: A previous 401 Unauthorized error was detected.\n` +
+          `Context: ${lockContent}\n\n` +
+          `WHY THIS HAPPENED:\n` +
+          `Linear will automatically deactivate API keys if they generate consistent 401 errors.\n` +
+          `We stopped to prevent this.\n\n` +
+          `TO FIX:\n` +
+          `1. Check your .env secrets (LINEAR_API_KEY, LINEAR_WEBHOOK_SECRET, PROXY_API_KEY).\n` +
+          `2. Run 'npm start -- linear projects --direct' to verify the key works without the proxy.\n` +
+          `3. Delete the lockfile to reset: 'rm .auth.lock' (or 'del .auth.lock' on Windows).\n`,
+      );
     }
 
     const makeRequest = async () => {
@@ -77,7 +83,7 @@ export class LinearClient {
             // CIRCUIT BREAKER: Trigger Lock
             const lockMsg = `401 Error at ${new Date().toISOString()}: ${text.substring(0, 100)}...`;
             require('fs').writeFileSync('.auth.lock', lockMsg);
-            
+
             const helpMsg = `
   🛑 AUTHENTICATION FAILURE (401) 🛑
   ----------------------------------
@@ -93,10 +99,8 @@ export class LinearClient {
   due to excessive error rates.
   
   Action: Verify secrets at https://linear.app/settings/api before retrying.`;
-  
-            throw new LinearAuthenticationError(
-              `${helpMsg}\n\nOriginal Error: ${text}`,
-            );
+
+            throw new LinearAuthenticationError(`${helpMsg}\n\nOriginal Error: ${text}`);
           }
           throw new LinearError(`HTTP Error ${response.status}: ${text}`);
         }
@@ -215,6 +219,9 @@ export class LinearClient {
     return data.projectStatuses.nodes;
   }
 
+  /**
+   *
+   */
   async updateProjectStatus(projectId: string, statusId: string): Promise<boolean> {
     const query = `
             mutation ProjectUpdate($id: String!, $input: ProjectUpdateInput!) {

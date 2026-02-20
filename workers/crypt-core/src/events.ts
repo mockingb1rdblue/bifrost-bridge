@@ -1,3 +1,6 @@
+/**
+ *
+ */
 export class EventStoreClient {
   private secret: string;
   private baseUrl: string; // e.g. http://bifrost-events.flycast:8080
@@ -48,6 +51,9 @@ export class EventStoreClient {
     }
   }
 
+  /**
+   *
+   */
   async append(event: {
     type: string;
     source: string;

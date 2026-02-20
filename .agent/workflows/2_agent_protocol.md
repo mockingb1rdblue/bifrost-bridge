@@ -82,14 +82,16 @@ If `Approach A` failed, propose `Approach B`.
 > **GLOBAL RULE**: Archiving technical debt is strictly PROHIBITED.
 
 ### The Philosophy
+
 Putting files in an `archive/` folder is not "cleaning"—it is hoarding. If code or documentation is not active, it is either **Valuable** (Merge it) or **Trash** (Delete it).
 
 ### Directives
+
 1.  **No "Archive" Folders**: Do not create `archive/`, `old/`, `legacy/`, or `backup/` directories.
 2.  **Refactor or Die**:
     - If a file contains useful info: **Extract** the value, **Merge** it into the Core Documentation (e.g., `OPERATIONAL_MANUAL.md`), and **Delete** the original.
     - If a file is obsolete: **Delete** it immediately.
-3.  **Proactive Management**: Tech debt must be paid down *as it is created*, not "later".
+3.  **Proactive Management**: Tech debt must be paid down _as it is created_, not "later".
 
 ## 5. Autonomy Protocol
 
@@ -97,6 +99,7 @@ Putting files in an `archive/` folder is not "cleaning"—it is hoarding. If cod
 > **GLOBAL RULE**: The Agent must never request the User to perform actions that the Agent is capable of performing itself.
 
 ### Purpose
+
 To maximize efficiency and reduce user cognitive load, the Agent must utilize its full suite of tools (Browser, Terminal, File System) to solve problems end-to-end.
 
 ### Rules
@@ -112,9 +115,9 @@ To maximize efficiency and reduce user cognitive load, the Agent must utilize it
 
 3.  **Exception Handling**:
     - Only ask the User for help if:
-        - A physical hardware interaction is required (e.g., YubiKey).
-        - A 2FA code is sent to their personal device/phone.
-        - You hit a tool error that you cannot resolve after multiple retries.
+      - A physical hardware interaction is required (e.g., YubiKey).
+      - A 2FA code is sent to their personal device/phone.
+      - You hit a tool error that you cannot resolve after multiple retries.
 
 4.  **Workflow**:
     - **Identify Task**: "I need to verify the webhook."

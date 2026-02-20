@@ -4,24 +4,33 @@ import crypto from 'crypto';
  * Authentication Helper for Sluagh Sluagh Swarm Worker Bees
  */
 export class AuthManager {
-    static getApiKey(): string {
-        const key = process.env.WORKER_API_KEY;
+  /**
+   *
+   */
+  static getApiKey(): string {
+    const key = process.env.WORKER_API_KEY;
 
-        if (!key) {
-            this.printDeathBanner('CRITICAL ERROR: WORKER_API_KEY environment variable is missing.');
-            process.exit(1);
-        }
-
-        return key;
+    if (!key) {
+      this.printDeathBanner('CRITICAL ERROR: WORKER_API_KEY environment variable is missing.');
+      process.exit(1);
     }
 
-    static getKeyHash(key: string): string {
-        // We now use the full SHA-256 hash for handshake verification
-        return crypto.createHash('sha256').update(key).digest('hex');
-    }
+    return key;
+  }
 
-    static printDeathBanner(reason: string, details?: any) {
-        const banner = `
+  /**
+   *
+   */
+  static getKeyHash(key: string): string {
+    // We now use the full SHA-256 hash for handshake verification
+    return crypto.createHash('sha256').update(key).digest('hex');
+  }
+
+  /**
+   *
+   */
+  static printDeathBanner(reason: string, details?: any) {
+    const banner = `
 ################################################################################
 #                                                                              #
 #                      🚨 SWARM AUTHENTICATION FAILURE 🚨                      #
@@ -42,6 +51,6 @@ THE WORKER MUST BE RESTARTED AFTER FIXING THE SECRETS.
 
 ################################################################################
 `;
-        console.error(banner);
-    }
+    console.error(banner);
+  }
 }

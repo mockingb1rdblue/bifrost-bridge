@@ -109,7 +109,7 @@ program
   .description('Launch portable bypass shell')
   .action(async () => {
     const isWin = process.platform === 'win32';
-    const launcher = isWin 
+    const launcher = isWin
       ? path.join(__dirname, '..', 'scripts', 'launchers', 'pwsh.bat')
       : path.join(__dirname, '..', 'scripts', 'launchers', 'crypt-shell.sh');
 

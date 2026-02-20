@@ -22,19 +22,19 @@ Secrets that both need (e.g. `LINEAR_API_KEY`) must be written to **both**.
 
 | Secret                   | Cloudflare | GitHub | Notes                                           |
 | ------------------------ | ---------- | ------ | ----------------------------------------------- |
-| `LINEAR_API_KEY`         | ✅          | ✅      | Linear personal API key (`lin_api_...`)         |
-| `LINEAR_WEBHOOK_SECRET`  | ✅          | ✅      | From Linear → Settings → API → Webhooks         |
-| `LINEAR_TEAM_ID`         | ✅          | ✅      | `d43e265a-cbc3-4f07-afcd-7792ce875ad3`          |
-| `LINEAR_PROJECT_ID`      | ✅          | ✅      | `9aeceb58-dc0e-46ab-9b26-f12c8a083815`          |
-| `GITHUB_WEBHOOK_SECRET`  | ✅          | —      | Managed via `scripts/rotate-github-webhook.mjs` |
-| `GITHUB_APP_ID`          | ✅          | —      | `2847336` — never goes to GitHub (circular)     |
-| `GITHUB_INSTALLATION_ID` | ✅          | —      | `109576174`                                     |
-| `GITHUB_CLIENT_ID`       | ✅          | —      | `Iv23liENW6LEGyM4iCZv`                          |
-| `GITHUB_PRIVATE_KEY`     | ✅          | —      | RSA PEM — NEVER goes to GitHub (circular)       |
-| `PROXY_API_KEY`          | ✅          | —      | Internal auth for worker endpoints              |
-| `CLOUDFLARE_API_TOKEN`   | —          | ✅      | CI/CD deploys                                   |
-| `CLOUDFLARE_ACCOUNT_ID`  | —          | ✅      | CI/CD deploys                                   |
-| `FLY_API_TOKEN`          | —          | ✅      | Worker bees deploy                              |
+| `LINEAR_API_KEY`         | ✅         | ✅     | Linear personal API key (`lin_api_...`)         |
+| `LINEAR_WEBHOOK_SECRET`  | ✅         | ✅     | From Linear → Settings → API → Webhooks         |
+| `LINEAR_TEAM_ID`         | ✅         | ✅     | `d43e265a-cbc3-4f07-afcd-7792ce875ad3`          |
+| `LINEAR_PROJECT_ID`      | ✅         | ✅     | `9aeceb58-dc0e-46ab-9b26-f12c8a083815`          |
+| `GITHUB_WEBHOOK_SECRET`  | ✅         | —      | Managed via `scripts/rotate-github-webhook.mjs` |
+| `GITHUB_APP_ID`          | ✅         | —      | `2847336` — never goes to GitHub (circular)     |
+| `GITHUB_INSTALLATION_ID` | ✅         | —      | `109576174`                                     |
+| `GITHUB_CLIENT_ID`       | ✅         | —      | `Iv23liENW6LEGyM4iCZv`                          |
+| `GITHUB_PRIVATE_KEY`     | ✅         | —      | RSA PEM — NEVER goes to GitHub (circular)       |
+| `PROXY_API_KEY`          | ✅         | —      | Internal auth for worker endpoints              |
+| `CLOUDFLARE_API_TOKEN`   | —          | ✅     | CI/CD deploys                                   |
+| `CLOUDFLARE_ACCOUNT_ID`  | —          | ✅     | CI/CD deploys                                   |
+| `FLY_API_TOKEN`          | —          | ✅     | Worker bees deploy                              |
 
 ---
 
@@ -64,6 +64,7 @@ node scripts/rotate-github-webhook.mjs
 ```
 
 This script:
+
 1. Generates a GitHub App JWT from `GITHUB_PRIVATE_KEY` + `GITHUB_APP_ID`
 2. Gets an installation token for `GITHUB_INSTALLATION_ID`
 3. Generates a new 32-byte hex secret
@@ -77,6 +78,7 @@ This script:
 ## Rotating the Linear Webhook Secret
 
 Linear doesn't expose an API to rotate webhook secrets. Process:
+
 1. User goes to Linear → Settings → API → Webhooks → copy new secret
 2. User provides the value once in chat
 3. I write it to both Cloudflare and GitHub:
@@ -91,6 +93,7 @@ gh secret set LINEAR_WEBHOOK_SECRET --body "lin_wh_..." -R mockingb1rdblue/bifro
 ## What Causes 401 "Invalid Signature" on Webhooks
 
 **Always a secret mismatch** — the HMAC algorithm is correct. Causes:
+
 - Linear webhook secret rotated but Cloudflare still has old value
 - `LINEAR_WEBHOOK_SECRET` was never set (checkConfig() returns 503)
 - `GITHUB_WEBHOOK_SECRET` not matching the webhook config
@@ -116,6 +119,7 @@ git pull origin hee-haw
 Feature branches: `feat/dark-<name>` → squash merge into `hee-haw` → delete feature branch.
 
 When merging with `gh pr merge`, always target `hee-haw`:
+
 ```bash
 gh pr create --base hee-haw --head feat/dark-something
 gh pr merge N --squash --delete-branch

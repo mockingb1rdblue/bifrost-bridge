@@ -13,9 +13,15 @@ export interface DiagnosticResult {
   error?: string;
 }
 
+/**
+ *
+ */
 export class Detective {
   private timeout = 5000;
 
+  /**
+   *
+   */
   async checkUrl(url: string, description: string): Promise<DiagnosticResult> {
     const start = Date.now();
     const parsedUrl = new URL(url);
@@ -64,6 +70,9 @@ export class Detective {
     });
   }
 
+  /**
+   *
+   */
   async inspectSsl(
     hostname: string,
   ): Promise<{ organization?: string; commonName?: string; intercepted: boolean }> {
@@ -102,6 +111,9 @@ export class Detective {
     });
   }
 
+  /**
+   *
+   */
   async runReport() {
     console.log(chalk.bold.magenta('\n=== Network Detective Report (TS) ==='));
 

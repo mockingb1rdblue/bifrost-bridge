@@ -18,7 +18,7 @@ export const GEMINI_MODELS = {
   FLASH_LATEST: 'gemini-flash-latest',
 
   // Complex reasoning
-  PRO_LATEST: 'gemini-pro-latest'
+  PRO_LATEST: 'gemini-pro-latest',
 } as const;
 
 export interface ResearchTask {
@@ -27,6 +27,9 @@ export interface ResearchTask {
   maxCost?: number;
 }
 
+/**
+ *
+ */
 export function selectModel(task: ResearchTask): string {
   if (task.requiresDeepReasoning || task.complexity === 'complex') {
     return PERPLEXITY_MODELS.SONAR_REASONING_PRO;

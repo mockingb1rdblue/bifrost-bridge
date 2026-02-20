@@ -1,3 +1,3 @@
-leave this here, it must survive any future refactors or organizational changes. 
+leave this here, it must survive any future refactors or organizational changes.
 
-For any doc in this folder, search all md in /docs and subfolders and if there is a relevant doc, add merge or refactor to it, the sections as relevant. Hack up the source md to disctribute its contents and intent as appropriate. then thin slice it as issues and append to the relevant issues in issues/ or create new issues. 
+For any doc in this folder, search all md in /docs and subfolders and if there is a relevant doc, add merge or refactor to it, the sections as relevant. Hack up the source md to disctribute its contents and intent as appropriate. then thin slice it as issues and append to the relevant issues in issues/ or create new issues.

@@ -34,6 +34,9 @@ export interface PerplexityResponse {
  * Custom Error Types
  */
 export class PerplexityError extends Error {
+  /**
+   *
+   */
   constructor(
     message: string,
     public statusCode?: number,
@@ -44,9 +47,15 @@ export class PerplexityError extends Error {
   }
 }
 
+/**
+ *
+ */
 export class NetworkError extends PerplexityError {
   public cause?: Error;
 
+  /**
+   *
+   */
   constructor(message: string, cause?: Error) {
     super(message, 0);
     this.name = 'NetworkError';
@@ -54,14 +63,26 @@ export class NetworkError extends PerplexityError {
   }
 }
 
+/**
+ *
+ */
 export class AuthenticationError extends PerplexityError {
+  /**
+   *
+   */
   constructor(message: string = 'Invalid API key') {
     super(message, 401);
     this.name = 'AuthenticationError';
   }
 }
 
+/**
+ *
+ */
 export class RateLimitError extends PerplexityError {
+  /**
+   *
+   */
   constructor(
     message: string = 'Rate limit exceeded',
     public retryAfter?: number,
@@ -71,14 +92,26 @@ export class RateLimitError extends PerplexityError {
   }
 }
 
+/**
+ *
+ */
 export class TimeoutError extends PerplexityError {
+  /**
+   *
+   */
   constructor(message: string = 'Request timeout') {
     super(message, 408);
     this.name = 'TimeoutError';
   }
 }
 
+/**
+ *
+ */
 export class ValidationError extends PerplexityError {
+  /**
+   *
+   */
   constructor(message: string) {
     super(message, 400);
     this.name = 'ValidationError';

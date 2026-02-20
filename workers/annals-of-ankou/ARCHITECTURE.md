@@ -1,14 +1,17 @@
 # Architecture: Annals of Ankou (bifrost-events)
 
 ## Overview
+
 **Annals of Ankou** is the central event sourcing engine for the Bifrost Bridge swarm. It provides a persistent, append-only record of all significant system events, enabling state replay, auditability, and multi-agent coordination.
 
 ## Components
+
 - **Fastify Server**: Handles HTTP requests and routing.
 - **Better-SQLite3**: Local persistent storage for high-performance event logging.
 - **EventStoreClient**: TypeScript client used by other workers (e.g., `custom-router`) to interact with the engine.
 
 ## Data Flow
+
 The following diagram illustrates the lifecycle of an event from creation to consumption.
 
 ```mermaid
@@ -35,6 +38,7 @@ sequenceDiagram
 ```
 
 ## Storage Schema
+
 Events are stored in a single `events` table with the following structure:
 
 | Column         | Type                  | Description                                   |
@@ -51,27 +55,38 @@ Events are stored in a single `events` table with the following structure:
 ## API Endpoints
 
 ### `POST /events`
+
 Appends a new event.
+
 - **Body**: `{ type, source, topic?, correlation_id?, payload, meta? }`
 - **Response**: `{ id, status: 'ok' }`
 
 ### `GET /state/:topic`
+
 Replays all events for a topic to reconstruct current state.
+
 - **Response**: `{ topic, state: Object, eventCount: Number }`
 
 ### `GET /events`
+
 Retrieves a list of recent events.
+
 - **Query Params**: `limit` (default 100), `type` (optional filter).
 - **Response**: Array of event objects.
 
 ### `GET /events/count` (New)
+
 Returns the total number of events in the store.
+
 - **Response**: `{"count": N}`
 
 ### `GET /health`
+
 Basic health check.
+
 - **Response**: `{"status": "ok"}`
 
 ## Troubleshooting
+
 - **Database Locked**: Ensure only one process is accessing the SQLite file at a time (Fastify handles this internally).
 - **Unauthorized**: Ensure the `Authorization: Bearer <secret>` header matches the `EVENTS_SECRET` environment variable.

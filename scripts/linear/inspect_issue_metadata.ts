@@ -7,7 +7,7 @@ const client = new LinearClient(process.env.LINEAR_API_KEY!, 'https://api.linear
 
 async function inspectIssues() {
   // Fetch a few sample issues to check their metadata
-  const sampleIds = ['BIF-70', 'BIF-74', 'BIF-101'];  // Infrastructure, Sprites, Security
+  const sampleIds = ['BIF-70', 'BIF-74', 'BIF-101']; // Infrastructure, Sprites, Security
 
   console.log('🔍 Inspecting Linear Issues for Metadata Completeness\n');
 

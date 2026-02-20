@@ -6,9 +6,15 @@ import https from 'https';
 
 const execAsync = promisify(exec);
 
+/**
+ *
+ */
 export class Verifier {
   private issues: string[] = [];
 
+  /**
+   *
+   */
   async verifyAll() {
     console.log(chalk.bold.cyan('\n=== Bifrost Environment Verification ==='));
 
@@ -23,7 +29,7 @@ export class Verifier {
       return true;
     } else {
       console.log(chalk.bold.yellow(`⚠️  ${this.issues.length} issue(s) found:\n`));
-      this.issues.forEach(issue => console.log(`   ${issue}`));
+      this.issues.forEach((issue) => console.log(`   ${issue}`));
       console.log(chalk.dim('\nRun this command again after fixing issues.\n'));
       return false;
     }
@@ -36,7 +42,7 @@ export class Verifier {
         port: 443,
         path: '/graphql',
         method: 'HEAD',
-        timeout: 5000
+        timeout: 5000,
       };
 
       const req = https.request(options, (res) => {
@@ -46,7 +52,9 @@ export class Verifier {
 
       req.on('error', (err) => {
         if (err.message.includes('certificate') || err.message.includes('SSL')) {
-          this.issues.push(chalk.yellow('⚠️  Certificate trust issue (export corporate CA to .certs/)'));
+          this.issues.push(
+            chalk.yellow('⚠️  Certificate trust issue (export corporate CA to .certs/)'),
+          );
         } else {
           console.log(chalk.green('✓ Network accessible (certificate trust OK)'));
         }
@@ -101,7 +109,9 @@ export class Verifier {
     if (process.env.NO_PROXY?.includes('workers.dev')) {
       console.log(chalk.green('✓ Proxy bypass configured'));
     } else {
-      this.issues.push(chalk.yellow('⚠️  Proxy bypass not configured (add *.workers.dev to NO_PROXY)'));
+      this.issues.push(
+        chalk.yellow('⚠️  Proxy bypass not configured (add *.workers.dev to NO_PROXY)'),
+      );
     }
   }
 }

@@ -4,11 +4,17 @@ export interface LinearConfig {
   projectId?: string;
 }
 
+/**
+ *
+ */
 export class LinearClient {
   private apiKey: string;
   private teamId: string;
   private baseUrl = 'https://api.linear.app/graphql';
 
+  /**
+   *
+   */
   constructor(config: LinearConfig) {
     this.apiKey = config.apiKey;
     this.teamId = config.teamId;
@@ -31,6 +37,9 @@ export class LinearClient {
     return result.data as T;
   }
 
+  /**
+   *
+   */
   async createIssue(input: {
     title: string;
     description?: string;
@@ -56,6 +65,9 @@ export class LinearClient {
     return result.issueCreate.issue;
   }
 
+  /**
+   *
+   */
   async addComment(issueId: string, body: string): Promise<boolean> {
     const mutation = `
             mutation CommentCreate($input: CommentCreateInput!) {
@@ -72,6 +84,9 @@ export class LinearClient {
     return result.commentCreate.success;
   }
 
+  /**
+   *
+   */
   async listProjects(): Promise<any[]> {
     const query = `
       query {
@@ -93,6 +108,9 @@ export class LinearClient {
     return data.projects.nodes;
   }
 
+  /**
+   *
+   */
   async listLabels(teamId: string): Promise<any[]> {
     const query = `
         query Labels {
@@ -109,6 +127,9 @@ export class LinearClient {
     return data.issueLabels.nodes;
   }
 
+  /**
+   *
+   */
   async updateIssue(
     issueId: string,
     input: {
@@ -131,6 +152,9 @@ export class LinearClient {
     return result.issueUpdate.success;
   }
 
+  /**
+   *
+   */
   async createLabel(input: { teamId: string; name: string; color: string }): Promise<string> {
     const mutation = `
         mutation LabelCreate($teamId: String!, $name: String!, $color: String!) {
@@ -146,6 +170,9 @@ export class LinearClient {
     return data.issueLabelCreate.issueLabel.id;
   }
 
+  /**
+   *
+   */
   async listMilestones(projectId: string): Promise<any[]> {
     const query = `
         query Milestones($projectId: String!) {
@@ -168,11 +195,17 @@ export class LinearClient {
     return data.project.milestones.nodes;
   }
 
+  /**
+   *
+   */
   async getLabelIdByName(teamId: string, name: string): Promise<string | undefined> {
     const labels = await this.listLabels(teamId);
     return labels.find((l) => l.name === name)?.id;
   }
 
+  /**
+   *
+   */
   async addLabel(issueId: string, labelName: string): Promise<boolean> {
     const labelId = await this.getLabelIdByName(this.teamId, labelName);
     if (!labelId) return false;
@@ -195,6 +228,9 @@ export class LinearClient {
     return this.updateIssue(issueId, { labelIds: [...currentLabelIds, labelId] });
   }
 
+  /**
+   *
+   */
   async removeLabel(issueId: string, labelName: string): Promise<boolean> {
     const labelId = await this.getLabelIdByName(this.teamId, labelName);
     if (!labelId) return false;
@@ -216,6 +252,9 @@ export class LinearClient {
     return this.updateIssue(issueId, { labelIds: currentLabelIds.filter((id) => id !== labelId) });
   }
 
+  /**
+   *
+   */
   async listIssuesByLabel(labelName: string): Promise<any[]> {
     const query = `
         query IssuesByLabel {
@@ -239,6 +278,9 @@ export class LinearClient {
     return data.issues.nodes;
   }
 
+  /**
+   *
+   */
   async getStateIdByName(name: string): Promise<string | undefined> {
     const query = `
       query States($teamId: String!) {
@@ -257,6 +299,9 @@ export class LinearClient {
     return data.workflowStates.nodes.find((s) => s.name.toLowerCase() === name.toLowerCase())?.id;
   }
 
+  /**
+   *
+   */
   async postProjectUpdate(
     projectId: string,
     input: {

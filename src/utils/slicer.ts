@@ -2,7 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 
+/**
+ *
+ */
 export class Slicer {
+  /**
+   *
+   */
   async slice(sourcePath: string, outputDir: string) {
     if (!fs.existsSync(sourcePath)) {
       console.error(chalk.red(`Error: Source file not found: ${sourcePath}`));

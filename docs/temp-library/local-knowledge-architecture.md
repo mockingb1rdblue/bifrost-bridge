@@ -4,10 +4,11 @@ This document outlines the architectural vision for transitioning our local docu
 
 ## 1. The Concept of "Immutable Truths"
 
-In our system, "Immutable Truths" represent the raw, fundamental documentation and facts scraped from official sources, parsed, and semantically embedded. Once ingested, they represent a locked point-in-time understanding of an official API or SDK. 
+In our system, "Immutable Truths" represent the raw, fundamental documentation and facts scraped from official sources, parsed, and semantically embedded. Once ingested, they represent a locked point-in-time understanding of an official API or SDK.
 
 ### Why Immutability?
-- **Auditable Context**: We always know *why* an AI agent made a decision based on the exact state of the docs at that time.
+
+- **Auditable Context**: We always know _why_ an AI agent made a decision based on the exact state of the docs at that time.
 - **RAG Consistency**: Re-running agents against historic immutable truths yields consistent behavior.
 
 ## 2. Local-First Architecture (The Scraper)
@@ -29,15 +30,18 @@ We build locally for fast iteration, zero-deploy latency, and simple debugging.
 When the local pipeline is perfected and the `library.sqlite` is populated, the transition to Cloudflare is designed to be seamless.
 
 ### Phase A: Migration of Truths
+
 1. **D1 Import**: Wrangler allows direct import of local SQLite files. We will convert our local `library.sqlite` into a baseline Cloudflare D1 database.
 2. **Vectorize Migration**: The `sqlite-vec` embeddings will be extracted and pushed into Cloudflare Vectorize. D1 will store the metadata and the Vector ID.
 
 ### Phase B: Fast Access via Workers
+
 - **Globally Distributed Reads**: Cloudflare D1 uses local read replicas automatically. Any Worker querying for an "immutable truth" will hit the closest regional edge, resulting in near-zero latency.
 - **Time Travel**: D1 natively supports 30-day Time Travel. This acts as a rolling backup and a natural extension of our "immutable" concept—we can query the state of our knowledge graph at a specific minute in the past.
-- **Worker AI**: Cloudflare Workers AI can generate embeddings on the fly at the edge to query Vectorize, completely bypassing the need to round-trip to OpenAI or remote embedding APIs for retrieval. 
+- **Worker AI**: Cloudflare Workers AI can generate embeddings on the fly at the edge to query Vectorize, completely bypassing the need to round-trip to OpenAI or remote embedding APIs for retrieval.
 
 ## 4. Final Cloud Topology
+
 ```mermaid
 graph TD
     A[Worker Bee / User Request] --> B[Router DO - Cloudflare Edge]

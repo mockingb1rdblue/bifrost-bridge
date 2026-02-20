@@ -7,8 +7,6 @@
  * Usage: JULES_API_KEY=... PROXY_URL=... tsx scripts/jules-agent.ts
  */
 
-
-
 const JULES_API_KEY = process.env.JULES_API_KEY;
 const PROXY_URL = process.env.PROXY_URL || 'http://localhost:8787';
 

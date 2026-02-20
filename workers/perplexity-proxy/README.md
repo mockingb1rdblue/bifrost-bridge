@@ -20,7 +20,9 @@ You need a Cloudflare API Token to deploy this worker. The "Global API Key" is i
 5.  Copy the token value immediately.
 
 ### B. Environment Setup
+
 The project follows a **strict "Zero Local Secrets" policy**.
+
 - **Do NOT** store API keys in `.env` or `.dev.vars` files.
 - **Do** use `wrangler secret put` to upload secrets to Cloudflare.
 - **Do** use `npx wrangler dev --remote` for local development.

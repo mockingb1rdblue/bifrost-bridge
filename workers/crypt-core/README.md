@@ -4,12 +4,14 @@ The central hub for the Bifrost Bridge swarm. It handles LLM routing, job orches
 
 ## 🔒 Security: Zero Local Secrets Policy
 
-**MANDATORY**: This project follows a strict "Zero Local Secrets" policy. 
+**MANDATORY**: This project follows a strict "Zero Local Secrets" policy.
+
 - **NO** `.env` files should contain production or sensitive API keys.
 - **NO** `.dev.vars` should be committed.
 - All secrets MUST be managed via `wrangler secret put [KEY]`.
 
 ### Required Secrets
+
 - `LINEAR_API_KEY`
 - `LINEAR_TEAM_ID`
 - `PROXY_API_KEY`
@@ -24,12 +26,15 @@ The central hub for the Bifrost Bridge swarm. It handles LLM routing, job orches
 ## 🛠️ Development & Deployment
 
 ### Local Development (Proxied)
+
 To run locally while accessing production secrets (and bypassing corporate SSL inspection):
+
 ```bash
 npm run dev -- --remote
 ```
 
 ### Deployment
+
 ```bash
 npm run deploy
 ```

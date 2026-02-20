@@ -7,7 +7,9 @@ description: The Startup Ritual - Enforcing Fresh Clone Mentality & Compliance
 **Trigger**: Execute this workflow at the start of EVERY new chat/session.
 
 ## Purpose
+
 To combat "environment drift" and "local secrets" usage. We operate under the assumption that:
+
 1.  The machine was just wiped.
 2.  All secrets must be re-verified.
 3.  Documentation is the only source of truth.
