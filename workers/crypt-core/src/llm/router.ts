@@ -65,7 +65,7 @@ export class LLMRouter {
             default:
                 const totalCharCount = request.messages.reduce((sum, m) => sum + m.content.length, 0);
                 if (totalCharCount > 100000) return 'gemini';
-                return 'deepseek';
+                return 'anthropic';
         }
     }
 

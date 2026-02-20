@@ -6,8 +6,8 @@
 
 ### Mission 1: The Cairn Codex (Project Management)
 - [/] **[CC-01] Schema Design**: Define `ProjectSpec` and schemas. (See [CAIRN_CODEX.md](specs/CAIRN_CODEX.md))
-- [ ] **[CC-02] Linear SDK Wrapper**: Create `LinearOrchestrator` class. (See [CAIRN_CODEX.md](specs/CAIRN_CODEX.md))
-- [ ] **[CC-03] Natural Language Parser**: Implement `ProjectSpecParser` with Perplexity.
+- [/] **[CC-02] Linear SDK Wrapper**: Create `LinearOrchestrator` class. (See [CAIRN_CODEX.md](specs/CAIRN_CODEX.md))
+- [/] **[CC-03] Natural Language Parser**: Implement `ProjectSpecParser` with Perplexity.
 - [ ] **[CC-04] MCP Tool**: Expose `create_structured_project` tool.
 - [ ] [CC-03] **Dependency Logic**: Implement graph resolution logic (blocking/soft dependencies).
 - [ ] [CC-04] **Status Workflow**: Implement state machine for task transitions (Pending -> Active -> Done).

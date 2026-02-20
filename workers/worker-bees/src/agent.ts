@@ -154,7 +154,7 @@ async function pollQueue() {
 
     if (response.status === 404) return;
     if (!response.ok) {
-        console.error(`[${WORKER_ID}] Queue Poll Error: ${response.status}`);
+        console.error(`[${WORKER_ID}] Queue Poll Error: ${response.status} - ${await response.text()}`);
         return;
     }
 
@@ -174,8 +174,7 @@ async function pollSwarm() {
 
     if (response.status === 404) return;
     if (!response.ok) {
-        // Warning only, swarm might not be active
-        // console.warn(`[${WORKER_ID}] Swarm Poll Error: ${response.status}`);
+        console.error(`[${WORKER_ID}] Swarm Poll Error: ${response.status} - ${await response.text()}`);
         return;
     }
 

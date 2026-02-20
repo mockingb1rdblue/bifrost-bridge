@@ -26,6 +26,13 @@ export interface Job {
   correlationId?: string;
 }
 
+export interface CircuitBreakerState {
+  state: 'closed' | 'open';
+  failureCount: number;
+  trippedAt?: number;
+  reason?: string;
+}
+
 // ... keep existing definitions
 export interface RouterState {
   jobs: Record<string, Job>;
@@ -34,6 +41,7 @@ export interface RouterState {
   metrics: RouterMetrics;
   recentErrors: ErrorLog[];
   lastMaintenance: number;
+  circuitBreakers: Record<string, CircuitBreakerState>;
 }
 export interface SluaghSwarmTask {
   id: string;

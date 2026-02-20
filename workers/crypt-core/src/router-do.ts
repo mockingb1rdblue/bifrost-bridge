@@ -61,6 +61,7 @@ export class RouterDO {
     },
     recentErrors: [],
     lastMaintenance: Date.now(),
+    circuitBreakers: {},
   };
 
   private llmRouter: LLMRouter;
@@ -95,16 +96,32 @@ export class RouterDO {
 
     // Restore state from storage
     this.state.blockConcurrencyWhile(async () => {
-      const stored = await this.state.storage.get<RouterState>('router_state');
-      if (stored) {
-        this.storage = {
-          ...this.storage,
-          ...stored,
-          rateLimits: stored.rateLimits || {},
-          metrics: stored.metrics || this.storage.metrics,
-          recentErrors: stored.recentErrors || [],
-        };
-      }
+      // CRITICAL: Delete the legacy oversized blob before any reads.
+      // Cloudflare allows deleting any-size key — just not reading them.
+      await this.state.storage.delete('router_state').catch(() => { });
+
+      // Load metadata (metrics, rateLimits, errors, circuit breakers)
+      const meta = await this.state.storage.get<any>('router_meta') || {};
+
+      // Load jobs
+      const jobsMap = await this.state.storage.list<Job>({ prefix: 'job_' });
+      const jobs: Record<string, Job> = {};
+      for (const [key, job] of jobsMap) jobs[job.id] = job;
+
+      // Load swarm tasks
+      const tasksMap = await this.state.storage.list<SluaghSwarmTask>({ prefix: 'task_' });
+      const swarmTasks: Record<string, SluaghSwarmTask> = {};
+      for (const [key, task] of tasksMap) swarmTasks[task.id] = task;
+
+      this.storage = {
+        jobs,
+        swarmTasks,
+        rateLimits: meta.rateLimits || {},
+        metrics: meta.metrics || this.storage.metrics,
+        recentErrors: meta.recentErrors || [],
+        lastMaintenance: meta.lastMaintenance || Date.now(),
+        circuitBreakers: meta.circuitBreakers || {},
+      };
     });
 
     // Set heartbeat alarm
@@ -781,35 +798,121 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
     });
   }
 
+  // ---- Circuit Breaker -------------------------------------------------------
+  // Trip threshold: 2 consecutive failures = circuit opens. No backoff, ever.
+  // 429 is treated as a failure — it means we have a call volume problem, not a timing problem.
+  private readonly CIRCUIT_TRIP_THRESHOLD = 2;
+
+  private isCircuitOpen(service: string): boolean {
+    const cb = this.storage.circuitBreakers[service];
+    if (!cb) return false;
+    if (cb.state === 'open') {
+      console.warn(`[CircuitBreaker] ${service} circuit is OPEN — skipping call. Tripped: ${cb.reason}`);
+      return true;
+    }
+    return false;
+  }
+
+  private async recordCircuitFailure(service: string, reason: string): Promise<void> {
+    if (!this.storage.circuitBreakers[service]) {
+      this.storage.circuitBreakers[service] = { state: 'closed', failureCount: 0 };
+    }
+    const cb = this.storage.circuitBreakers[service];
+    cb.failureCount++;
+    console.warn(`[CircuitBreaker] ${service} failure #${cb.failureCount}: ${reason}`);
+
+    if (cb.failureCount >= this.CIRCUIT_TRIP_THRESHOLD) {
+      cb.state = 'open';
+      cb.trippedAt = Date.now();
+      cb.reason = reason;
+      console.error(`[CircuitBreaker] ⛔ ${service} circuit TRIPPED after ${cb.failureCount} failures. All calls stopped.`);
+      await this.dispatchSelfHealingTask(service, reason);
+    }
+    await this.saveState();
+  }
+
+  private recordCircuitSuccess(service: string): void {
+    if (this.storage.circuitBreakers[service]) {
+      this.storage.circuitBreakers[service] = { state: 'closed', failureCount: 0 };
+    }
+  }
+
+  /**
+   * Dispatches a swarm task to diagnose and self-heal a tripped circuit.
+   * The swarm worker will:
+   * 1. Probe the service with a sandbox test call (no side effects)
+   * 2. Diagnose: 401 = bad key, 403 = bad permissions, 429 = call volume bug, 5xx = upstream down
+   * 3. If fixable: apply fix and call /admin/circuit-reset?service=X
+   * 4. If not fixable: open one GitHub issue (never Linear for Linear failures) and stop
+   */
+  private async dispatchSelfHealingTask(service: string, reason: string): Promise<void> {
+    const taskId = `task_heal_${service}_${Date.now()}`;
+    const task: SluaghSwarmTask = {
+      id: taskId,
+      issueId: taskId,
+      type: 'chore',
+      title: `[SELF-HEAL] Circuit breaker tripped: ${service}`,
+      description: [
+        `The circuit breaker for external service "${service}" has tripped after ${this.CIRCUIT_TRIP_THRESHOLD} consecutive failures.`,
+        ``,
+        `**Last failure reason:** ${reason}`,
+        `**Tripped at:** ${new Date().toISOString()}`,
+        ``,
+        `## Your job`,
+        `1. Run a **sandbox probe** — single isolated test call to ${service} with no side effects`,
+        `2. Diagnose by HTTP status:`,
+        `   - 401 → key is invalid or deactivated → open a GitHub issue, stop`,
+        `   - 403 → key lacks permissions → open a GitHub issue, stop`,
+        `   - 429 → call volume architectural bug (do NOT retry) → open a GitHub issue, stop`,
+        `   - 5xx → upstream outage → probe once more to confirm, then open GitHub issue, stop`,
+        `   - 200 → transient error, now recovered → call POST /admin/circuit-reset?service=${service}`,
+        `3. **Do NOT use Linear** if Linear is the broken service. Use GitHub issues only.`,
+        `4. After a confirmed fix: call POST /admin/circuit-reset?service=${service} to restore the circuit.`,
+      ].join('\n'),
+      files: [],
+      status: 'pending',
+      priority: 100, // Highest priority — self-healing beats all queued work
+      isHighRisk: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    this.storage.swarmTasks[taskId] = task;
+    console.error(`[CircuitBreaker] Self-healing task dispatched: ${taskId}`);
+  }
+  // ---- End Circuit Breaker ---------------------------------------------------
+
   private async processBatch(limit: number = this.BATCH_SIZE): Promise<Response> {
-    await this.syncLinearTasks();
+    // syncLinearTasks is called exclusively from alarm() - not here - to avoid hammering Linear on every batch
 
     const pendingJobs = Object.values(this.storage.jobs)
       .filter((j) => j.status === 'pending')
       .sort((a, b) => b.priority - a.priority)
       .slice(0, limit);
 
-    const linear = new LinearClient({
-      apiKey: this.env.LINEAR_API_KEY,
-      teamId: this.env.LINEAR_TEAM_ID,
-    });
-
     for (const job of pendingJobs) {
       if (job.type === 'ingestion' && !job.linearIssueId) {
-        job.status = 'awaiting_hitl';
-        try {
-          const issue = await linear.createIssue({
-            title: `[HITL] Ingestion Approval Required: ${job.id}`,
-            description: `Job ID: ${job.id}\nPayload: ${JSON.stringify(job.payload, null, 2)}\n\nPlease approve this ingestion by adding a comment 'APPROVE' or updating the status.`,
-            teamId: this.env.LINEAR_TEAM_ID,
-            projectId: this.env.LINEAR_PROJECT_ID,
-          });
-          job.linearIssueId = issue.id;
-          job.linearIdentifier = issue.identifier;
-        } catch (e) {
-          await this.logError((e as Error).message, 'LINEAR_CREATE_ISSUE', e);
+        if (this.isCircuitOpen('linear')) {
           job.status = 'failed';
-          job.error = (e as Error).message;
+          job.error = 'LINEAR_CIRCUIT_OPEN: circuit tripped, cannot create Linear issue';
+        } else {
+          job.status = 'awaiting_hitl';
+          try {
+            const linear = new LinearClient({ apiKey: this.env.LINEAR_API_KEY, teamId: this.env.LINEAR_TEAM_ID });
+            const issue = await linear.createIssue({
+              title: `[HITL] Ingestion Approval Required: ${job.id}`,
+              description: `Job ID: ${job.id}\nPayload: ${JSON.stringify(job.payload, null, 2)}\n\nPlease approve this ingestion by adding a comment 'APPROVE' or updating the status.`,
+              teamId: this.env.LINEAR_TEAM_ID,
+              projectId: this.env.LINEAR_PROJECT_ID,
+            });
+            job.linearIssueId = issue.id;
+            job.linearIdentifier = issue.identifier;
+            this.recordCircuitSuccess('linear');
+          } catch (e) {
+            await this.recordCircuitFailure('linear', (e as Error).message);
+            await this.logError((e as Error).message, 'LINEAR_CREATE_ISSUE', e);
+            job.status = 'failed';
+            job.error = (e as Error).message;
+          }
         }
       } else if (job.type === 'orchestration' && job.status === 'pending') {
         await this.processOrchestrationJob(job);
@@ -1146,7 +1249,44 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
         case '/v1/admin/batch':
           if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
           return await this.handleBatchTrigger(request);
+        case '/admin/circuit-reset':
+          if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+          const svcParam = url.searchParams.get('service');
+          if (!svcParam) return new Response('Missing ?service= param', { status: 400 });
+          if (this.storage.circuitBreakers[svcParam]) {
+            this.storage.circuitBreakers[svcParam] = { state: 'closed', failureCount: 0 };
+            await this.saveState();
+          }
+          return new Response(JSON.stringify({ message: `Circuit reset: ${svcParam}`, status: 'closed' }), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        case '/admin/circuits':
+          return new Response(JSON.stringify(this.storage.circuitBreakers), {
+            headers: { 'Content-Type': 'application/json' },
+          });
         default:
+          if (path === '/v1/admin/wipe' && request.method === 'POST') {
+            await this.state.storage.deleteAll();
+            this.storage = {
+              jobs: {},
+              swarmTasks: {},
+              rateLimits: {},
+              metrics: {
+                totalRequests: 0,
+                totalTasks: 0,
+                tokensConsumed: 0,
+                errorCount: 0,
+                successCount: 0,
+                startTime: Date.now(),
+                providerStats: {},
+              },
+              recentErrors: [],
+              lastMaintenance: Date.now(),
+              circuitBreakers: {},
+            };
+            await this.saveState();
+            return new Response(JSON.stringify({ message: 'State completely wiped' }), { status: 200 });
+          }
           return new Response('Not found', { status: 404 });
       }
     } catch (e: any) {
@@ -1311,7 +1451,7 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
 
   private async triggerMaintenance() {
     this.storage.lastMaintenance = Date.now();
-    await this.syncLinearTasks();
+    // syncLinearTasks is intentionally NOT called here — only alarm() triggers it once per cycle
     await this.processBatch();
     await this.saveState();
   }
@@ -1381,10 +1521,71 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
   }
 
   private async saveState() {
-    await this.state.storage.put('router_state', this.storage);
+    try {
+      // 1. Save metadata (rateLimits, metrics, recentErrors)
+      const meta = {
+        rateLimits: this.storage.rateLimits,
+        metrics: this.storage.metrics,
+        recentErrors: this.storage.recentErrors,
+        lastMaintenance: this.storage.lastMaintenance,
+      };
+      await this.state.storage.put('router_meta', meta);
+
+      // 2. Clean up old records from memory and storage
+      await this.cleanupOldRecords();
+
+      // 3. Save active jobs individually (sequentially to avoid concurrent limits)
+      for (const job of Object.values(this.storage.jobs)) {
+        await this.state.storage.put(`job_${job.id}`, job);
+      }
+
+      // 4. Save active swarm tasks individually
+      for (const task of Object.values(this.storage.swarmTasks)) {
+        await this.state.storage.put(`task_${task.id}`, task);
+      }
+
+      // Clean up monolithic legacy state if it exists
+      await this.state.storage.delete('router_state').catch(() => { });
+    } catch (e: any) {
+      console.error('[RouterDO.saveState] CRITICAL FAILURE:', e.message, e.stack);
+      // DO NOT throw, or we will cause a cascade of 1101 errors.
+    }
+  }
+
+  private async cleanupOldRecords() {
+    const now = Date.now();
+    const MAX_COMPLETED = 10;
+
+    // Jobs
+    const allJobs = Object.values(this.storage.jobs);
+    const completedJobs = allJobs.filter(j => j.status === 'completed' || j.status === 'failed')
+      .sort((a, b) => b.updatedAt - a.updatedAt);
+    if (completedJobs.length > MAX_COMPLETED) {
+      const toDelete = completedJobs.slice(MAX_COMPLETED);
+      for (const j of toDelete) {
+        delete this.storage.jobs[j.id];
+        await this.state.storage.delete(`job_${j.id}`);
+      }
+    }
+
+    // Swarm tasks
+    const allSwarmTasks = Object.values(this.storage.swarmTasks);
+    const completedSwarm = allSwarmTasks.filter(t => t.status === 'completed' || t.status === 'failed')
+      .sort((a, b) => (b.updatedAt || now) - (a.updatedAt || now));
+
+    if (completedSwarm.length > MAX_COMPLETED) {
+      const toDelete = completedSwarm.slice(MAX_COMPLETED);
+      for (const t of toDelete) {
+        delete this.storage.swarmTasks[t.id];
+        await this.state.storage.delete(`task_${t.id}`);
+      }
+    }
   }
 
   private async syncLinearTasks() {
+    // Circuit breaker: if Linear has failed 2x consecutively, stop all calls until swarm self-heals
+    if (this.isCircuitOpen('linear')) return;
+
     try {
       if (!this.env.LINEAR_API_KEY || !this.env.LINEAR_TEAM_ID) {
         return;
@@ -1398,7 +1599,6 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
       const labels = await linear.listLabels(this.env.LINEAR_TEAM_ID);
       const readyLabel = labels.find((l: any) => l.name === 'sluagh:ready');
       const activeLabel = labels.find((l: any) => l.name === 'sluagh:active');
-      const julesLabel = labels.find((l: any) => l.name === 'agent:jules');
 
       if (!readyLabel || !activeLabel) {
         return;
@@ -1448,8 +1648,13 @@ ${log.lessonsLearned.map((l) => `- ${l}`).join('\n')}
           payload: { jobId, issueIdentifier: issue.identifier },
         });
       }
+
+      // Successful sync — reset the failure counter
+      this.recordCircuitSuccess('linear');
     } catch (e: any) {
       console.error('[syncLinearTasks] Sync failed:', e.message);
+      // This counts toward the 2-strike trip threshold
+      await this.recordCircuitFailure('linear', e.message);
     }
   }
 
