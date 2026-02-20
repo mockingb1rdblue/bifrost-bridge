@@ -44,48 +44,97 @@ Expect `fly logs` to show `[Orchestrator][step 1/2] ✅` then `[Orchestrator][st
 
 ---
 
-## Fix 2 — Rate Limit 429s (BLOCKER: worker chokes itself every other poll)
+## Fix 2 — Rate Limit Death Spiral (BLOCKER: system rate-limits itself into the ground)
 
-**Problem**: The worker polls `/v1/queue/poll` AND `/v1/swarm/next` every 5 seconds using the same `PROXY_API_KEY`. That's 24 requests/minute from a single key hitting a token bucket that refills at 1 token/sec. The bucket gets saturated and 429s half the calls.
+**Invariant**: the system must NEVER hit rate limits under legitimate internal load. If it does, the whole system is broken — not the caller.
 
-**Root cause in `router-do.ts`**: `checkRateLimit(authKey)` uses the raw `Authorization` header as the bucket key. The worker bee is a trusted internal caller, not a random user.
-
-**Fix in `workers/crypt-core/src/router-do.ts` `fetch()` method**:
-
-Whitelist the internal worker key from rate limiting:
+**Root cause A — health score death spiral in `router-do.ts` `checkRateLimit()`**:
 
 ```ts
-// After checkConfig(), before checkRateLimit()
-const isInternalWorker = authKey === `Bearer ${this.env.PROXY_API_KEY}`;
-if (!isInternalWorker && !this.checkRateLimit(authKey)) {
-  await this.saveState();
-  return new Response('Too Many Requests', { status: 429 });
+// Current (broken)
+const effectiveRefillRate = baseRefillRate * healthScore;
+// When pendingJobs >= 100 → healthScore = 0.1 → refill = 0.1 tokens/sec
+// → 429s → more errors → worse health score → never recovers
+```
+
+The health score multiplier on the refill rate is backwards. When the system is under load is exactly when the worker needs to poll freely. Rate limiting is for bad actors, not internal load.
+
+**Fix A**: Remove `calculateHealthScore()` from the rate limit refill path. The score stays for metrics only.
+
+**File**: `workers/crypt-core/src/router-do.ts`, function `checkRateLimit()`
+
+```ts
+// Remove this line:
+const effectiveRefillRate = baseRefillRate * healthScore;
+
+// Replace with:
+const effectiveRefillRate = baseRefillRate; // health score is observability only, never load-shedding
+```
+
+---
+
+**Root cause B — two poll requests per tick, same key, same bucket**
+
+The worker makes `POST /v1/queue/poll` + `GET /v1/swarm/next` every 5s = 24 requests/minute from one key. Structural fix: merge into one endpoint.
+
+**Add to `router-do.ts`**:
+
+```ts
+case '/v1/worker/poll':
+  if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+  return await this.handleWorkerPoll(request);
+```
+
+```ts
+private async handleWorkerPoll(request: Request): Promise<Response> {
+  const { workerId } = (await request.json()) as any;
+
+  const queueJob = Object.values(this.storage.jobs)
+    .filter(j => j.status === 'pending')
+    .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0] ?? null;
+  if (queueJob) { queueJob.status = 'processing'; queueJob.assignedTo = workerId; queueJob.startedAt = Date.now(); }
+
+  const swarmTask = Object.values(this.storage.swarmTasks)
+    .filter(t => t.status === 'pending')
+    .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)[0] ?? null;
+  if (swarmTask) { swarmTask.status = 'in_progress'; swarmTask.assignedTo = workerId; swarmTask.startedAt = Date.now(); }
+
+  if (queueJob || swarmTask) await this.saveState();
+  return new Response(JSON.stringify({ queueJob, swarmTask }), { headers: { 'Content-Type': 'application/json' } });
 }
 ```
 
-This skips rate limiting entirely for the trusted worker bee. External callers still get rate-limited.
+**Update `agent.ts`**: Replace `pollQueue()` + `pollSwarm()` with single `pollWorker()`:
 
-**Also update `agent.ts`**: The worker currently polls both `/v1/queue/poll` and `/v1/swarm/next` in the **same 5s tick**, touching the router 4 times per tick (two polls + completing the previous job). Space them apart and **do not poll swarm if queue job was found and is executing**:
-
-In `pollForJob()`:
 ```ts
-async function pollForJob() {
-  try {
-    const foundQueueJob = await pollQueue();
-    if (!foundQueueJob) {
-      // Only poll swarm if queue is empty — avoid double-hammering
-      await pollSwarm();
-    }
-  } catch (error: any) {
-    // Log cause code for diagnosis, but do not stop the loop
-    console.error(`[${WORKER_ID}] Poll error [${error.cause?.code || 'UNKNOWN'}]:`, error.message);
+async function pollWorker() {
+  const response = await fetch(`${ROUTER_URL}/v1/worker/poll`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ workerId: WORKER_ID }),
+  });
+  if (!response.ok) {
+    console.error(`[${WORKER_ID}] Worker poll ${response.status} | ${await response.text()}`);
+    return;
   }
+  const { queueJob, swarmTask } = await response.json() as any;
+  if (queueJob) {
+    console.log(`[${WORKER_ID}] 🍯 Queue job: ${queueJob.id} (${queueJob.type})`);
+    await processJob(queueJob);
+  }
+  if (swarmTask) {
+    console.log(`[${WORKER_ID}] 🏴‍☠️ Swarm task: ${swarmTask.id} (${swarmTask.type})`);
+    await processJob({ id: swarmTask.id, type: swarmTask.type, payload: { ...swarmTask, isSwarm: true } });
+  }
+  if (!queueJob && !swarmTask) console.log(`[${WORKER_ID}] 💤 No work`);
 }
 ```
 
-Make `pollQueue()` and `pollSwarm()` return `boolean` (true = job found and executing).
+Replace `setInterval(pollForJob, POLL_INTERVAL)` → `setInterval(pollWorker, POLL_INTERVAL)`. Delete `pollQueue()`, `pollSwarm()`, `pollForJob()`.
 
-**Verification**: `fly logs` should show zero `429` errors after redeploy.
+**Result**: 1 request/tick instead of 2–4. With Fix 3 stopping the ingestor flood, `pendingJobs` drops below 50, health score returns to 1.0, and the system never hits rate limits again.
+
+**Verification**: `fly logs` must show zero `429` after redeploy. Empty queue shows `💤 No work`, not errors.
 
 ---
 
@@ -166,9 +215,9 @@ Specifically:
 
 ## Execution Order
 
-1. Fix 3 (loop prevention) — most urgent, it's flooding everything right now
-2. Fix 2 (rate limit whitelist) — second, because 429s block fix verification
-3. Fix 1 (orchestration handler) — now that queue isn't flooding
+1. Fix 3 (loop prevention) — most urgent, stops the ingestor flood that causes everything else
+2. Fix 2 (rate limit death spiral) — remove health-score multiplier + merge poll endpoints
+3. Fix 1 (orchestration handler) — now that queue isn't flooding, real jobs can run
 4. Fix 4 (PR base branch) — quick 1-liner, do it with fix 1
 
 Commit all fixes together in one PR: `feat: swarm orchestration + loop prevention + rate limit fix`.
