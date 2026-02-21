@@ -1,4 +1,5 @@
 import { Job, JobResult, JobHandler } from '../agent';
+import { config } from '../config';
 
 interface FetchUrlPayload {
   url: string;
@@ -22,12 +23,12 @@ export class FetchUrlHandler implements JobHandler {
     const { url, method, headers = {}, body, timeout = 30000 } = payload;
 
     // 1. Secret Injection (Security)
-    // Replaces values starting with '$' with process.env values
+    // Replaces values starting with '$' with config.PROCESS_ENV values
     const secureHeaders: Record<string, string> = {};
     for (const [key, value] of Object.entries(headers)) {
       if (value.startsWith('$')) {
         const envKey = value.slice(1);
-        const envValue = process.env[envKey];
+        const envValue = config.PROCESS_ENV[envKey];
         if (!envValue) {
           return { success: false, error: `Missing secure environment variable: ${envKey}` };
         }

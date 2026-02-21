@@ -20,7 +20,7 @@ export class LinearClient {
     this.teamId = config.teamId;
   }
 
-  private async query<T>(query: string, variables?: any): Promise<T> {
+  public async query<T>(query: string, variables?: any): Promise<T> {
     const response = await fetch(this.baseUrl, {
       method: 'POST',
       headers: {

@@ -1,5 +1,6 @@
 import { Job, JobHandler, JobResult } from '../agent';
 import { LLMClient, LLMMessage } from '../llm-client';
+import { config } from '../config';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
@@ -16,7 +17,7 @@ async function spawnAsync(
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       ...options,
-      env: { ...process.env, ...options.env },
+      env: { ...config.PROCESS_ENV, ...options.env },
     });
 
     let stdout = '';

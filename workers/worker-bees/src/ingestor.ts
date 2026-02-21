@@ -1,9 +1,10 @@
 import { LinearClient } from '@linear/sdk';
+import { config } from './config';
 
 // Configuration
-const LINEAR_API_KEY = process.env.LINEAR_API_KEY;
-const ROUTER_URL = process.env.ROUTER_URL || 'http://localhost:8787';
-const WORKER_API_KEY = process.env.WORKER_API_KEY || 'dev-key';
+const LINEAR_API_KEY = config.LINEAR_API_KEY;
+const ROUTER_URL = config.ROUTER_URL;
+const PROXY_API_KEY = config.PROXY_API_KEY;
 const POLL_INTERVAL = 10000; // 10 seconds
 
 let linear: LinearClient;
@@ -137,7 +138,7 @@ async function pollLinear() {
       const response = await fetch(`${ROUTER_URL}/v1/queue/add`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${WORKER_API_KEY}`,
+          Authorization: `Bearer ${PROXY_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

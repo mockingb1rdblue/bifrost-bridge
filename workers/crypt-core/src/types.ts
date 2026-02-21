@@ -1,15 +1,32 @@
 export interface Env {
-  // ... existing
-  FLY_API_TOKEN: string;
+  PROXY_API_KEY: string;
+  LINEAR_API_KEY: string;
+  LINEAR_WEBHOOK_SECRET: string;
+  LINEAR_TEAM_ID: string;
+  LINEAR_PROJECT_ID: string;
+  GITHUB_APP_ID: string;
+  GITHUB_PRIVATE_KEY: string;
+  GITHUB_INSTALLATION_ID: string;
+  GITHUB_WEBHOOK_SECRET: string;
+  DEEPSEEK_API_KEY: string;
+  ANTHROPIC_API_KEY: string;
+  GEMINI_API_KEY: string;
+  PERPLEXITY_API_KEY: string;
   EVENTS_SECRET: string;
+  EVENTS_URL: string;
+  FLY_API_TOKEN: string;
+  RATE_LIMIT_DEGRADATION_THRESHOLD?: string;
+  RATE_LIMIT_MAX_TOKENS?: string;
+  RATE_LIMIT_REFILL_RATE?: string;
+  JULES_API_KEY: string;
+  RUNNER_SECRET: string;
+  ROUTER_DO: DurableObjectNamespace;
   GOVERNANCE_DO: DurableObjectNamespace;
-  // ... others
-  [key: string]: any;
 }
 
 export interface Job {
   id: string;
-  type: 'ingestion' | 'orchestration' | 'runner_task'; // Added runner_task
+  type: 'ingestion' | 'orchestration' | 'runner_task' | 'run_command'; // run_command: dispatched by LinearIngestor
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'awaiting_hitl';
   priority: number;
   payload: any;
@@ -42,6 +59,7 @@ export interface RouterState {
   recentErrors: ErrorLog[];
   lastMaintenance: number;
   circuitBreakers: Record<string, CircuitBreakerState>;
+  ingestedIssueIds: string[];
 }
 export interface SluaghSwarmTask {
   id: string;
