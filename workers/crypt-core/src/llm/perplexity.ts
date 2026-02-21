@@ -12,7 +12,7 @@ export class PerplexityClient implements LLMClient {
    */
   constructor(apiKey: string, baseUrl?: string) {
     this.apiKey = apiKey;
-    this.baseUrl = baseUrl || process.env.PERPLEXITY_BASE_URL || 'https://api.perplexity.ai';
+    this.baseUrl = baseUrl || 'https://api.perplexity.ai';
   }
 
   /**

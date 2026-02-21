@@ -11,7 +11,7 @@ if (!API_KEY) {
 
 async function optimizeArchitecture() {
   console.log('🔍 Consulting Perplexity for Local Scraper Optimization...');
-  const client = new PerplexityClient(API_KEY);
+  const client = new PerplexityClient(API_KEY!);
 
   const strategyPath = path.resolve(
     __dirname,

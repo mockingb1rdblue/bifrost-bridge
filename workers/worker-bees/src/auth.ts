@@ -3,15 +3,17 @@ import crypto from 'crypto';
 /**
  * Authentication Helper for Sluagh Sluagh Swarm Worker Bees
  */
+import { config } from './config';
+
 export class AuthManager {
   /**
    *
    */
   static getApiKey(): string {
-    const key = process.env.WORKER_API_KEY;
+    const key = config.PROXY_API_KEY;
 
     if (!key) {
-      this.printDeathBanner('CRITICAL ERROR: WORKER_API_KEY environment variable is missing.');
+      AuthManager.printDeathBanner('CRITICAL ERROR: PROXY_API_KEY environment variable is missing.');
       process.exit(1);
     }
 

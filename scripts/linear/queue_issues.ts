@@ -35,7 +35,7 @@ async function main() {
     : baseUrl || 'https://api.linear.app/graphql';
   const client = new LinearClient(apiKey, finalBaseUrl);
 
-  const issuesToQueue = ['BIF-34', 'BIF-35', 'BIF-36', 'BIF-37', 'BIF-38'];
+  const issuesToQueue = ['BIF-281'];
 
   console.log(chalk.bold(`🚀 Queueing Next 5 Issues:\n`));
 
@@ -67,9 +67,13 @@ async function main() {
 
       console.log(chalk.cyan(`   Queueing ${identifier}: ${issue.title}...`));
 
-      // 1. Find 'Todo' state ID
+      // 1. Find 'In Progress' state ID and Viewer ID
       const states = await client.getWorkflowStates(issue.team.id);
-      const todoState = states.find((s: any) => s.name === 'Todo' || s.type === 'unstarted');
+      const inProgressState = states.find((s: any) => s.name === 'In Progress' || s.type === 'started');
+      
+      const viewerQuery = `query { viewer { id } }`;
+      const viewerData = await client.query<{ viewer: { id: string } }>(viewerQuery);
+      const viewerId = viewerData.viewer.id;
 
       // 2. Find 'sluagh:ready' label ID
       const labelsQuery = `query { issueLabels { nodes { id name } } }`;
@@ -86,18 +90,19 @@ async function main() {
                 }
             `;
 
-      const input: any = {};
-      if (todoState) input.stateId = todoState.id;
+      const input: any = {
+        title: `[SWARM] [run_command] ${issue.title}`,
+        description: `${issue.description || ''}\n\n\`\`\`json\n{\n  \"command\": \"echo\",\n  \"args\": [\"Autonomy test successful\"]\n}\n\`\`\``,
+        assigneeId: viewerId
+      };
+      
+      if (inProgressState) input.stateId = inProgressState.id;
       if (readyLabel) {
-        // Get existing labels to not overwrite them?
-        // Actually issueUpdate input for labels is labelIds: string[]
-        // We should probably merge if we want to keep others, but the user said "queue up"
-        // which often implies setting the correct state for automation.
         input.labelIds = [readyLabel.id];
       }
 
       await client.query(updateMutation, { id: issue.id, input });
-      console.log(chalk.green(`      ✅ Moved to Todo + tagged sluagh:ready.`));
+      console.log(chalk.green(`      ✅ Assigned to swarm + Moved to In Progress + Payload added.`));
     } catch (e: any) {
       console.error(chalk.red(`      ❌ Failed ${identifier}: ${e.message}`));
     }

@@ -310,8 +310,9 @@ const startAgent = () => {
   setInterval(pollWorker, POLL_INTERVAL);
 };
 
-if (require.main === module) {
-  startAgent();
-}
+// Removed for ESM compatibility and because index.ts calls startAgent()
+// if (require.main === module) {
+//   startAgent();
+// }
 
 export { pollWorker, processJob, completeJob, startAgent };

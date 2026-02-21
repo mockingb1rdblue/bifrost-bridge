@@ -11,7 +11,10 @@ export interface LLMConfig {
   anthropicKey?: string;
   geminiKey?: string;
   perplexityKey?: string;
-  // ... existing options ...
+  anthropicBaseUrl?: string;
+  deepseekBaseUrl?: string;
+  geminiBaseUrl?: string;
+  perplexityBaseUrl?: string;
 }
 
 /**

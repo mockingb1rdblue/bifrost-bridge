@@ -2,6 +2,7 @@ import http from 'http';
 import { Job, JobResult, handlers, registerHandler, startAgent } from './agent';
 import { RunCommandHandler } from './handlers/RunCommandHandler';
 import { FetchUrlHandler } from './handlers/FetchUrlHandler';
+import { config } from './config';
 
 console.log('[Worker Bee] 🐝 Starting in HTTP Runner Mode');
 
@@ -9,7 +10,7 @@ console.log('[Worker Bee] 🐝 Starting in HTTP Runner Mode');
 registerHandler(new RunCommandHandler());
 registerHandler(new FetchUrlHandler());
 
-const PORT = process.env.PORT || 8080;
+const PORT = config.PORT;
 
 const server = http.createServer(async (req, res) => {
   // Health check
@@ -28,7 +29,7 @@ const server = http.createServer(async (req, res) => {
   // Execute endpoint
   if (req.method === 'POST' && req.url === '/execute') {
     const authHeader = req.headers['authorization'];
-    const apiKey = process.env.WORKER_API_KEY || 'dev-key';
+    const apiKey = config.PROXY_API_KEY;
 
     if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
       res.writeHead(401, { 'Content-Type': 'application/json' });

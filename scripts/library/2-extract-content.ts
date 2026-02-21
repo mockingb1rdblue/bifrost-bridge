@@ -40,7 +40,7 @@ async function extractFlashLite(htmlContent: string) {
   return response.text || '';
 }
 
-async function processPage(url: string, db: Database) {
+async function processPage(url: string, db: Database.Database) {
   console.log(`Crawling: ${url}`);
   const res = await fetch(url);
   if (!res.body) return;

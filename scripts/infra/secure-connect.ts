@@ -92,9 +92,14 @@ const getFromCloudVault = async (namespaceId: string, keyName: string): Promise<
     ]);
     let output = '';
     child.stdout.on('data', (data) => (output += data.toString()));
+    child.stderr.on('data', (data) => console.error(`[KV Debug] ${data}`));
     child.on('close', (code) => {
-      if (code === 0 && output.trim() && !output.includes('not found')) resolve(output.trim());
-      else resolve(null);
+      if (code === 0 && output.trim() && !output.includes('not found')) {
+        resolve(output.trim());
+      } else {
+        if (code !== 0) console.error(`[KV Debug] Failed with code ${code} for key ${keyName}`);
+        resolve(null);
+      }
     });
   });
 };
@@ -135,56 +140,55 @@ async function main() {
   }
   console.log('✅ Found.\n');
 
-  let linearKey = await getFromCloudVault(vaultId, 'LINEAR_API_KEY');
-  let proxyKey = await getFromCloudVault(vaultId, 'PROXY_API_KEY');
-  const perplexityBaseUrl = await getFromCloudVault(vaultId, 'PERPLEXITY_BASE_URL');
-  let geminiKey = await getFromCloudVault(vaultId, 'GEMINI_API_KEY');
+  const secrets: Record<string, string> = {};
+  const requiredKeys = [
+    'LINEAR_API_KEY',
+    'PROXY_API_KEY',
+    'GEMINI_API_KEY',
+    'ANTHROPIC_API_KEY',
+    'PERPLEXITY_API_KEY',
+    'DEEPSEEK_API_KEY',
+    'LINEAR_TEAM_ID',
+    'LINEAR_PROJECT_ID',
+    'GITHUB_APP_ID',
+    'GITHUB_PRIVATE_KEY',
+    'GITHUB_INSTALLATION_ID',
+    'LINEAR_WEBHOOK_SECRET',
+    'GITHUB_WEBHOOK_SECRET',
+    'PERPLEXITY_BASE_URL',
+  ];
 
-  if (perplexityBaseUrl) {
-    process.env.PERPLEXITY_BASE_URL = perplexityBaseUrl;
-  }
-
-  if (linearKey) {
-    console.log('✅ Loaded LINEAR_API_KEY securely from Cloud Vault.');
-  } else {
-    linearKey = await ask(
-      '🔑 Enter Linear API Key (will be saved securely to Cloud Vault): ',
-      true,
-    );
-    if (linearKey) {
-      console.log('\n⏳ Encrypting and uploading to Cloudflare KV...');
-      await saveToCloudVault(vaultId, 'LINEAR_API_KEY', linearKey);
-      console.log('✅ Saved.');
+  for (const key of requiredKeys) {
+    let value = await getFromCloudVault(vaultId, key);
+    if (value) {
+      secrets[key] = value;
+      console.log(`✅ Loaded ${key} securely from Cloud Vault.`);
+    } else if (
+      key === 'LINEAR_API_KEY' ||
+      key === 'PROXY_API_KEY' ||
+      key === 'GEMINI_API_KEY'
+    ) {
+      // Critical keys that must exist
+      value = await ask(`🔑 Enter ${key.replace(/_/g, ' ')} (will be saved securely to Cloud Vault): `, true);
+      if (value) {
+        console.log(`\n⏳ Encrypting and uploading ${key} to Cloudflare KV...`);
+        await saveToCloudVault(vaultId, key, value);
+        secrets[key] = value;
+        console.log('✅ Saved.');
+      }
+    } else {
+      // Non-critical or optional keys for local testing
+      secrets[key] = `dummy-${key.toLowerCase()}`;
     }
   }
 
-  if (proxyKey) {
-    console.log('✅ Loaded PROXY_API_KEY securely from Cloud Vault.');
-  } else {
-    proxyKey = await ask('🔑 Enter Proxy API Key (will be saved securely to Cloud Vault): ', true);
-    if (proxyKey) {
-      console.log('\n⏳ Encrypting and uploading to Cloudflare KV...');
-      await saveToCloudVault(vaultId, 'PROXY_API_KEY', proxyKey);
-      console.log('✅ Saved.');
-    }
-  }
+  // Inject all loaded secrets into process.env
+  Object.entries(secrets).forEach(([key, value]) => {
+    if (value) process.env[key] = value;
+  });
 
-  if (geminiKey) {
-    console.log('✅ Loaded GEMINI_API_KEY securely from Cloud Vault.');
-  } else {
-    geminiKey = await ask(
-      '🔑 Enter Gemini API Key (will be saved securely to Cloud Vault): ',
-      true,
-    );
-    if (geminiKey) {
-      console.log('\n⏳ Encrypting and uploading to Cloudflare KV...');
-      await saveToCloudVault(vaultId, 'GEMINI_API_KEY', geminiKey);
-      console.log('✅ Saved.');
-    }
-  }
-
-  if (!linearKey || !proxyKey || !geminiKey) {
-    console.error('❌ All keys (LINEAR, PROXY, GEMINI) are required.');
+  if (!secrets.LINEAR_API_KEY || !secrets.PROXY_API_KEY || !secrets.GEMINI_API_KEY) {
+    console.error('\n❌ Primary keys (LINEAR, PROXY, GEMINI) are required to proceed.');
     process.exit(1);
   }
 
@@ -202,13 +206,24 @@ async function main() {
 
   console.log(`\n🚀 Launching \x1b[33m${scriptPath}\x1b[0m with secure context...\n`);
 
-  const child = spawn('npx', ['tsx', scriptPath, ...remainingArgs], {
+  let commandArgs = scriptPath.endsWith('.ts')
+    ? ['tsx', scriptPath, ...remainingArgs]
+    : [scriptPath, ...remainingArgs];
+
+  // If running wrangler dev/deploy, inject secrets as --var flags
+  const isWrangler = scriptPath === 'wrangler' || (commandArgs[0] === 'wrangler');
+  if (isWrangler && (remainingArgs.includes('dev') || remainingArgs.includes('deploy'))) {
+    Object.entries(secrets).forEach(([key, value]) => {
+      if (value && key !== 'PERPLEXITY_BASE_URL' && key !== 'NODE_EXTRA_CA_CERTS') {
+        commandArgs.push('--var', `${key}:${value}`);
+      }
+    });
+  }
+
+  const child = spawn('npx', ['--', ...commandArgs], {
     stdio: 'inherit',
     env: {
       ...process.env,
-      LINEAR_API_KEY: linearKey,
-      PROXY_API_KEY: proxyKey,
-      GEMINI_API_KEY: geminiKey,
       NODE_EXTRA_CA_CERTS: process.env.NODE_EXTRA_CA_CERTS, // Preserve certs if set
     },
   });

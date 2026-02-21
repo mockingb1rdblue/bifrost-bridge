@@ -1,4 +1,5 @@
 import { Job, JobResult, JobHandler } from '../agent';
+import { config } from '../config';
 
 interface LinearActionPayload {
   action: 'create_issue' | 'update_issue' | 'list_issues' | 'create_comment';
@@ -25,9 +26,9 @@ export class LinearHandler implements JobHandler {
     // No, let's stick to fetch for "Zero Dependency" purity if we can, OR just use the installed SDK.
     // We already have @linear/sdk in package.json. Let's use it.
 
-    const API_KEY = process.env.LINEAR_API_KEY;
+    const API_KEY = config.LINEAR_API_KEY;
     if (!API_KEY) {
-      return { success: false, error: 'Missing LINEAR_API_KEY env var' };
+      return { success: false, error: 'Missing LINEAR_API_KEY config' };
     }
 
     try {
